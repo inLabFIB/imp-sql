@@ -1,4 +1,7 @@
 package edu.upc.imp.queryschema;
 
-public abstract class Query implements RelationalExpression, ValueExpression {
+import edu.upc.imp.queryschema.visitor.QuerySchemaObject;
+
+public abstract class Query implements RelationalExpression, QuerySchemaObject {
+
 }

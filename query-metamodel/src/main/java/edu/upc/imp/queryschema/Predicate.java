@@ -1,4 +1,6 @@
 package edu.upc.imp.queryschema;
 
-public abstract class Predicate implements BooleanExpression {
+import edu.upc.imp.queryschema.visitor.QuerySchemaObject;
+
+public abstract class Predicate implements BooleanExpression, QuerySchemaObject {
 }

@@ -1,5 +1,14 @@
 package edu.upc.imp.queryschema;
 
-public class TableReference implements RelationalExpression {
-    private String tableName;
+import edu.upc.imp.queryschema.visitor.QuerySchemaObject;
+import edu.upc.imp.queryschema.visitor.QuerySchemaVisitor;
+
+public class TableReference implements RelationalExpression, QuerySchemaObject {
+
+    private String name;
+
+    @Override
+    public void visit(QuerySchemaVisitor visitor) {
+        visitor.visit(this);
+    }
 }
