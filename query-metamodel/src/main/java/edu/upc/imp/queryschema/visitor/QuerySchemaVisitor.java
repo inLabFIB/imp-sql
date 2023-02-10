@@ -3,8 +3,7 @@ package edu.upc.imp.queryschema.visitor;
 import edu.upc.imp.queryschema.*;
 
 public interface QuerySchemaVisitor {
-
-    String visit(Query q);
+    String visit(TableExpression te);
     String visit(JoinOperation jo);
     String visit(TableReference tr);
     String visit(ComparisonPredicate cp);

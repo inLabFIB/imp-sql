@@ -6,7 +6,7 @@ import edu.upc.imp.queryschema.visitor.QuerySchemaVisitor;
 public class SQLServerPrinter implements QuerySchemaVisitor {
 
     @Override
-    public String visit(Query q) {
+    public String visit(TableExpression te) {
         return null;
     }
 
