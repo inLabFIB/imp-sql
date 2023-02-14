@@ -1,9 +1,11 @@
 package edu.upc.imp.printer;
 
-import edu.upc.imp.queryschema.*;
-import edu.upc.imp.queryschema.visitor.QuerySchemaVisitor;
+import edu.upc.imp.sqlobjectschema.*;
+import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
-public class SQLServerPrinter implements QuerySchemaVisitor {
+public class SQLServerPrinter implements SQLObjectSchemaVisitor {
+
+    private SQLObjectSchema sqlObjectSchema;
 
     @Override
     public String visit(TableExpression te) {
@@ -42,6 +44,11 @@ public class SQLServerPrinter implements QuerySchemaVisitor {
 
     @Override
     public String visit(Assertion a) {
+        return null;
+    }
+
+    @Override
+    public String visit(View v) {
         return null;
     }
 }

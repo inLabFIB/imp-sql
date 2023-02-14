@@ -1,4 +1,4 @@
-package edu.upc.imp.queryschema;
+package edu.upc.imp.sqlobjectschema;
 
 public interface ValueExpression {
 }

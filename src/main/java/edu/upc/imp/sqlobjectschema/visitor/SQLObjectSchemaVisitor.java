@@ -1,8 +1,8 @@
-package edu.upc.imp.queryschema.visitor;
+package edu.upc.imp.sqlobjectschema.visitor;
 
-import edu.upc.imp.queryschema.*;
+import edu.upc.imp.sqlobjectschema.*;
 
-public interface QuerySchemaVisitor {
+public interface SQLObjectSchemaVisitor {
     String visit(TableExpression te);
     String visit(JoinOperation jo);
     String visit(TableReference tr);
@@ -11,4 +11,5 @@ public interface QuerySchemaVisitor {
     String visit(Constant c);
     String visit(PredicateOperation po);
     String visit(Assertion a);
+    String visit(View v);
 }

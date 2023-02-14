@@ -1,11 +1,11 @@
-package edu.upc.imp.queryschema;
+package edu.upc.imp.sqlobjectschema;
 
-import edu.upc.imp.queryschema.visitor.QuerySchemaObject;
-import edu.upc.imp.queryschema.visitor.QuerySchemaVisitor;
+import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
+import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.List;
 
-public class TableExpression extends Query implements QuerySchemaObject {
+public class TableExpression extends Query implements SQLObjectSchemaEntity {
     // Invariable rule: columnAliases.length = selectClause.length && tableAliases.length = fromClause.length
 
     // Aliases can be seen by other classes by using getters
@@ -21,7 +21,7 @@ public class TableExpression extends Query implements QuerySchemaObject {
     private BooleanExpression whereClause;
 
     @Override
-    public void visit(QuerySchemaVisitor visitor) {
-        visitor.visit(this);
+    public String visit(SQLObjectSchemaVisitor visitor) {
+        return visitor.visit(this);
     }
 }

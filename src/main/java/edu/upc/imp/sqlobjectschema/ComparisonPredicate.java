@@ -1,6 +1,6 @@
-package edu.upc.imp.queryschema;
+package edu.upc.imp.sqlobjectschema;
 
-import edu.upc.imp.queryschema.visitor.QuerySchemaVisitor;
+import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 public class ComparisonPredicate extends Predicate {
 
@@ -13,7 +13,7 @@ public class ComparisonPredicate extends Predicate {
     private ValueExpression rightExpression;
 
     @Override
-    public void visit(QuerySchemaVisitor visitor) {
-        visitor.visit(this);
+    public String visit(SQLObjectSchemaVisitor visitor) {
+        return visitor.visit(this);
     }
 }
