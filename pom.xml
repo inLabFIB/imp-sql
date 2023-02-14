@@ -26,6 +26,12 @@
       <version>4.11.1</version>
     </dependency>
     <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-maven-plugin</artifactId>
+      <version>4.3</version>
+      <type>maven-plugin</type>
+    </dependency>
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>5.9.2</version>
@@ -44,5 +50,30 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>4.3</version>
+        <configuration>
+          <visitor>true</visitor>
+          <sourceDirectory>src/main/antlr4/edu.upc.imp.parser/SQLServer</sourceDirectory>
+          <includes>
+            <include>TSqlLexer.g4</include>
+            <include>TSqlParser.g4</include>
+          </includes>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
