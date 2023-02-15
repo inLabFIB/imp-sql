@@ -3,6 +3,7 @@ package edu.upc.imp.printer;
 import edu.upc.imp.sqlobjectschema.*;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+@SuppressWarnings("unchecked")
 public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     private SQLObjectSchema sqlObjectSchema;

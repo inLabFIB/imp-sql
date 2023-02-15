@@ -8,7 +8,7 @@ public class ColumnReference implements ValueExpression, SQLObjectSchemaEntity {
     private String columnAlias;
 
     @Override
-    public String visit(SQLObjectSchemaVisitor visitor) {
+    public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
 }

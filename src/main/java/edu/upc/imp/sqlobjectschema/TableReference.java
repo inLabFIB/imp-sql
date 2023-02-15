@@ -8,7 +8,7 @@ public class TableReference implements RelationalExpression, SQLObjectSchemaEnti
     private String name;
 
     @Override
-    public String visit(SQLObjectSchemaVisitor visitor) {
+    public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
 }

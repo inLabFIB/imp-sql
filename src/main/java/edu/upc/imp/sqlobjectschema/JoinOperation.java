@@ -15,7 +15,7 @@ public class JoinOperation implements RelationalExpression, SQLObjectSchemaEntit
     private BooleanExpression onClause;
 
     @Override
-    public String visit(SQLObjectSchemaVisitor visitor) {
+    public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
 }

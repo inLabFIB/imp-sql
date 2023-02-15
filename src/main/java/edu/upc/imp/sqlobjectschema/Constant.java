@@ -8,7 +8,7 @@ public class Constant implements ValueExpression, SQLObjectSchemaEntity {
     //TODO: think how to differentiate different types and store values
 
     @Override
-    public String visit(SQLObjectSchemaVisitor visitor) {
+    public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
 }

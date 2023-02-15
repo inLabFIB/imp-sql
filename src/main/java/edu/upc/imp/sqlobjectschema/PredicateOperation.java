@@ -14,7 +14,7 @@ public class PredicateOperation implements BooleanExpression, SQLObjectSchemaEnt
     private BooleanExpression rightExpression;
 
     @Override
-    public String visit(SQLObjectSchemaVisitor visitor) {
+    public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
 }

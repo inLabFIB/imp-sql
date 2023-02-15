@@ -4,16 +4,16 @@ import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 public class ComparisonPredicate extends Predicate {
 
-    enum ComparisonOperator {
+    public enum ComparisonOperator {
         EQ
     }
 
-    private ComparisonOperator operator;
+    public ComparisonOperator operator;
     private ValueExpression leftExpression;
     private ValueExpression rightExpression;
 
     @Override
-    public String visit(SQLObjectSchemaVisitor visitor) {
+    public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
 }

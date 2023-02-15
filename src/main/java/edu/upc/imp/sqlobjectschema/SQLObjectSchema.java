@@ -10,15 +10,17 @@ public class SQLObjectSchema {
     List<Assertion> assertions;
     List<View> views;
 
-    // Use default visitor: SQLServerPrinter
-    List<String> visit() {
-        return this.visit(new SQLServerPrinter());
-    }
+    public SQLObjectSchema() {}
 
-    List<String> visit(SQLObjectSchemaVisitor visitor) {
-        return Stream.concat(
-            assertions.stream().map(a -> a.visit(visitor)),
-            views.stream().map(v -> v.visit(visitor))
-        ).toList();
-    }
+//    // Use default visitor: SQLServerPrinter
+//    List<String> visit() {
+//        return this.visit(new SQLServerPrinter());
+//    }
+
+//    List<String> visit(SQLObjectSchemaVisitor visitor) {
+//        return Stream.concat(
+//            assertions.stream().map(a -> a.visit(visitor)),
+//            views.stream().map(v -> v.visit(visitor))
+//        ).toList();
+//    }
 }

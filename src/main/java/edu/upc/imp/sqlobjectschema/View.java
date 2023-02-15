@@ -9,7 +9,7 @@ public class View implements SQLObjectSchemaEntity {
     private Query query;
 
     @Override
-    public String visit(SQLObjectSchemaVisitor visitor) {
+    public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
 }

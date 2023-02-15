@@ -1,4 +1,6 @@
 package edu.upc.imp.sqlobjectschema;
 
-public interface BooleanExpression {
+import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
+
+public interface BooleanExpression extends SQLObjectSchemaEntity {
 }
