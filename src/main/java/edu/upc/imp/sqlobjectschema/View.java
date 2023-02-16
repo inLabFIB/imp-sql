@@ -5,8 +5,21 @@ import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 public class View implements SQLObjectSchemaEntity {
 
-    private String name;
-    private Query query;
+    private final String name;
+    private final Query query;
+
+    public View(String name, Query query) {
+        this.name = name;
+        this.query = query;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Query getQuery() {
+        return query;
+    }
 
     @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {

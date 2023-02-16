@@ -1,4 +1,6 @@
 package edu.upc.imp.sqlobjectschema;
 
-public interface ValueExpression {
+import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
+
+public interface ValueExpression extends SQLObjectSchemaEntity {
 }

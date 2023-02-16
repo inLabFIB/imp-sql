@@ -6,7 +6,7 @@ import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.List;
 
-public class TableExpression extends Query implements SQLObjectSchemaEntity {
+public class TableExpression extends Query {
     // Invariable rule: columnAliases.length = selectClause.length && tableAliases.length = fromClause.length
 
     // Aliases can be seen by other classes by using getters

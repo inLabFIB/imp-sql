@@ -3,7 +3,7 @@ package edu.upc.imp.sqlobjectschema;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
-public class PredicateOperation implements BooleanExpression, SQLObjectSchemaEntity {
+public class PredicateOperation implements BooleanExpression {
 
     enum PredicateOperator {
         AND

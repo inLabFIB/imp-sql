@@ -1,4 +1,6 @@
 package edu.upc.imp.sqlobjectschema;
 
-public interface RelationalExpression {
+import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
+
+public interface RelationalExpression extends SQLObjectSchemaEntity {
 }

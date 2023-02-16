@@ -1,8 +1,7 @@
 package edu.upc.imp.parser;
 
-import edu.upc.imp.parser.SQLServer.TSqlLexer;
-import edu.upc.imp.parser.SQLServer.TSqlParser;
-import edu.upc.imp.parser.test.DummyParser;
+import edu.upc.imp.parser.sql_server.TSqlLexer;
+import edu.upc.imp.parser.sql_server.TSqlParser;
 import edu.upc.imp.sqlobjectschema.SQLObjectSchema;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
@@ -24,7 +23,7 @@ public class SQLObjectSchemaParser {
 
     public void parse() {
         CodePointCharStream input = CharStreams.fromString(sqlStatements);
-        TSqlLexer lexer = new TSqlLexer(input);
+        edu.upc.imp.parser.sql_server.TSqlLexer lexer = new TSqlLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         TSqlParser parser = new TSqlParser(tokens);
 

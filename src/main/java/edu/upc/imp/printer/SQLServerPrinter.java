@@ -25,17 +25,22 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(ComparisonPredicate cp) {
-        return null;
+        String operation = switch (cp.getOperator()) {
+            case EQ -> " = ";
+            default -> " " + cp.getOperator().toString() + " ";
+        };
+        return cp.getLeftExpression().visit(this) + operation + cp.getRightExpression().visit(this);
     }
 
     @Override
     public String visit(ColumnReference cr) {
-        return null;
+        return cr.getTableAlias() + "." + cr.getColumnAlias();
     }
 
     @Override
     public String visit(Constant c) {
-        return null;
+        // TODO: Change this when we treat subclasses of constant
+        return c.getValue();
     }
 
     @Override
@@ -45,11 +50,15 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(Assertion a) {
-        return null;
+        // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
+        //  e.g. replace whitespaces with underscores
+        return "CREATE ASSERTION " + a.getName() + " CHECK ( " + a.getBooleanExpression().visit(this) + " );";
     }
 
     @Override
     public String visit(View v) {
-        return null;
+        // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
+        //  e.g. replace whitespaces with underscores
+        return "CREATE VIEW " + v.getName() + " AS " + v.getQuery().visit(this);
     }
 }

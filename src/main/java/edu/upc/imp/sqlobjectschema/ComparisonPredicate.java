@@ -8,9 +8,27 @@ public class ComparisonPredicate extends Predicate {
         EQ
     }
 
-    public ComparisonOperator operator;
-    private ValueExpression leftExpression;
-    private ValueExpression rightExpression;
+    private final ComparisonOperator operator;
+    private final ValueExpression leftExpression;
+    private final ValueExpression rightExpression;
+
+    public ComparisonPredicate(ComparisonOperator operator, ValueExpression leftExpression, ValueExpression rightExpression) {
+        this.operator = operator;
+        this.leftExpression = leftExpression;
+        this.rightExpression = rightExpression;
+    }
+
+    public ComparisonOperator getOperator() {
+        return operator;
+    }
+
+    public ValueExpression getLeftExpression() {
+        return leftExpression;
+    }
+
+    public ValueExpression getRightExpression() {
+        return rightExpression;
+    }
 
     @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
