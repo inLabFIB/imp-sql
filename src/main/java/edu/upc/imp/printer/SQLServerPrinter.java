@@ -6,21 +6,33 @@ import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 @SuppressWarnings("unchecked")
 public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
-    private SQLObjectSchema sqlObjectSchema;
-
     @Override
     public String visit(TableExpression te) {
         return null;
     }
 
     @Override
-    public String visit(JoinOperation jo) {
-        return null;
+    public String visit(CrossJoin j) {
+        return j.getLeftExpression().visit(this) + " CROSS JOIN " + j.getRightExpression().visit(this);
+    }
+
+    @Override
+    public String visit(OnJoin j) {
+        String operation = switch (j.getOperator()) {
+            case INNER -> " INNER JOIN ";
+            case NATURAL -> " NATURAL JOIN ";
+            case LEFT -> " LEFT OUTER JOIN ";
+            case RIGHT -> " RIGHT OUTER JOIN ";
+            case FULL -> " FULL OUTER JOIN ";
+            default -> " " + j.getOperator().toString() + " ";
+        };
+        return j.getLeftExpression().visit(this) + operation + j.getRightExpression().visit(this) +
+            " ON (" + j.getOnClause().visit(this) + ")";
     }
 
     @Override
     public String visit(TableReference tr) {
-        return null;
+        return tr.getName();
     }
 
     @Override
@@ -45,7 +57,11 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(PredicateOperation po) {
-        return null;
+        String operation = switch (po.getOperator()) {
+            case AND -> " AND ";
+            default -> " " + po.getOperator().toString() + " ";
+        };
+        return po.getLeftExpression().visit(this) + operation + po.getRightExpression().visit(this);
     }
 
     @Override

@@ -4,7 +4,8 @@ import edu.upc.imp.sqlobjectschema.*;
 
 public interface SQLObjectSchemaVisitor {
     <T> T visit(TableExpression te);
-    <T> T visit(JoinOperation jo);
+    <T> T visit(CrossJoin j);
+    <T> T visit(OnJoin j);
     <T> T visit(TableReference tr);
     <T> T visit(ComparisonPredicate cp);
     <T> T visit(ColumnReference cr);

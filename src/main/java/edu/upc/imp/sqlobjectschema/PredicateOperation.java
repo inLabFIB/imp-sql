@@ -1,17 +1,34 @@
 package edu.upc.imp.sqlobjectschema;
 
-import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 public class PredicateOperation implements BooleanExpression {
 
-    enum PredicateOperator {
+    public enum PredicateOperator {
         AND
     }
 
-    private PredicateOperator operator;
-    private BooleanExpression leftExpression;
-    private BooleanExpression rightExpression;
+    private final PredicateOperator operator;
+    private final BooleanExpression leftExpression;
+    private final BooleanExpression rightExpression;
+
+    public PredicateOperation(PredicateOperator operator, BooleanExpression leftExpression, BooleanExpression rightExpression) {
+        this.operator = operator;
+        this.leftExpression = leftExpression;
+        this.rightExpression = rightExpression;
+    }
+
+    public PredicateOperator getOperator() {
+        return operator;
+    }
+
+    public BooleanExpression getLeftExpression() {
+        return leftExpression;
+    }
+
+    public BooleanExpression getRightExpression() {
+        return rightExpression;
+    }
 
     @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {

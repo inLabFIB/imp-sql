@@ -1,21 +1,21 @@
 package edu.upc.imp.sqlobjectschema;
 
-import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
-import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
+public abstract class JoinOperation implements RelationalExpression {
 
-public class JoinOperation implements RelationalExpression {
+    private final RelationalExpression leftExpression;
+    private final RelationalExpression rightExpression;
 
-    enum JoinOperator {
-        CROSS
+
+    protected JoinOperation(RelationalExpression leftExpression, RelationalExpression rightExpression) {
+        this.leftExpression = leftExpression;
+        this.rightExpression = rightExpression;
     }
 
-    private JoinOperator operator;
-    private RelationalExpression leftExpression;
-    private RelationalExpression rightExpression;
-    private BooleanExpression onClause;
+    public RelationalExpression getLeftExpression() {
+        return leftExpression;
+    }
 
-    @Override
-    public <T> T visit(SQLObjectSchemaVisitor visitor) {
-        return visitor.visit(this);
+    public RelationalExpression getRightExpression() {
+        return rightExpression;
     }
 }

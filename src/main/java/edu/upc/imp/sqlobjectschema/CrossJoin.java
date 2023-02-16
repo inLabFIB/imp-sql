@@ -2,16 +2,10 @@ package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
-public class TableReference implements RelationalExpression {
+public class CrossJoin extends JoinOperation {
 
-    private final String name;
-
-    public TableReference(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
+    public CrossJoin(RelationalExpression leftExpression, RelationalExpression rightExpression) {
+        super(leftExpression, rightExpression);
     }
 
     @Override
