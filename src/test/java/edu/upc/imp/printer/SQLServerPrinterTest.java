@@ -16,7 +16,7 @@ class SQLServerPrinterTest {
             "FirstAssertion",
             new ComparisonPredicate(
                 ComparisonPredicate.ComparisonOperator.EQ,
-                new ColumnReference("table", "column"),
+                new ColumnReference(new FullTableName("table"), "column"),
                 new SQLInteger(2)
             )
         );
@@ -33,9 +33,9 @@ class SQLServerPrinterTest {
         View view = new View(
             "FirstView",
             new TableExpression(
-                List.of(new SQLString("Id-1"), new ColumnReference("table", "column")),
+                List.of(new SQLString("Id-1"), new ColumnReference( new FullTableName("table"), "column")),
                 List.of("idx", "val"),
-                new CrossJoin(new TableReference("table1", "T1"), new TableReference("table2", null)),
+                new CrossJoin(new TableReference(new FullTableName("table1"), "T1"), new TableReference(new FullTableName("table2"), null)),
                 new PredicateOperation(
                     PredicateOperation.PredicateOperator.AND,
                     new ComparisonPredicate(

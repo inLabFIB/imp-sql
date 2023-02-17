@@ -48,8 +48,8 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(TableReference tr) {
-        if (tr.getAlias() == null) return tr.getName();
-        return tr.getName() + " AS " + tr.getAlias();
+        if (tr.getAlias() == null) return tr.getTableName();
+        return tr.getTableName() + " AS " + tr.getAlias();
     }
 
     @Override
@@ -63,7 +63,7 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(ColumnReference cr) {
-        return cr.getTableAlias() + "." + cr.getColumnAlias();
+        return cr.getTableName() + "." + cr.getColumnName();
     }
 
     @Override

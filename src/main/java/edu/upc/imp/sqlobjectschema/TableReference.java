@@ -4,15 +4,15 @@ import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 public class TableReference extends AliasableRelationalExpression {
 
-    private final String name;
+    private final FullTableName tableName;
 
-    public TableReference(String name, String alias) {
+    public TableReference(FullTableName tableName, String alias) {
         super(alias);
-        this.name = name;
+        this.tableName = tableName;
     }
 
-    public String getName() {
-        return name;
+    public String getTableName() {
+        return tableName.getTableName();
     }
 
     @Override
