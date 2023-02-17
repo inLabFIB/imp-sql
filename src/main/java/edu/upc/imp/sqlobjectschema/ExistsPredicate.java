@@ -10,12 +10,12 @@ public class ExistsPredicate extends Predicate {
         this.query = query;
     }
 
+    public Query getQuery() {
+        return query;
+    }
+
     @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
-    }
-
-    public Query getQuery() {
-        return query;
     }
 }

@@ -1,7 +1,7 @@
 package edu.upc.imp.sqlobjectschema;
 
-import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
-
-public abstract class Query implements RelationalExpression {
-
+public abstract class Query extends AliasableRelationalExpression {
+    protected Query(String alias) {
+        super(alias);
+    }
 }

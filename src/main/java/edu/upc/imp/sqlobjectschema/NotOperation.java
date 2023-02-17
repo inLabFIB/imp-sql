@@ -10,12 +10,12 @@ public class NotOperation implements BooleanExpression {
         this.expression = expression;
     }
 
+    public BooleanExpression getExpression() {
+        return expression;
+    }
+
     @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
-    }
-
-    public BooleanExpression getExpression() {
-        return expression;
     }
 }
