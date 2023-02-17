@@ -9,10 +9,12 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(TableReference tr);
     <T> T visit(ComparisonPredicate cp);
     <T> T visit(ColumnReference cr);
-    <T> T visit(Constant c);
     <T> T visit(PredicateOperation po);
     <T> T visit(Assertion a);
     <T> T visit(View v);
     <T> T visit(NotOperation no);
     <T> T visit(ExistsPredicate ep);
+    <T> T visit(SQLDecimal d);
+    <T> T visit(SQLFloat f);
+    <T> T visit(SQLString s);
 }

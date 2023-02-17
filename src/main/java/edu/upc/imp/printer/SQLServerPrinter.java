@@ -67,12 +67,6 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
     }
 
     @Override
-    public String visit(Constant c) {
-        // TODO: Change this when we treat subclasses of constant
-        return c.getValue();
-    }
-
-    @Override
     public String visit(PredicateOperation po) {
         String operation = switch (po.getOperator()) {
             case AND -> " AND ";
@@ -105,5 +99,24 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
     public String visit(ExistsPredicate ep) {
         if (ep.getQuery().getAlias() != null) throw new RuntimeException("Query inside ExistsPredicate cannot have an alias in TSQL.");
         return "EXISTS ( " + ep.getQuery().<String>visit(this) + " )";
+    }
+
+
+    //TODO: implement this
+    @Override
+    public <T> T visit(SQLDecimal d) {
+        return null;
+    }
+
+    //TODO: implement this
+    @Override
+    public <T> T visit(SQLFloat f) {
+        return null;
+    }
+
+    //TODO: implement this
+    @Override
+    public <T> T visit(SQLString s) {
+        return null;
     }
 }

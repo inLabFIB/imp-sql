@@ -1,7 +1,6 @@
 package edu.upc.imp.printer;
 
 import edu.upc.imp.sqlobjectschema.*;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -18,7 +17,7 @@ class SQLServerPrinterTest {
             new ComparisonPredicate(
                 ComparisonPredicate.ComparisonOperator.EQ,
                 new ColumnReference("table", "column"),
-                new Constant("2")
+                new PrimitiveExpression("2")
             )
         );
         String sqlSyntax = assertion.visit(new SQLServerPrinter());
@@ -34,19 +33,19 @@ class SQLServerPrinterTest {
         View view = new View(
             "FirstView",
             new TableExpression(
-                List.of(new Constant("1"), new ColumnReference("table", "column")),
+                List.of(new PrimitiveExpression("1"), new ColumnReference("table", "column")),
                 List.of("idx", "val"),
                 new CrossJoin(new TableReference("table1", "T1"), new TableReference("table2", null)),
                 new PredicateOperation(
                     PredicateOperation.PredicateOperator.AND,
                     new ComparisonPredicate(
                         ComparisonPredicate.ComparisonOperator.EQ,
-                        new Constant("1"),
-                        new Constant("1")
+                        new PrimitiveExpression("1"),
+                        new PrimitiveExpression("1")
                     ),
                     new NotOperation(new ExistsPredicate(
                         new TableExpression(
-                            List.of(new Constant("1")), nullStringList, null, null, null
+                            List.of(new PrimitiveExpression("1")), nullStringList, null, null, null
                         )
                     ))
                 ), null)
