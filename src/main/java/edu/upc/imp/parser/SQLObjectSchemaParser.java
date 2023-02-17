@@ -6,10 +6,6 @@ import edu.upc.imp.sqlobjectschema.SQLObjectSchema;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
-
-import java.net.DatagramPacket;
-
 
 public class SQLObjectSchemaParser {
 
@@ -27,9 +23,9 @@ public class SQLObjectSchemaParser {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         TSqlParser parser = new TSqlParser(tokens);
 
-//        TsqlfileContext tree = parser.tsqlfile();
-//        SQLObjectSchemaGrammarVisitorImpl visitor = new SQLObjectSchemaGrammarVisitorImpl(schema);
-//        visitor.visit(tree);
+        TSqlParser.Tsql_fileContext tree = parser.tsql_file();
+        SQLObjectSchemaGrammarVisitorImpl visitor = new SQLObjectSchemaGrammarVisitorImpl(schema);
+        visitor.visit(tree);
     }
 
     public SQLObjectSchema getSQLObjectSchema() {

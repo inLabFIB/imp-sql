@@ -14,10 +14,11 @@ public class SQLObjectSchemaParserTest {
 
     @Test
     public void shouldLoadTPCHAssertion1() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(StatementsProvider.getTPCHAtLeastOneItemAssertion());
+        String basicAssertion = "CREATE ASSERTION assertionName CHECK ( NOT EXISTS ( SELECT 1))";
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicAssertion);
         parser.parse();
         SQLObjectSchema schema = parser.getSQLObjectSchema();
-        assertNotNull(schema);
+        assert(schema.getAssertions().size() == 1);
     }
 
 }

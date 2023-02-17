@@ -94,7 +94,7 @@ select_statement
 
 //TODO: add [constraint_attributes]
 create_assertion
-    : CREATE ASSERTION full_assertion_name assertion_check ';'?
+    : CREATE ASSERTION assertion_name assertion_check ';'?
     ;
 
 assertion_check
@@ -1219,12 +1219,8 @@ window_frame_following
     | DECIMAL FOLLOWING
     ;
 
-//TODO: Maybe can be improved
-full_assertion_name
-    : (linkedServer=id_ '.' '.' schema=id_   '.'
-    |                       server=id_    '.' database=id_ '.'  schema=id_   '.'
-    |                                         database=id_ '.'  schema=id_? '.'
-    |                                                           schema=id_    '.')? table=id_
+assertion_name
+    :  assertion=id_
     ;
 
 full_table_name

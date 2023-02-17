@@ -13,4 +13,6 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(PredicateOperation po);
     <T> T visit(Assertion a);
     <T> T visit(View v);
+    <T> T visit(NotOperation no);
+    <T> T visit(ExistsPredicate ep);
 }

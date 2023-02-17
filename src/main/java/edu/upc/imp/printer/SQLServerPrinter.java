@@ -77,4 +77,16 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
         //  e.g. replace whitespaces with underscores
         return "CREATE VIEW " + v.getName() + " AS " + v.getQuery().visit(this);
     }
+
+    //TODO: not implemented!
+    @Override
+    public String visit(NotOperation no) {
+        return null;
+    }
+
+    //TODO: not implemented!
+    @Override
+    public String visit(ExistsPredicate ep) {
+        return null;
+    }
 }
