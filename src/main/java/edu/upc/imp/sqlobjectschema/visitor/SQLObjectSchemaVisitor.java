@@ -14,7 +14,7 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(View v);
     <T> T visit(NotOperation no);
     <T> T visit(ExistsPredicate ep);
-    <T> T visit(SQLDecimal d);
+    <T> T visit(SQLInteger d);
     <T> T visit(SQLFloat f);
     <T> T visit(SQLString s);
 }

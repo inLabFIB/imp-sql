@@ -104,7 +104,7 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     //TODO: implement this
     @Override
-    public <T> T visit(SQLDecimal d) {
+    public <T> T visit(SQLInteger d) {
         return null;
     }
 
