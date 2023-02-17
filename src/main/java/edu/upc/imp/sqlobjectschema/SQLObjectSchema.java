@@ -11,12 +11,14 @@ public class SQLObjectSchema {
 
     private final List<Assertion> assertions;
     private final List<View> views;
+    private final List<Query> selects;
 
     /** CONSTRUCTORS **/
 
     public SQLObjectSchema() {
         assertions = new ArrayList<>();
         views = new ArrayList<>();
+        selects = new ArrayList<>();
     }
 
 
@@ -30,10 +32,22 @@ public class SQLObjectSchema {
         return new ArrayList<>(views);
     }
 
+    public List<Query> getSelects() {
+        return selects;
+    }
+    
     /** MODIFIERS **/
 
     public void addAssertion(Assertion assertion) {
         assertions.add(assertion);
+    }
+
+    public void addView(View view) {
+        views.add(view);
+    }
+
+    public void addSelect(Query select) {
+        selects.add(select);
     }
 
 

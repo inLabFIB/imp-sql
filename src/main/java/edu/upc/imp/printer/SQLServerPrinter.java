@@ -115,4 +115,10 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
     public String visit(SQLString s) {
         return "'" + s.getValue() + "'";
     }
+
+    //TODO: implement this!!!
+    @Override
+    public <T> T visit(FullTableName tn) {
+        throw new RuntimeException("implement this!!");
+    }
 }
