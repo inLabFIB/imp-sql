@@ -118,7 +118,7 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     //TODO: implement this!!!
     @Override
-    public <T> T visit(FullTableName tn) {
-        throw new RuntimeException("implement this!!");
+    public String visit(FullTableName tn) {
+        return tn.getFullTableName();
     }
 }

@@ -49,8 +49,13 @@ public class FullTableName implements SQLObjectSchemaEntity {
      * Might not be standard
      */
     public String getFullTableName() {
-        //TODO: implement this (needs to check for nulls and throw exceptions)
-        throw new RuntimeException("not implemented yet!");
+        if (tableName == null) throw new RuntimeException("No table name specified.");
+        String fullName = "";
+        if (serverName != null) fullName += serverName + ".";
+        if (databaseName != null) fullName += databaseName + ".";
+        if (schemaName != null) fullName += schemaName + ".";
+        fullName += tableName;
+        return fullName;
     }
 
     @Override
