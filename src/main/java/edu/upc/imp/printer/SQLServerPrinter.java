@@ -101,22 +101,18 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
         return "EXISTS ( " + ep.getQuery().<String>visit(this) + " )";
     }
 
-
-    //TODO: implement this
     @Override
-    public <T> T visit(SQLInteger d) {
-        return null;
+    public String visit(SQLInteger i) {
+        return "" + i.getValue();
     }
 
-    //TODO: implement this
     @Override
-    public <T> T visit(SQLFloat f) {
-        return null;
+    public String visit(SQLFloat f) {
+        return "" + f.getValue();
     }
 
-    //TODO: implement this
     @Override
-    public <T> T visit(SQLString s) {
-        return null;
+    public String visit(SQLString s) {
+        return "'" + s.getValue() + "'";
     }
 }

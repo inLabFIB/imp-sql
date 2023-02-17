@@ -17,7 +17,7 @@ class SQLServerPrinterTest {
             new ComparisonPredicate(
                 ComparisonPredicate.ComparisonOperator.EQ,
                 new ColumnReference("table", "column"),
-                new PrimitiveExpression("2")
+                new SQLInteger(2)
             )
         );
         String sqlSyntax = assertion.visit(new SQLServerPrinter());
@@ -33,19 +33,19 @@ class SQLServerPrinterTest {
         View view = new View(
             "FirstView",
             new TableExpression(
-                List.of(new PrimitiveExpression("1"), new ColumnReference("table", "column")),
+                List.of(new SQLString("Id-1"), new ColumnReference("table", "column")),
                 List.of("idx", "val"),
                 new CrossJoin(new TableReference("table1", "T1"), new TableReference("table2", null)),
                 new PredicateOperation(
                     PredicateOperation.PredicateOperator.AND,
                     new ComparisonPredicate(
                         ComparisonPredicate.ComparisonOperator.EQ,
-                        new PrimitiveExpression("1"),
-                        new PrimitiveExpression("1")
+                        new SQLInteger(1),
+                        new SQLFloat(1.0f)
                     ),
                     new NotOperation(new ExistsPredicate(
                         new TableExpression(
-                            List.of(new PrimitiveExpression("1")), nullStringList, null, null, null
+                            List.of(new SQLInteger(1)), nullStringList, null, null, null
                         )
                     ))
                 ), null)
@@ -53,7 +53,7 @@ class SQLServerPrinterTest {
 
         String sqlSyntax = view.visit(new SQLServerPrinter());
 
-        String expectedSqlSyntax = "CREATE VIEW FirstView AS SELECT 1 AS idx, table.column AS val FROM table1 AS T1 CROSS JOIN table2 WHERE 1 = 1 AND NOT ( EXISTS ( SELECT 1 ) );";
+        String expectedSqlSyntax = "CREATE VIEW FirstView AS SELECT 'Id-1' AS idx, table.column AS val FROM table1 AS T1 CROSS JOIN table2 WHERE 1 = 1.0 AND NOT ( EXISTS ( SELECT 1 ) );";
         assertThat(sqlSyntax, is(expectedSqlSyntax));
     }
 }
