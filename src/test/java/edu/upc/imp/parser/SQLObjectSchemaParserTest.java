@@ -33,8 +33,7 @@ public class SQLObjectSchemaParserTest {
         SQLObjectSchema schema = parser.getSQLObjectSchema();
         // Object built directly in java
         View expectedView = new View("viewName", new TableExpression(
-            List.of(new ColumnReference(new FullTableName("table1"),"col1")),
-            List.of("c1"),
+            List.of(new AliasableSelectItem("c1", new ColumnReference(new FullTableName("table1"),"col1"))),
             new CrossJoin(new TableReference(new FullTableName("table1"), null), new TableReference(new FullTableName("table2"), null)),
             null, null
         ));

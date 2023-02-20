@@ -28,13 +28,10 @@ class SQLServerPrinterTest {
 
     @Test
     void printSPJView() {
-        List<String> nullStringList = new ArrayList<>();
-        nullStringList.add(null);
         View view = new View(
             "FirstView",
             new TableExpression(
-                List.of(new SQLString("Id-1"), new ColumnReference( new FullTableName("table"), "column")),
-                List.of("idx", "val"),
+                List.of(new AliasableSelectItem("idx", new SQLString("Id-1")), new AliasableSelectItem("val", new ColumnReference( new FullTableName("table"), "column"))),
                 new CrossJoin(new TableReference(new FullTableName("table1"), "T1"), new TableReference(new FullTableName("table2"), null)),
                 new PredicateOperation(
                     PredicateOperation.PredicateOperator.AND,
@@ -45,7 +42,7 @@ class SQLServerPrinterTest {
                     ),
                     new NotOperation(new ExistsPredicate(
                         new TableExpression(
-                            List.of(new SQLInteger(1)), nullStringList, null, null, null
+                            List.of(new AliasableSelectItem(null, new SQLInteger(1))),null, null, null
                         )
                     ))
                 ), null)

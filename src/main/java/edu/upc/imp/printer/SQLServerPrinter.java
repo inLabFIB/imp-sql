@@ -3,19 +3,15 @@ package edu.upc.imp.printer;
 import edu.upc.imp.sqlobjectschema.*;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.stream.Collectors;
+
 @SuppressWarnings("unchecked")
 public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(TableExpression te) {
         StringBuilder subquery = new StringBuilder("SELECT ");
-        for (int i = 0; i < te.getNumberOfSelectClauseItems(); i++) {
-            if (i > 0) subquery.append(", ");
-            ValueExpression value = te.getNthSelectionValue(i);
-            String alias = te.getNthSelectionAlias(i);
-            if (alias == null) subquery.append(value.<String>visit(this));
-            else subquery.append(value.<String>visit(this)).append(" AS ").append(alias);
-        }
+        subquery.append(String.join(", ", te.getSelectClause().stream().map(s -> s.<String>visit(this)).toList()));
 
         RelationalExpression fromClause = te.getFromClause();
         if (fromClause != null) subquery.append(" FROM ").append(fromClause.<String>visit(this));
@@ -116,9 +112,19 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
         return "'" + s.getValue() + "'";
     }
 
-    //TODO: implement this!!!
     @Override
     public String visit(FullTableName tn) {
         return tn.getFullTableName();
+    }
+
+    @Override
+    public String visit(Asterisk a) {
+        return "*";
+    }
+
+    @Override
+    public String visit(AliasableSelectItem asi) {
+        if (asi.getColumAlias() == null) return asi.getExpression().<String>visit(this);
+        return asi.getExpression().<String>visit(this) + " AS " + asi.getColumAlias();
     }
 }

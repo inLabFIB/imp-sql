@@ -13,25 +13,20 @@ public class TableExpression extends Query {
     // The relationship between aliases and fromClause/selectClause elements is positional:
     //     e.g. columnAliases[x] -> selectClause[x]
 
-    private final List<ValueExpression> selectClause;
-    private final List<String> columnAliases; // Aliases visible to outer queries (defined in SELECT clause).
+    private final List<SelectItem> selectClause;
+
     private final RelationalExpression fromClause;
-
-    private final List<RelationalExpression> fromClauseTerminalExpressions;
-    private final List<String> tableAliases;  // Aliases visible to sub-queries (defined in FROM clause).
-
     private final BooleanExpression whereClause;
+    //CACHE for optimized translation, might delete in the future
 
-    public TableExpression(List<ValueExpression> selectClause, List<String> columnAliases, RelationalExpression fromClause, BooleanExpression whereClause, String alias) {
+    private final List<AliasableRelationalExpression> fromClauseTerminalExpressions;
+    public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause, String alias) {
         super(alias);
-        if (selectClause.size() != columnAliases.size()) throw new RuntimeException("selectClause and columnAliases must have the same size");
         this.selectClause = selectClause;
-        this.columnAliases = columnAliases;
         this.fromClause = fromClause;
         this.whereClause = whereClause;
 
-        List<RelationalExpression> tempFromClauseTerminalExpressions = new ArrayList<>();
-        List<String> tempTableAliases = new ArrayList<>();
+        List<AliasableRelationalExpression> tempFromClauseTerminalExpressions = new ArrayList<>();
         // Traverse fromClause joins to find aliases and terminal expressions
         Stack<RelationalExpression> toVisit = new Stack<>();
         toVisit.push(fromClause);
@@ -42,21 +37,25 @@ public class TableExpression extends Query {
                 toVisit.push(join.getRightExpression());
             } else if (next instanceof AliasableRelationalExpression terminal) {
                 tempFromClauseTerminalExpressions.add(terminal);
-                tempTableAliases.add(terminal.getAlias());
             }
         }
         this.fromClauseTerminalExpressions = tempFromClauseTerminalExpressions;
-        this.tableAliases = tempTableAliases;
     }
 
     public int getNumberOfSelectClauseItems() {
         return selectClause.size();
     }
+
     public String getNthSelectionAlias(int n) {
-        return columnAliases.get(n);
+        return selectClause.get(n).getColumAlias();
     }
-    public ValueExpression getNthSelectionValue(int n) {
+    public SelectItem getNthSelectionValue(int n) {
         return selectClause.get(n);
+    }
+
+
+    public List<SelectItem> getSelectClause() {
+        return selectClause;
     }
 
     public RelationalExpression getFromClause() {
