@@ -5,6 +5,8 @@ import edu.upc.imp.sqlobjectschema.*;
 import edu.upc.imp.parser.sql_server.TSqlParserBaseVisitor;
 import org.antlr.v4.runtime.misc.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
@@ -41,8 +43,12 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         return visitSelect_statement(ctx.select_statement());
     }
 
-    //TODO:
-    public Query visitSelect_statement(TSqlParser.Select_statementContext ctx) {return null;}
+    public Query visitSelect_statement(TSqlParser.Select_statementContext ctx) {
+        if (ctx.select_order_by_clause() != null) throw new RuntimeException("Grammar expression (`ORDER BY`) not supported yet!");
+        else if (ctx.for_clause() != null) throw new RuntimeException("Grammar expression (`FOR ...`) not supported yet!");
+        else if (ctx.option_clause() != null) throw new RuntimeException("Grammar expression (`OPTION ...`) not supported yet!");
+        else return visitQuery_expression(ctx.query_expression());
+    }
 
     /** BOOLEAN EXPRESSION / ASSERTION NODES **/
 
@@ -118,31 +124,97 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     /** QUERY NODES **/
 
-    //TODO: finish this
+    //TODO: drama with UNIONS
     public Query visitQuery_expression(TSqlParser.Query_expressionContext ctx) {
-        if (ctx.UNION() != null || ctx.unions != null) {
-            //TODO: V2
-            throw new RuntimeException("Grammar expression (`WITH`) not supported yet!");
-        }
         return null;
     }
 
-    public TableExpression visitQuerySpecification(TSqlParser.Query_specificationContext ctx) {return null;}
+    public TableExpression visitQuerySpecification(TSqlParser.Query_specificationContext ctx) {
+        if (ctx.allOrDistinct != null) throw new RuntimeException("Grammar expression (`ALL/DISTINCT`) not supported yet!");
+        if(ctx.top != null) throw new RuntimeException("Grammar expression (`TOP`) not supported yet!");
+        if(ctx.INTO() != null) throw new RuntimeException("Grammar expression (`TOP`) not supported yet!");
+        if(ctx.GROUP() != null) throw new RuntimeException("Grammar expression (`GROUP BY`) not supported yet!");
+        if(ctx.HAVING() != null) throw new RuntimeException("Grammar expression (`HAVING`) not supported yet!");
 
+        List<SelectItem> selectClause = visitSelect_list(ctx.columns);
+        RelationalExpression fromClause = null;
+        BooleanExpression whereClause = null;
+
+        if (ctx.FROM() != null) fromClause = visitTable_sources(ctx.from);
+        if (ctx.WHERE() != null) whereClause = visitSearch_condition(ctx.where);
+
+        return new TableExpression(selectClause, fromClause, whereClause, null);
+    }
+
+    public List<SelectItem> visitSelect_list(TSqlParser.Select_listContext ctx) {
+        List<SelectItem> columns = new ArrayList<>();
+        for (TSqlParser.Select_list_elemContext item : ctx.selectElement) {
+            columns.add(visitSelect_list_elem(item));
+        }
+        return columns;
+    }
+
+    public SelectItem visitSelect_list_elem(TSqlParser.Select_list_elemContext ctx) {
+        if (ctx.udt_elem() != null) throw new RuntimeException("Grammar expression (udt elements) not supported yet!");
+        if (ctx.LOCAL_ID() != null) throw new RuntimeException("Grammar expression (Local id variables) not supported yet!");
+
+        if (ctx.asterisk() != null) return visitAsterisk(ctx.asterisk());
+        else return visitExpression_elem(ctx.expression_elem());
+
+    }
+
+    public Asterisk visitAsterisk(TSqlParser.AsteriskContext ctx) {
+        if (ctx.table_name() != null
+            || ctx.INSERTED() != null
+            || ctx.DELETED() != null) throw new RuntimeException("Grammar expression (`TABLE.*`) not supported yet!");
+        return new Asterisk();
+    }
+
+    //TODO: store more information of the original sql statement (equality/ as / implicit as)
+
+    public AliasableSelectItem visitExpression_elem(TSqlParser.Expression_elemContext ctx) {
+        if (ctx.eq != null) return new AliasableSelectItem(ctx.leftAlias.getText(), visitExpression(ctx.leftAssignment));
+        else return new AliasableSelectItem(visitAs_column_alias(ctx.as_column_alias()), visitExpression(ctx.leftAssignment));
+    }
+    public String visitAs_column_alias(TSqlParser.As_column_aliasContext ctx) {
+        return ctx.column_alias().getText();
+    }
+
+
+    public RelationalExpression visitTable_sources(TSqlParser.Table_sourcesContext ctx) {
+        if (ctx.non_ansi_join() != null) return visitNon_ansi_join(ctx.non_ansi_join());
+
+        RelationalExpression root = visitTable_source(ctx.source.get(0));
+        for (int i = 1; i < ctx.source.size(); i++) {
+            root = new CrossJoin(root, visitTable_source(ctx.source.get(i)));
+        }
+        return root;
+    }
+
+    public RelationalExpression visitNon_ansi_join(TSqlParser.Non_ansi_joinContext ctx) {
+        RelationalExpression root = visitTable_source(ctx.source.get(0));
+        for (int i = 1; i < ctx.source.size(); i++) {
+            root = new CrossJoin(root, visitTable_source(ctx.source.get(i)));
+        }
+        return root;
+    }
+
+    public RelationalExpression visitTable_source(TSqlParser.Table_sourceContext ctx) {
+        RelationalExpression root = visitTable_source_item(ctx.table_source_item());
+        for (TSqlParser.Join_partContext join_part : ctx.join_part()) {
+            //TODO: implement this
+            throw new RuntimeException("implement this!");
+        }
+        return root;
+    }
+
+    public TableExpression visitTable_source_item(TSqlParser.Table_source_itemContext ctx) {
+        return null;
+    }
 
     public Query visitSubquery(TSqlParser.SubqueryContext ctx) {
         return visitSelect_statement(ctx.select_statement());
     }
-
-    //TODO:
-    public TableExpression visitQuery_specification(TSqlParser.Query_specificationContext ctx) {
-        return null;
-    }
-
-    /*public SetOperation visitSql_union(TSqlParser.Sql_unionContext ctx) {
-        return null;
-    }*/
-
 
 
     /** NAME/BASIC NODES **/
