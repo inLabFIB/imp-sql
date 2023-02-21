@@ -13,17 +13,24 @@ public class Assertion implements SQLObjectSchemaEntity {
         this.booleanExpression = booleanExpression;
     }
 
+    public FullTableName getAssertionName() {
+        return assertionName;
+    }
+
+    public BooleanExpression getBooleanExpression() {
+        return booleanExpression;
+    }
 
     @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
 
-    public String getAssertionName() {
-        return assertionName.getTableName();
-    }
-
-    public BooleanExpression getBooleanExpression() {
-        return booleanExpression;
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Assertion a
+            && assertionName.equals(a.assertionName)
+            && booleanExpression.equals(a.booleanExpression);
     }
 }

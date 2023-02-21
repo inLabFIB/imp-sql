@@ -18,4 +18,11 @@ public class NotOperation implements BooleanExpression {
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
+
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof NotOperation nop
+            && expression.equals(nop.expression);
+    }
 }

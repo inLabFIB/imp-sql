@@ -13,7 +13,7 @@ public class OnJoin extends JoinOperation {
     }
 
     private final JoinOperator operator;
-    private final BooleanExpression onClause;
+    private final BooleanExpression onClause; //TODO: should be not null??
 
     public OnJoin(JoinOperator operator, RelationalExpression leftExpression, RelationalExpression rightExpression, BooleanExpression onClause) {
         super(leftExpression, rightExpression);
@@ -32,5 +32,15 @@ public class OnJoin extends JoinOperation {
     @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
+    }
+
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof OnJoin oj
+            && operator.equals(oj.operator)
+            && getLeftExpression().equals(oj.getLeftExpression())
+            && getRightExpression().equals(oj.getRightExpression())
+            && onClause.equals(oj.onClause);
     }
 }

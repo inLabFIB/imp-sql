@@ -18,4 +18,11 @@ public class SQLFloat implements PrimitiveConstant {
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
+
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof SQLFloat f
+            && value == f.value;
+    }
 }

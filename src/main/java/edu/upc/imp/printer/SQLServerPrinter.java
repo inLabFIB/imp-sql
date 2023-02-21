@@ -73,7 +73,7 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
     public String visit(Assertion a) {
         // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
         //  e.g. replace whitespaces with underscores
-        return "CREATE ASSERTION " + a.getAssertionName() + " CHECK ( " + a.getBooleanExpression().<String>visit(this) + " );";
+        return "CREATE ASSERTION " + a.getAssertionName().<String>visit(this) + " CHECK ( " + a.getBooleanExpression().<String>visit(this) + " );";
     }
 
     @Override
@@ -81,7 +81,10 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
         if (v.getQuery().getAlias() != null) throw new RuntimeException("Query of View cannot have an alias in TSQL.");
         // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
         //  e.g. replace whitespaces with underscores
-        return "CREATE VIEW " + v.getViewName() + " AS " + v.getQuery().<String>visit(this) + ";";
+        String viewCreationStatement = "CREATE VIEW " + v.getViewName().<String>visit(this);
+        if (v.getColumnNames().size() > 0) viewCreationStatement += "(" + String.join(", ", v.getColumnNames()) + ")";
+        viewCreationStatement += " AS " + v.getQuery().<String>visit(this) + ";";
+        return viewCreationStatement;
     }
 
     @Override

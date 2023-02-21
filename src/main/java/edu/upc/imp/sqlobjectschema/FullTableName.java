@@ -49,6 +49,7 @@ public class FullTableName implements SQLObjectSchemaEntity {
      * Might not be standard
      */
     public String getFullTableName() {
+        // TODO: Check specification, if it is possible to do serverName...tableName, or similar
         if (tableName == null) throw new RuntimeException("No table name specified.");
         String fullName = "";
         if (serverName != null) fullName += serverName + ".";
@@ -63,4 +64,13 @@ public class FullTableName implements SQLObjectSchemaEntity {
         return visitor.visit(this);
     }
 
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof FullTableName ftn
+            && (serverName == null ? ftn.serverName == null : serverName.equals(ftn.serverName)
+            && databaseName == null ? ftn.databaseName == null : databaseName.equals(ftn.databaseName)
+            && schemaName == null ? ftn.schemaName == null : schemaName.equals(ftn.schemaName)
+            && tableName.equals(ftn.tableName));
+    }
 }

@@ -34,4 +34,13 @@ public class PredicateOperation implements BooleanExpression {
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
+
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof PredicateOperation pop
+            && operator.equals(pop.operator)
+            && leftExpression.equals(pop.leftExpression)
+            && rightExpression.equals(pop.rightExpression);
+    }
 }

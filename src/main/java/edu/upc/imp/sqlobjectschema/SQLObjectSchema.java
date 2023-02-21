@@ -62,4 +62,13 @@ public class SQLObjectSchema {
 //            views.stream().map(v -> v.visit(visitor))
 //        ).toList();
 //    }
+
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof SQLObjectSchema os
+            && assertions.equals(os.assertions)
+            && views.equals(os.views)
+            && selects.equals(os.selects);
+    }
 }

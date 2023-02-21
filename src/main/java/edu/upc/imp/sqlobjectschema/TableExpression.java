@@ -7,19 +7,14 @@ import java.util.List;
 import java.util.Stack;
 
 public class TableExpression extends Query {
-    // Invariable rule: columnAliases.length = selectClause.length && tableAliases.length = fromClause.length
-
-    // Aliases can be seen by other classes by using getters
-    // The relationship between aliases and fromClause/selectClause elements is positional:
-    //     e.g. columnAliases[x] -> selectClause[x]
 
     private final List<SelectItem> selectClause;
-
     private final RelationalExpression fromClause;
     private final BooleanExpression whereClause;
-    //CACHE for optimized translation, might delete in the future
 
+    //CACHE for optimized translation, might delete in the future
     private final List<AliasableRelationalExpression> fromClauseTerminalExpressions;
+
     public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause, String alias) {
         super(alias);
         this.selectClause = selectClause;
@@ -45,23 +40,18 @@ public class TableExpression extends Query {
     public int getNumberOfSelectClauseItems() {
         return selectClause.size();
     }
-
     public String getNthSelectionAlias(int n) {
         return selectClause.get(n).getColumAlias();
     }
     public SelectItem getNthSelectionValue(int n) {
         return selectClause.get(n);
     }
-
-
     public List<SelectItem> getSelectClause() {
         return selectClause;
     }
-
     public RelationalExpression getFromClause() {
         return fromClause;
     }
-
     public BooleanExpression getWhereClause() {
         return whereClause;
     }
@@ -74,5 +64,16 @@ public class TableExpression extends Query {
     @Override
     public AliasableRelationalExpression getAliasedCopy(String newAlias) {
         return new TableExpression(selectClause, fromClause, whereClause, newAlias);
+    }
+
+
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof TableExpression te
+            && (getAlias() == null ? te.getAlias() == null : getAlias().equals(te.getAlias())
+            && selectClause.equals(te.selectClause)
+            && fromClause == null ? te.fromClause == null : fromClause.equals(te.fromClause)
+            && whereClause == null ? te.whereClause == null : whereClause.equals(te.whereClause));
     }
 }

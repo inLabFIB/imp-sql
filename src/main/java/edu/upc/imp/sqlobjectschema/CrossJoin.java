@@ -12,4 +12,12 @@ public class CrossJoin extends JoinOperation {
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
+
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof CrossJoin cj
+            && getLeftExpression().equals(cj.getLeftExpression())
+            && getRightExpression().equals(cj.getRightExpression());
+    }
 }

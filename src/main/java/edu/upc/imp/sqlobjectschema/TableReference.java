@@ -24,4 +24,12 @@ public class TableReference extends AliasableRelationalExpression {
     public AliasableRelationalExpression getAliasedCopy(String newAlias) {
         return new TableReference(tableName, newAlias);
     }
+
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof TableReference t
+            && (getAlias() == null ? t.getAlias() == null : getAlias().equals(t.getAlias())
+            && tableName.equals(t.tableName));
+    }
 }

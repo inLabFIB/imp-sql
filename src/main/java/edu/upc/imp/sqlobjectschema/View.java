@@ -21,8 +21,12 @@ public class View implements SQLObjectSchemaEntity {
         this(viewName, null, query);
     }
 
-    public String getViewName() {
-        return viewName.getTableName();
+    public FullTableName getViewName() {
+        return viewName;
+    }
+
+    public List<String> getColumnNames() {
+        return columnNames;
     }
 
     public Query getQuery() {
@@ -32,5 +36,14 @@ public class View implements SQLObjectSchemaEntity {
     @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
+    }
+
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof View v
+            && (viewName.equals(v.viewName)
+            && columnNames == null ? v.columnNames == null : columnNames.equals(v.columnNames)
+            && query == v.query);
     }
 }

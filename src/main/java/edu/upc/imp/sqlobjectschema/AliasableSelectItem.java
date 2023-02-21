@@ -28,4 +28,12 @@ public class AliasableSelectItem implements SelectItem {
     public String getColumAlias() {
         return columnAlias;
     }
+
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof AliasableSelectItem asi
+            && (columnAlias == null ? asi.columnAlias == null : columnAlias.equals(asi.columnAlias)
+            && expression.equals(asi.expression));
+    }
 }

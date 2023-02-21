@@ -23,4 +23,12 @@ public class ColumnReference implements ValueExpression {
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
+
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ColumnReference c
+            && (tableName == null ? c.tableName == null : tableName.equals(c.tableName)
+            && columnName.equals(c.columnName));
+    }
 }

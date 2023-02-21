@@ -18,4 +18,11 @@ public class ExistsPredicate extends Predicate {
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
+
+    /** Syntactic equals implementation **/
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ExistsPredicate ep
+            && query.equals(ep.query);
+    }
 }

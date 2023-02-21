@@ -27,12 +27,12 @@ public class SQLObjectSchemaParserTest {
     @Test
     public void crateViewStatementGeneratesCorrectObject() {
         // Object parsed from input string
-        String basicView = "CREATE VIEW viewName AS SELECT table1.col1 AS c1 FROM table1, table2;";
+        String basicView = "CREATE VIEW viewName (col1) AS SELECT table1.col1 AS c1 FROM table1, table2;";
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicView);
         parser.parse();
         SQLObjectSchema schema = parser.getSQLObjectSchema();
         // Object built directly in java
-        View expectedView = new View(new FullTableName("viewName"), new TableExpression(
+        View expectedView = new View(new FullTableName("viewName"), List.of("col1"), new TableExpression(
             List.of(new AliasableSelectItem("c1", new ColumnReference(new FullTableName("table1"),"col1"))),
             new CrossJoin(new TableReference(new FullTableName("table1"), null), new TableReference(new FullTableName("table2"), null)),
             null, null
