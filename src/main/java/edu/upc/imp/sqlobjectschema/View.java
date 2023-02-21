@@ -4,6 +4,7 @@ import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.List;
+import java.util.Objects;
 
 public class View implements SQLObjectSchemaEntity {
 
@@ -12,9 +13,9 @@ public class View implements SQLObjectSchemaEntity {
     private final Query query;
 
     public View(FullTableName viewName, List<String> columnNames, Query query) {
-        this.viewName = viewName;
+        this.viewName = Objects.requireNonNull(viewName, "The parameter 'viewName' cannot be null.");
         this.columnNames = columnNames;
-        this.query = query;
+        this.query = Objects.requireNonNull(query, "The parameter 'query' cannot be null.");
     }
 
     public View(FullTableName viewName, Query query) {
@@ -42,8 +43,8 @@ public class View implements SQLObjectSchemaEntity {
     @Override
     public boolean equals(Object o) {
         return o instanceof View v
-            && (viewName.equals(v.viewName)
-            && columnNames == null ? v.columnNames == null : columnNames.equals(v.columnNames)
-            && query == v.query);
+            && viewName.equals(v.viewName)
+            && Objects.equals(columnNames, v.columnNames)
+            && query.equals(v.query);
     }
 }

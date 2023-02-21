@@ -2,6 +2,8 @@ package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.Objects;
+
 public class ColumnReference implements ValueExpression {
     private final FullTableName tableName;
     private final String columnName;
@@ -28,7 +30,7 @@ public class ColumnReference implements ValueExpression {
     @Override
     public boolean equals(Object o) {
         return o instanceof ColumnReference c
-            && (tableName == null ? c.tableName == null : tableName.equals(c.tableName)
-            && columnName.equals(c.columnName));
+            && Objects.equals(tableName, c.tableName)
+            && columnName.equals(c.columnName);
     }
 }

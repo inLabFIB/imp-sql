@@ -21,7 +21,17 @@ public class SQLObjectSchemaParserTest {
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicAssertion);
         parser.parse();
         SQLObjectSchema schema = parser.getSQLObjectSchema();
-        assert(schema.getAssertions().size() == 1);
+        Assertion exepctedAssertion = new Assertion(
+            new FullTableName("assertionName"),
+            new NotOperation(new ExistsPredicate(
+                new TableExpression(
+                    List.of(new AliasableSelectItem(null, new SQLInteger(1))),
+                    null, null, null
+                )
+            ))
+        );
+        assertThat("Parsed assertion does not equal expected assertion",
+            schema.getAssertions().get(0).equals(exepctedAssertion));
     }
 
     @Test
@@ -32,13 +42,17 @@ public class SQLObjectSchemaParserTest {
         parser.parse();
         SQLObjectSchema schema = parser.getSQLObjectSchema();
         // Object built directly in java
-        View expectedView = new View(new FullTableName("viewName"), List.of("col1"), new TableExpression(
-            List.of(new AliasableSelectItem("c1", new ColumnReference(new FullTableName("table1"),"col1"))),
-            new CrossJoin(new TableReference(new FullTableName("table1"), null), new TableReference(new FullTableName("table2"), null)),
-            null, null
+        View expectedView = new View(
+            new FullTableName("viewName"), List.of("col1"),
+            new TableExpression(
+                List.of(new AliasableSelectItem("c1", new ColumnReference(new FullTableName("table1"),"col1"))),
+                new CrossJoin(
+                    new TableReference(new FullTableName("table1"), null),
+                    new TableReference(new FullTableName("table2"), null)
+                ), null, null
         ));
         // Compare the string representation of both (for some "toString" visitor)
-        assertThat(schema.getViews().get(0).visit(new SQLServerPrinter()), is(expectedView.<String>visit(new SQLServerPrinter())));
+        assertThat("Parsed view does not equal expected view", schema.getViews().get(0).equals(expectedView));
     }
 
 }

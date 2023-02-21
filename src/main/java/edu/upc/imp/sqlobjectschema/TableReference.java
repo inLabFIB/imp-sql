@@ -2,6 +2,8 @@ package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.Objects;
+
 public class TableReference extends AliasableRelationalExpression {
 
     private final FullTableName tableName;
@@ -29,7 +31,7 @@ public class TableReference extends AliasableRelationalExpression {
     @Override
     public boolean equals(Object o) {
         return o instanceof TableReference t
-            && (getAlias() == null ? t.getAlias() == null : getAlias().equals(t.getAlias())
-            && tableName.equals(t.tableName));
+            && Objects.equals(getAlias(), t.getAlias())
+            && tableName.equals(t.tableName);
     }
 }

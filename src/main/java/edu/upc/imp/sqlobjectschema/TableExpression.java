@@ -4,6 +4,7 @@ import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Stack;
 
 public class TableExpression extends Query {
@@ -71,9 +72,9 @@ public class TableExpression extends Query {
     @Override
     public boolean equals(Object o) {
         return o instanceof TableExpression te
-            && (getAlias() == null ? te.getAlias() == null : getAlias().equals(te.getAlias())
+            && Objects.equals(getAlias(), te.getAlias())
             && selectClause.equals(te.selectClause)
-            && fromClause == null ? te.fromClause == null : fromClause.equals(te.fromClause)
-            && whereClause == null ? te.whereClause == null : whereClause.equals(te.whereClause));
+            && Objects.equals(fromClause, te.fromClause)
+            && Objects.equals(whereClause, te.whereClause);
     }
 }

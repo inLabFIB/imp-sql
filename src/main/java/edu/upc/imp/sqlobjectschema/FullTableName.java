@@ -3,6 +3,8 @@ package edu.upc.imp.sqlobjectschema;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.Objects;
+
 public class FullTableName implements SQLObjectSchemaEntity {
 
     private final String serverName;
@@ -68,9 +70,9 @@ public class FullTableName implements SQLObjectSchemaEntity {
     @Override
     public boolean equals(Object o) {
         return o instanceof FullTableName ftn
-            && (serverName == null ? ftn.serverName == null : serverName.equals(ftn.serverName)
-            && databaseName == null ? ftn.databaseName == null : databaseName.equals(ftn.databaseName)
-            && schemaName == null ? ftn.schemaName == null : schemaName.equals(ftn.schemaName)
-            && tableName.equals(ftn.tableName));
+            && Objects.equals(serverName, ftn.serverName)
+            && Objects.equals(databaseName, ftn.databaseName)
+            && Objects.equals(schemaName, ftn.schemaName)
+            && tableName.equals(ftn.tableName);
     }
 }

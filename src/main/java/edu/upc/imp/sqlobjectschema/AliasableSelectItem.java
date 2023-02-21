@@ -2,6 +2,8 @@ package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.Objects;
+
 /**
  * For now it only considers AS statements. Equality alias can be added in the future.
  */
@@ -33,7 +35,7 @@ public class AliasableSelectItem implements SelectItem {
     @Override
     public boolean equals(Object o) {
         return o instanceof AliasableSelectItem asi
-            && (columnAlias == null ? asi.columnAlias == null : columnAlias.equals(asi.columnAlias)
-            && expression.equals(asi.expression));
+            && Objects.equals(columnAlias, asi.columnAlias)
+            && expression.equals(asi.expression);
     }
 }
