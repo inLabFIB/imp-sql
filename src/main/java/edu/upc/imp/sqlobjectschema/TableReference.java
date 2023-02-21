@@ -19,4 +19,9 @@ public class TableReference extends AliasableRelationalExpression {
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public AliasableRelationalExpression getAliasedCopy(String newAlias) {
+        return new TableReference(tableName, newAlias);
+    }
 }

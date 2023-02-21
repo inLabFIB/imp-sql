@@ -10,4 +10,6 @@ public abstract class AliasableRelationalExpression implements RelationalExpress
     public String getAlias() {
         return alias;
     }
+
+    public abstract AliasableRelationalExpression getAliasedCopy(String newAlias);
 }

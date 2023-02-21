@@ -3,7 +3,6 @@ package edu.upc.imp.printer;
 import edu.upc.imp.sqlobjectschema.*;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -13,7 +12,7 @@ class SQLServerPrinterTest {
     @Test
     void printSPJAssertion() {
         Assertion assertion = new Assertion(
-            "FirstAssertion",
+            new FullTableName("FirstAssertion"),
             new ComparisonPredicate(
                 ComparisonPredicate.ComparisonOperator.EQ,
                 new ColumnReference(new FullTableName("table"), "column"),
@@ -29,7 +28,7 @@ class SQLServerPrinterTest {
     @Test
     void printSPJView() {
         View view = new View(
-            "FirstView",
+            new FullTableName("FirstView"),
             new TableExpression(
                 List.of(new AliasableSelectItem("idx", new SQLString("Id-1")), new AliasableSelectItem("val", new ColumnReference( new FullTableName("table"), "column"))),
                 new CrossJoin(new TableReference(new FullTableName("table1"), "T1"), new TableReference(new FullTableName("table2"), null)),

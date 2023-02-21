@@ -70,4 +70,9 @@ public class TableExpression extends Query {
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public AliasableRelationalExpression getAliasedCopy(String newAlias) {
+        return new TableExpression(selectClause, fromClause, whereClause, newAlias);
+    }
 }

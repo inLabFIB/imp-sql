@@ -94,7 +94,7 @@ select_statement
 
 //TODO: add [constraint_attributes]
 create_assertion
-    : CREATE ASSERTION assertion_name assertion_check ';'?
+    : CREATE ASSERTION simple_name assertion_check ';'?
     ;
 
 assertion_check
@@ -1217,10 +1217,6 @@ window_frame_preceding
 window_frame_following
     : UNBOUNDED FOLLOWING
     | DECIMAL FOLLOWING
-    ;
-
-assertion_name
-    :  assertion=id_
     ;
 
 full_table_name

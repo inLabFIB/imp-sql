@@ -32,13 +32,13 @@ public class SQLObjectSchemaParserTest {
         parser.parse();
         SQLObjectSchema schema = parser.getSQLObjectSchema();
         // Object built directly in java
-        View expectedView = new View("viewName", new TableExpression(
+        View expectedView = new View(new FullTableName("viewName"), new TableExpression(
             List.of(new AliasableSelectItem("c1", new ColumnReference(new FullTableName("table1"),"col1"))),
             new CrossJoin(new TableReference(new FullTableName("table1"), null), new TableReference(new FullTableName("table2"), null)),
             null, null
         ));
         // Compare the string representation of both (for some "toString" visitor)
-        assertThat(schema.getViews().get(0).visit(new SQLServerPrinter()), is(expectedView.visit(new SQLServerPrinter())));
+        assertThat(schema.getViews().get(0).visit(new SQLServerPrinter()), is(expectedView.<String>visit(new SQLServerPrinter())));
     }
 
 }

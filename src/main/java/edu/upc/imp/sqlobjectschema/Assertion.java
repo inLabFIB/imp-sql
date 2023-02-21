@@ -5,11 +5,11 @@ import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 public class Assertion implements SQLObjectSchemaEntity {
 
-    private final String name;
+    private final FullTableName assertionName;
     private final BooleanExpression booleanExpression;
 
-    public Assertion(String name, BooleanExpression booleanExpression) {
-        this.name = name;
+    public Assertion(FullTableName name, BooleanExpression booleanExpression) {
+        this.assertionName = name;
         this.booleanExpression = booleanExpression;
     }
 
@@ -19,8 +19,8 @@ public class Assertion implements SQLObjectSchemaEntity {
         return visitor.visit(this);
     }
 
-    public String getName() {
-        return name;
+    public String getAssertionName() {
+        return assertionName.getTableName();
     }
 
     public BooleanExpression getBooleanExpression() {
