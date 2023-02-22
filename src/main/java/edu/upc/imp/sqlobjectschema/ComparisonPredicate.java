@@ -2,6 +2,8 @@ package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.Objects;
+
 public class ComparisonPredicate extends Predicate {
 
     public enum ComparisonOperator {
@@ -13,9 +15,9 @@ public class ComparisonPredicate extends Predicate {
     private final ValueExpression rightExpression;
 
     public ComparisonPredicate(ComparisonOperator operator, ValueExpression leftExpression, ValueExpression rightExpression) {
-        this.operator = operator;
-        this.leftExpression = leftExpression;
-        this.rightExpression = rightExpression;
+        this.operator = Objects.requireNonNull(operator, "The parameter 'operator' cannot be null.");
+        this.leftExpression = Objects.requireNonNull(leftExpression, "The parameter 'leftExpression' cannot be null.");
+        this.rightExpression = Objects.requireNonNull(rightExpression, "The parameter 'rightExpression' cannot be null.");
     }
 
     public ComparisonOperator getOperator() {

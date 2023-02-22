@@ -16,9 +16,21 @@ public class TableExpression extends Query {
     //CACHE for optimized translation, might delete in the future
     private final List<AliasableRelationalExpression> fromClauseTerminalExpressions;
 
+    public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause) {
+        this(selectClause, fromClause, whereClause, null, false);
+    }
+
+    public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause, boolean isFirstLevel) {
+        this(selectClause, fromClause, whereClause, null, isFirstLevel);
+    }
+
     public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause, String alias) {
-        super(alias);
-        this.selectClause = selectClause;
+        this(selectClause, fromClause, whereClause, alias, false);
+    }
+
+    public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause, String alias, boolean isFirstLevel) {
+        super(alias, isFirstLevel);
+        this.selectClause = Objects.requireNonNull(selectClause, "The select clause of a TableExpression cannot be null.");
         this.fromClause = fromClause;
         this.whereClause = whereClause;
 
@@ -48,7 +60,7 @@ public class TableExpression extends Query {
         return selectClause.get(n);
     }
     public List<SelectItem> getSelectClause() {
-        return selectClause;
+        return new ArrayList<>(selectClause);
     }
     public RelationalExpression getFromClause() {
         return fromClause;
@@ -67,6 +79,10 @@ public class TableExpression extends Query {
         return new TableExpression(selectClause, fromClause, whereClause, newAlias);
     }
 
+    @Override
+    public Query getFirstLevelCopy() {
+        return new TableExpression(selectClause, fromClause, whereClause, true);
+    }
 
     /** Syntactic equals implementation **/
     @Override

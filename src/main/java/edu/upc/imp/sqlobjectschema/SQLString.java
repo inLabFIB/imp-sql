@@ -2,12 +2,14 @@ package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.Objects;
+
 public class SQLString implements PrimitiveConstant {
 
     private final String value;
 
     public SQLString(String value) {
-        this.value = value;
+        this.value = Objects.requireNonNull(value, "The parameter 'value' cannot be null.");
     }
 
     public String getValue() {

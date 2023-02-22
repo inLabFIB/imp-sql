@@ -5,16 +5,20 @@ import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 import java.util.Objects;
 
 /**
- * For now it only considers AS statements. Equality alias can be added in the future.
+ * For now, it only considers AS statements. Equality alias can be added in the future.
  */
 public class AliasableSelectItem implements SelectItem {
 
     private final String columnAlias;
     private final ValueExpression expression;
 
-    public AliasableSelectItem(String columnAlias, ValueExpression expression) {
+    public AliasableSelectItem(ValueExpression expression, String columnAlias) {
         this.columnAlias = columnAlias;
-        this.expression = expression;
+        this.expression = Objects.requireNonNull(expression, "The parameter 'expression' cannot be null.");
+    }
+
+    public AliasableSelectItem(ValueExpression expression) {
+        this(expression, null);
     }
 
     public ValueExpression getExpression() {

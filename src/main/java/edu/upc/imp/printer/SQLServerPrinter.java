@@ -17,13 +17,23 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
         BooleanExpression whereClause = te.getWhereClause();
         if (whereClause != null) subquery.append(" WHERE ").append(whereClause.<String>visit(this));
 
-        if (te.getAlias() == null) return subquery.toString();
-        return "(" + subquery + ") AS " + te.getAlias();
+        if (te.getAlias() == null) {
+            return te.isFirstLevel() ? subquery + ";" : "( " + subquery + " )";
+        }
+        return "( " + subquery + " ) AS " + te.getAlias();
     }
 
+    /**
+     * Only adds parenthesis if the right expression contains another cross join.
+     * The left expression does not need parenthesis since it is evaluated first (assuming left to right order).
+     * The other cases (with on clauses) are already evaluated first (because of the on clause).
+     *  WARNING: Natural join does not have an on clause, when implementing it, add it to the cases where parenthesis are added.
+     */
     @Override
     public String visit(CrossJoin j) {
-        return j.getLeftExpression().<String>visit(this) + " CROSS JOIN " + j.getRightExpression().<String>visit(this);
+        String rightExp = j.getRightExpression().visit(this);
+        if (j.getRightExpression() instanceof CrossJoin) rightExp = "( " + rightExp + " )";
+        return j.getLeftExpression().<String>visit(this) + " CROSS JOIN " + rightExp;
     }
 
     @Override
@@ -37,13 +47,13 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
             default -> " " + j.getOperator().toString() + " ";
         };
         return j.getLeftExpression().<String>visit(this) + operation + j.getRightExpression().<String>visit(this) +
-            " ON (" + j.getOnClause().<String>visit(this) + ")";
+            " ON ( " + j.getOnClause().<String>visit(this) + " )";
     }
 
     @Override
     public String visit(TableReference tr) {
-        if (tr.getAlias() == null) return tr.getTableName();
-        return tr.getTableName() + " AS " + tr.getAlias();
+        if (tr.getAlias() == null) return tr.getFullTableName().visit(this);
+        return tr.getFullTableName().<String>visit(this) + " AS " + tr.getAlias();
     }
 
     @Override
@@ -57,7 +67,8 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(ColumnReference cr) {
-        return cr.getTableName() + "." + cr.getColumnName();
+        if (cr.getFullTableName() == null) return cr.getColumnName();
+        return cr.getFullTableName().<String>visit(this) + "." + cr.getColumnName();
     }
 
     @Override
@@ -82,7 +93,7 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
         // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
         //  e.g. replace whitespaces with underscores
         String viewCreationStatement = "CREATE VIEW " + v.getViewName().<String>visit(this);
-        if (v.getColumnNames().size() > 0) viewCreationStatement += "(" + String.join(", ", v.getColumnNames()) + ")";
+        if (v.getColumnNames() != null && v.getColumnNames().size() > 0) viewCreationStatement += " ( " + String.join(", ", v.getColumnNames()) + " )";
         viewCreationStatement += " AS " + v.getQuery().<String>visit(this) + ";";
         return viewCreationStatement;
     }
@@ -95,7 +106,7 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
     @Override
     public String visit(ExistsPredicate ep) {
         if (ep.getQuery().getAlias() != null) throw new RuntimeException("Query inside ExistsPredicate cannot have an alias in TSQL.");
-        return "EXISTS ( " + ep.getQuery().<String>visit(this) + " )";
+        return "EXISTS " + ep.getQuery().<String>visit(this);
     }
 
     @Override
@@ -125,7 +136,7 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(AliasableSelectItem asi) {
-        if (asi.getColumAlias() == null) return asi.getExpression().<String>visit(this);
+        if (asi.getColumAlias() == null) return asi.getExpression().visit(this);
         return asi.getExpression().<String>visit(this) + " AS " + asi.getColumAlias();
     }
 }

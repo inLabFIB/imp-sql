@@ -2,12 +2,14 @@ package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.Objects;
+
 public class NotOperation implements BooleanExpression {
 
     private final BooleanExpression expression;
 
     public NotOperation(BooleanExpression expression) {
-        this.expression = expression;
+        this.expression = Objects.requireNonNull(expression, "The parameter 'expression' cannot be null.");
     }
 
     public BooleanExpression getExpression() {

@@ -5,20 +5,29 @@ import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 import java.util.Objects;
 
 public class ColumnReference implements ValueExpression {
-    private final FullTableName tableName;
+
+    private final FullTableName fullTableName;
     private final String columnName;
 
     public ColumnReference(FullTableName tableName, String columnName) {
-        this.tableName = tableName;
-        this.columnName = columnName;
+        this.fullTableName = tableName;
+        this.columnName = Objects.requireNonNull(columnName, "The parameter 'columnName' cannot be null.");
     }
 
-    public String getTableName() {
-        return tableName.getTableName();
+    public ColumnReference(String columnName) {
+        this(null, columnName);
+    }
+
+    public FullTableName getFullTableName() {
+        return fullTableName;
     }
 
     public String getColumnName() {
         return columnName;
+    }
+
+    public String getTableName() {
+        return fullTableName.getTableName();
     }
 
     @Override
@@ -30,7 +39,7 @@ public class ColumnReference implements ValueExpression {
     @Override
     public boolean equals(Object o) {
         return o instanceof ColumnReference c
-            && Objects.equals(tableName, c.tableName)
+            && Objects.equals(fullTableName, c.fullTableName)
             && columnName.equals(c.columnName);
     }
 }

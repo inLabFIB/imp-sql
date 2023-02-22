@@ -3,6 +3,7 @@ package edu.upc.imp.sqlobjectschema;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,7 +28,7 @@ public class View implements SQLObjectSchemaEntity {
     }
 
     public List<String> getColumnNames() {
-        return columnNames;
+        return columnNames == null ? null : new ArrayList<>(columnNames);
     }
 
     public Query getQuery() {

@@ -2,6 +2,8 @@ package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.Objects;
+
 public class OnJoin extends JoinOperation {
 
     public enum JoinOperator {
@@ -13,11 +15,14 @@ public class OnJoin extends JoinOperation {
     }
 
     private final JoinOperator operator;
-    private final BooleanExpression onClause; //TODO: should be not null??
+    private final BooleanExpression onClause;
 
     public OnJoin(JoinOperator operator, RelationalExpression leftExpression, RelationalExpression rightExpression, BooleanExpression onClause) {
-        super(leftExpression, rightExpression);
-        this.operator = operator;
+        super(
+            Objects.requireNonNull(leftExpression, "The parameter 'leftExpression' cannot be null."),
+            Objects.requireNonNull(rightExpression, "The parameter 'rightExpression' cannot be null.")
+        );
+        this.operator = Objects.requireNonNull(operator, "The parameter 'operator' cannot be null.");
         this.onClause = onClause;
     }
 
@@ -41,6 +46,6 @@ public class OnJoin extends JoinOperation {
             && operator.equals(oj.operator)
             && getLeftExpression().equals(oj.getLeftExpression())
             && getRightExpression().equals(oj.getRightExpression())
-            && onClause.equals(oj.onClause);
+            && Objects.equals(onClause, oj.onClause);
     }
 }

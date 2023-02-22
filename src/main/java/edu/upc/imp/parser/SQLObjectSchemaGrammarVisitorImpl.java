@@ -26,7 +26,6 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         return newAssertion;
     }
 
-    //TODO: Maybe can be removed
     public BooleanExpression visitAssertion_check(TSqlParser.Assertion_checkContext ctx) {
         return visitSearch_condition(ctx.search_condition());
     }
@@ -34,7 +33,12 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     public Query visitSelect_statement_standalone(TSqlParser.Select_statement_standaloneContext ctx)  {
         if (ctx.with_expression() != null) throw new RuntimeException("Grammar expression (`WITH`) not supported yet!");
-        return visitSelect_statement(ctx.select_statement());
+        Query selectStatement =  visitSelect_statement(ctx.select_statement());
+        if (ctx.getParent() instanceof TSqlParser.Dml_clauseContext) {
+            selectStatement = selectStatement.getFirstLevelCopy();
+            schema.addSelect(selectStatement);
+        }
+        return selectStatement;
     }
 
     public Query visitSelect_statement(TSqlParser.Select_statementContext ctx) {
@@ -84,8 +88,11 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
             if (ctx.predicate() != null) expression = visitPredicate(ctx.predicate());
             else expression = visitSearch_condition(ctx.search_condition(0));
 
-            if (ctx.NOT() != null) return new NotOperation(expression);
-            else return expression;
+            for (int i = 0; i < ctx.NOT().size(); i++) {
+                expression = new NotOperation(expression);
+            }
+
+            return expression;
         }
     }
 
@@ -191,11 +198,11 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     //TODO: store more information of the original sql statement (equality/ as / implicit as)
 
     public AliasableSelectItem visitExpression_elem(TSqlParser.Expression_elemContext ctx) {
-        if (ctx.eq != null) return new AliasableSelectItem(ctx.leftAlias.getText(), visitExpression(ctx.leftAssignment));
+        if (ctx.eq != null) return new AliasableSelectItem(visitExpression(ctx.leftAssignment), ctx.leftAlias.getText());
         else {
             String alias = null;
             if (ctx.as_column_alias() != null) alias = visitAs_column_alias(ctx.as_column_alias());
-            return new AliasableSelectItem(alias, visitExpression(ctx.expressionAs));
+            return new AliasableSelectItem(visitExpression(ctx.expressionAs), alias);
         }
     }
     public String visitAs_column_alias(TSqlParser.As_column_aliasContext ctx) {
@@ -331,7 +338,10 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     }
 
     public ValueExpression visitPrimitive_constant(TSqlParser.Primitive_constantContext ctx) {
-        if (ctx.STRING() != null) return new SQLString(ctx.STRING().getText());
+        if (ctx.STRING() != null) {
+            String str = ctx.STRING().getText();
+            return new SQLString(str.substring(1,str.length()-1));
+        }
         else if (ctx.DECIMAL() != null) return new SQLInteger(Integer.parseInt(ctx.DECIMAL().getText()));
         else if (ctx.FLOAT() != null) return new SQLFloat(Float.parseFloat(ctx.FLOAT().getText()));
         else {

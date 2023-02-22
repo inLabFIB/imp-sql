@@ -28,7 +28,7 @@ public class FullTableName implements SQLObjectSchemaEntity {
         this.serverName = serverName;
         this.databaseName = databaseName;
         this.schemaName = schemaName;
-        this.tableName = tableName;
+        this.tableName = Objects.requireNonNull(tableName, "The parameter 'tableName' cannot be null.");
     }
 
     public String getTableName() {

@@ -2,10 +2,15 @@ package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.Objects;
+
 public class CrossJoin extends JoinOperation {
 
     public CrossJoin(RelationalExpression leftExpression, RelationalExpression rightExpression) {
-        super(leftExpression, rightExpression);
+        super(
+            Objects.requireNonNull(leftExpression, "The parameter 'leftExpression' cannot be null."),
+            Objects.requireNonNull(rightExpression, "The parameter 'rightExpression' cannot be null.")
+            );
     }
 
     @Override

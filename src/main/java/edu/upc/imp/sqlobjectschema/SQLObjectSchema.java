@@ -33,7 +33,7 @@ public class SQLObjectSchema {
     }
 
     public List<Query> getSelects() {
-        return selects;
+        return new ArrayList<>(selects);
     }
     
     /** MODIFIERS **/

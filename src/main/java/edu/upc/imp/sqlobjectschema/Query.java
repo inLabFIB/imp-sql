@@ -1,7 +1,17 @@
 package edu.upc.imp.sqlobjectschema;
 
 public abstract class Query extends AliasableRelationalExpression implements ValueExpression {
-    protected Query(String alias) {
+
+    private final boolean isFirstLevel;
+
+    protected Query(String alias, boolean isFirstLevel) {
         super(alias);
+        this.isFirstLevel = isFirstLevel;
     }
+
+    public boolean isFirstLevel() {
+        return isFirstLevel;
+    }
+
+    public abstract Query getFirstLevelCopy();
 }
