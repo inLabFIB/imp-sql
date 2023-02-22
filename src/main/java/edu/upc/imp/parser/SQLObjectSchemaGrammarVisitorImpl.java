@@ -205,8 +205,18 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
             return new AliasableSelectItem(visitExpression(ctx.expressionAs), alias);
         }
     }
+
+    public String visitAs_table_alias(TSqlParser.As_table_aliasContext ctx) {
+        return ctx.table_alias().getText();
+    }
+
     public String visitAs_column_alias(TSqlParser.As_column_aliasContext ctx) {
-        return ctx.column_alias().getText();
+        return visitColumn_alias(ctx.column_alias());
+    }
+
+    public String visitColumn_alias(TSqlParser.Column_aliasContext ctx) {
+        if (ctx.STRING() != null) throw new RuntimeException("Grammar expression (STRING) in alias expressions not supported yet!");
+        return visitId_(ctx.id_());
     }
 
 
@@ -275,7 +285,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         if (ctx.column_alias_list() != null) throw new RuntimeException("column_alias_list not supported yet!");
 
         String alias = null;
-        if (ctx.as_table_alias() != null) alias = ctx.as_table_alias().getText();
+        if (ctx.as_table_alias() != null) alias = visitAs_table_alias(ctx.as_table_alias());
 
         if (ctx.full_table_name() != null) {
             if (ctx.deprecated_table_hint() != null
