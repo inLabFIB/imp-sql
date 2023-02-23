@@ -76,4 +76,18 @@
     </plugins>
   </build>
 
+  <distributionManagement>
+    <repository>
+      <id>inlab-nexe-repository</id>
+      <name>Internal Releases</name>
+      <url>https://nexe.fib.upc.edu/repository/maven-releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>inlab-nexe-repository</id>
+      <name>Internal Snapshots</name>
+      <url>https://nexe.fib.upc.edu/repository/maven-snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+
 </project>
