@@ -56,6 +56,7 @@ dml_clause
 // Data Definition Language: https://msdn.microsoft.com/en-us/library/ff848799.aspx)
 ddl_clause
     : create_assertion
+    | create_table
     ;
 
 file_path
@@ -101,6 +102,255 @@ assertion_check
     : CHECK LR_BRACKET search_condition RR_BRACKET
     ;
 
+
+// https://msdn.microsoft.com/en-us/library/ms174979.aspx
+create_table
+    : CREATE TABLE table_name '(' column_def_table_constraints  (','? table_indices)*  ','? ')' (LOCK simple_id)? table_options* (ON id_ | DEFAULT)? (TEXTIMAGE_ON id_ | DEFAULT)?';'?
+    ;
+
+column_def_table_constraints
+    : column_def_table_constraint (','? column_def_table_constraint)*
+    ;
+
+column_def_table_constraint
+    : column_definition
+    | materialized_column_definition
+    | table_constraint
+    ;
+
+// https://msdn.microsoft.com/en-us/library/ms188066.aspx
+table_constraint
+    : (CONSTRAINT constraint=id_)?
+        (
+            (
+                (PRIMARY KEY | UNIQUE)
+                clustered?
+                '(' column_name_list_with_order ')'
+                primary_key_options
+            )
+            |
+            (
+                FOREIGN KEY
+                '(' fk = column_name_list ')'
+                foreign_key_options
+            )
+            |
+            (
+                CONNECTION
+                '(' connection_node ( ',' connection_node )* ')'
+            )
+            |
+            (
+                DEFAULT constant_expr=expression FOR column=id_ (WITH VALUES)?
+            )
+            | check_constraint
+        )
+    ;
+
+clustered
+    : CLUSTERED
+    | NONCLUSTERED
+    ;
+
+column_name_list_with_order
+    : id_ (ASC | DESC)? (',' id_ (ASC | DESC)?)*
+    ;
+
+primary_key_options
+    :
+        (WITH FILLFACTOR '=' DECIMAL)?
+        alter_table_index_options?
+        on_partition_or_filegroup?
+    ;
+
+alter_table_index_options
+    : WITH '(' alter_table_index_option (',' alter_table_index_option)* ')'
+    ;
+
+// https://msdn.microsoft.com/en-us/library/ms186869.aspx
+alter_table_index_option
+    : PAD_INDEX '=' on_off
+    | FILLFACTOR '=' DECIMAL
+    | IGNORE_DUP_KEY '=' on_off
+    | STATISTICS_NORECOMPUTE '=' on_off
+    | ALLOW_ROW_LOCKS '=' on_off
+    | ALLOW_PAGE_LOCKS '=' on_off
+    | OPTIMIZE_FOR_SEQUENTIAL_KEY '=' on_off
+    | SORT_IN_TEMPDB '=' on_off
+    | MAXDOP '=' max_degree_of_parallelism=DECIMAL
+    | DATA_COMPRESSION '=' (NONE | ROW | PAGE | COLUMNSTORE | COLUMNSTORE_ARCHIVE)
+        on_partitions?
+    | XML_COMPRESSION '=' on_off
+        on_partitions?
+    | DISTRIBUTION '=' HASH '(' id_ ')' | CLUSTERED INDEX '(' id_ (ASC | DESC)? (',' id_ (ASC | DESC)?)* ')'
+    | ONLINE '=' (ON ('(' low_priority_lock_wait ')')? | OFF)
+    | RESUMABLE '=' on_off
+    | MAX_DURATION '=' times=DECIMAL MINUTES?
+    ;
+
+on_off
+    : ON
+    | OFF
+    ;
+
+on_partitions
+    : ON PARTITIONS '('
+        partition_number=DECIMAL ( 'TO' to_partition_number=DECIMAL )?
+        ( ',' partition_number=DECIMAL ( 'TO' to_partition_number=DECIMAL )? )*
+    ')'
+    ;
+
+low_priority_lock_wait
+    : WAIT_AT_LOW_PRIORITY '('
+      MAX_DURATION '=' max_duration=time MINUTES? ','
+      ABORT_AFTER_WAIT '=' abort_after_wait=(NONE | SELF | BLOCKERS) ')'
+    ;
+
+time
+    : (LOCAL_ID | constant)
+    ;
+
+on_partition_or_filegroup
+    :
+        ON (
+            (partition_scheme_name=id_ '(' partition_column_name=id_ ')')
+            | filegroup=id_
+            | DEFAULT_DOUBLE_QUOTE
+        )
+    ;
+
+foreign_key_options
+    :
+        REFERENCES table_name '(' pk = column_name_list')'
+        on_delete?
+        on_update?
+        (NOT FOR REPLICATION)?
+    ;
+
+on_delete
+    : ON DELETE (NO ACTION | CASCADE | SET NULL_ | SET DEFAULT)
+    ;
+
+on_update
+    : ON UPDATE (NO ACTION | CASCADE | SET NULL_ | SET DEFAULT)
+    ;
+
+connection_node
+    :
+        from_node_table=id_ TO to_node_table=id_
+    ;
+
+check_constraint
+    :
+    CHECK (NOT FOR REPLICATION)? '(' search_condition ')'
+    ;
+
+
+
+materialized_column_definition
+    : id_ (COMPUTE | AS) expression (MATERIALIZED | NOT MATERIALIZED)?
+    ;
+
+column_definition
+    : id_ (data_type | AS expression PERSISTED? )
+      column_definition_element*
+      column_index?
+    ;
+
+column_index
+    :
+        INDEX index_name=id_ clustered?
+        create_table_index_options?
+        on_partition_or_filegroup?
+        ( FILESTREAM_ON ( filestream_filegroup_or_partition_schema_name=id_ | NULL_DOUBLE_QUOTE ) )?
+    ;
+
+create_table_index_options
+    : WITH '(' create_table_index_option ( ',' create_table_index_option)* ')'
+    ;
+
+create_table_index_option
+    : PAD_INDEX '=' on_off
+    | FILLFACTOR '=' DECIMAL
+    | IGNORE_DUP_KEY '=' on_off
+    | STATISTICS_NORECOMPUTE '=' on_off
+    | STATISTICS_INCREMENTAL '=' on_off
+    | ALLOW_ROW_LOCKS '=' on_off
+    | ALLOW_PAGE_LOCKS '=' on_off
+    | OPTIMIZE_FOR_SEQUENTIAL_KEY '=' on_off
+    | DATA_COMPRESSION '=' (NONE | ROW | PAGE | COLUMNSTORE | COLUMNSTORE_ARCHIVE)
+        on_partitions?
+    | XML_COMPRESSION '=' on_off
+        on_partitions?
+    ;
+
+
+column_definition_element
+    : FILESTREAM
+    | COLLATE collation_name=id_
+    | SPARSE
+    | MASKED WITH '(' FUNCTION '=' mask_function=STRING ')'
+    | (CONSTRAINT constraint=id_)? DEFAULT  constant_expr=expression
+    | IDENTITY ('(' seed=DECIMAL ',' increment=DECIMAL ')')?
+    | NOT FOR REPLICATION
+    | GENERATED ALWAYS AS ( ROW | TRANSACTION_ID | SEQUENCE_NUMBER ) ( START | END ) HIDDEN_KEYWORD?
+    // NULL / NOT NULL is a constraint
+    | ROWGUIDCOL
+    | ENCRYPTED WITH
+        '(' COLUMN_ENCRYPTION_KEY '=' key_name=STRING ','
+            ENCRYPTION_TYPE '=' ( DETERMINISTIC | RANDOMIZED ) ','
+            ALGORITHM '=' algo=STRING
+        ')'
+    | column_constraint
+    ;
+
+// https://msdn.microsoft.com/en-us/library/ms186712.aspx
+// There is a documentation error: NOT NULL is a constraint
+// and therefore can be given a name.
+column_constraint
+    : (CONSTRAINT constraint=id_)?
+      (
+        null_notnull
+      | (
+            (PRIMARY KEY | UNIQUE)
+            clustered?
+            primary_key_options
+        )
+      | (
+            (FOREIGN KEY)?
+            foreign_key_options
+        )
+      | check_constraint
+      )
+    ;
+
+
+table_indices
+    : INDEX id_  UNIQUE? clustered? '(' column_name_list_with_order ')'
+    | INDEX id_ CLUSTERED COLUMNSTORE
+    | INDEX id_ NONCLUSTERED? COLUMNSTORE '(' column_name_list ')'
+    create_table_index_options?
+    (ON id_)?
+    ;
+
+simple_id
+    : ID
+    ;
+
+table_options
+    : WITH ('(' table_option (',' table_option)* ')' | table_option (',' table_option)*)
+    ;
+
+table_option
+    : (simple_id | keyword) '=' (simple_id | keyword | on_off | DECIMAL)
+    | CLUSTERED COLUMNSTORE INDEX | HEAP
+    | FILLFACTOR '=' DECIMAL
+    | DISTRIBUTION '=' HASH '(' id_ ')' | CLUSTERED INDEX '(' id_ (ASC | DESC)? (',' id_ (ASC | DESC)?)* ')'
+    | DATA_COMPRESSION '=' (NONE | ROW | PAGE)
+        on_partitions?
+    | XML_COMPRESSION '=' on_off
+        on_partitions?
+    ;
 
 // https://msdn.microsoft.com/en-us/library/ms187956.aspx
 create_view
