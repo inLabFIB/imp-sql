@@ -3,6 +3,7 @@ package edu.upc.imp.parser;
 import edu.upc.imp.parser.sql_server.TSqlParser;
 import edu.upc.imp.sqlobjectschema.*;
 import edu.upc.imp.parser.sql_server.TSqlParserBaseVisitor;
+import edu.upc.imp.sqlobjectschema.exceptions.MissingReferencedObjectException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +20,10 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     /** TOP LEVEL STATEMENTS NODES **/
 
     public Assertion visitCreate_assertion(TSqlParser.Create_assertionContext ctx) {
-        FullTableName assertionName = visitSimple_name(ctx.simple_name());
-        BooleanExpression searchCondition = visitAssertion_check(ctx.assertion_check());
-        Assertion newAssertion = new Assertion(assertionName, searchCondition);
+        Assertion newAssertion = new Assertion(
+            visitId_(ctx.simple_name().name),
+            visitSimple_name(ctx.simple_name()),
+            visitAssertion_check(ctx.assertion_check()));
         schema.addAssertion(newAssertion);
         return newAssertion;
     }
@@ -54,6 +56,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         List<String> columnNames = null;
         if (ctx.column_name_list() != null) columnNames = visitColumn_name_list(ctx.column_name_list());
         View view = new View(
+            visitId_(ctx.simple_name().name),
             visitSimple_name(ctx.simple_name()),
             columnNames,
             visitSelect_statement_standalone(ctx.select_statement_standalone()));
@@ -126,17 +129,20 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     }
 
     public ColumnReference visitFull_column_name(TSqlParser.Full_column_nameContext ctx) {
-        FullTableName fullTableName = null;
-
+        String tableName = null;
         if (ctx.DELETED() != null || ctx.INSERTED() != null || ctx.IDENTITY() != null || ctx.ROWGUID() != null) {
             //TODO: V2
             throw new RuntimeException("Grammar expression related to extra info for full_column_name not supported yet!");
         }
         else if (ctx.full_table_name() != null) {
-            fullTableName = visitFull_table_name(ctx.full_table_name());
+            tableName = visitId_(ctx.full_table_name().table);
+            SchemaReference schemaReference = visitFull_table_name(ctx.full_table_name());
+            if (schemaReference != visitFull_table_name(ctx.full_table_name())) {
+                throw new RuntimeException("schema reference definition in a column reference not supported yet");
+            }
         }
 
-        return new ColumnReference(fullTableName, visitId_(ctx.column_name));
+        return new ColumnReference(tableName, visitId_(ctx.column_name));
     }
 
     /** QUERY NODES **/
@@ -292,7 +298,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
                 || ctx.with_table_hints() != null
                 || ctx.sybase_legacy_hints() != null) throw new RuntimeException("Grammar expression related to table_source_item not supported yet!");
 
-            return new TableReference(visitFull_table_name(ctx.full_table_name()), alias);
+            return new TableReference(findExistingTableObject(ctx.full_table_name()), alias);
         }
         if (ctx.derived_table() != null) return visitDerived_table(ctx.derived_table()).getAliasedCopy(alias);
         if (ctx.table_source() != null) return visitTable_source(ctx.table_source());
@@ -319,20 +325,20 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     /** NAME/BASIC NODES **/
 
-    public FullTableName visitFull_table_name(TSqlParser.Full_table_nameContext ctx) {
+    public SchemaReference visitFull_table_name(TSqlParser.Full_table_nameContext ctx) {
         if (ctx.linkedServer != null) throw new RuntimeException("Grammar expression related to linkedServer in full_table_name not supported yet!");
 
-        return new FullTableName(
+        if (ctx.schema == null) return null;
+
+        return new SchemaReference(
             ctx.server != null ? visitId_(ctx.server) : null,
             ctx.database != null ? visitId_(ctx.database) : null,
-            ctx.schema != null ? visitId_(ctx.schema) : null,
-            visitId_(ctx.table));
+            visitId_(ctx.schema));
     }
 
-    public FullTableName visitSimple_name(TSqlParser.Simple_nameContext ctx) {
-        return new FullTableName(
-            ctx.schema != null ? visitId_(ctx.schema) : null,
-            visitId_(ctx.name));
+    public SchemaReference visitSimple_name(TSqlParser.Simple_nameContext ctx) {
+        if (ctx.schema == null) return null;
+        return new SchemaReference(visitId_(ctx.schema));
     }
 
     public ValueExpression visitPrimitive_expression(TSqlParser.Primitive_expressionContext ctx) {
@@ -371,5 +377,20 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     public String visitId_(TSqlParser.Id_Context ctx) {
         return ctx.getText();
+    }
+
+
+    private Table findExistingTableObject(TSqlParser.Full_table_nameContext ctx) {
+
+        String tableName = visitId_(ctx.table);
+        SchemaReference schemaReference = visitFull_table_name(ctx);
+
+        for (Table t : schema.getTables()) {
+            if (t.getTableName().equals(tableName) && Objects.equals(schemaReference, t.getSchemaReference())) {
+                return t;
+            }
+        }
+
+        throw new MissingReferencedObjectException("Referenced Table Object not found....") ;
     }
 }

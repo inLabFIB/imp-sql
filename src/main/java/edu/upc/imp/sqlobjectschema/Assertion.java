@@ -7,16 +7,27 @@ import java.util.Objects;
 
 public class Assertion implements SQLObjectSchemaEntity {
 
-    private final FullTableName assertionName;
-    private final BooleanExpression booleanExpression;
+    private final String assertionName;
 
-    public Assertion(FullTableName name, BooleanExpression booleanExpression) {
-        this.assertionName = Objects.requireNonNull(name, "The parameter 'name' cannot be null.");
+    private final SchemaReference schemaReference;
+
+    private final BooleanExpression booleanExpression;
+    public Assertion(String assertionName, SchemaReference schemaReference, BooleanExpression booleanExpression) {
+        this.assertionName = Objects.requireNonNull(assertionName, "The parameter 'assertionName' cannot be null.");
+        this.schemaReference = schemaReference;
         this.booleanExpression = Objects.requireNonNull(booleanExpression, "The parameter 'booleanExpression' cannot be null.");
     }
 
-    public FullTableName getAssertionName() {
+    public Assertion(String assertionName, BooleanExpression booleanExpression) {
+        this(assertionName, null, booleanExpression);
+    }
+
+    public String getAssertionName() {
         return assertionName;
+    }
+
+    public SchemaReference getSchemaReference() {
+        return schemaReference;
     }
 
     public BooleanExpression getBooleanExpression() {
@@ -33,6 +44,7 @@ public class Assertion implements SQLObjectSchemaEntity {
     public boolean equals(Object o) {
         return o instanceof Assertion a
             && assertionName.equals(a.assertionName)
+            && Objects.equals(schemaReference, a.schemaReference)
             && booleanExpression.equals(a.booleanExpression);
     }
 }

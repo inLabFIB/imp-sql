@@ -11,6 +11,9 @@ public class SQLObjectSchema {
 
     private final List<Assertion> assertions;
     private final List<View> views;
+    private final List<Table> tables;
+
+    //TODO: remove selects
     private final List<Query> selects;
 
     /** CONSTRUCTORS **/
@@ -19,6 +22,7 @@ public class SQLObjectSchema {
         assertions = new ArrayList<>();
         views = new ArrayList<>();
         selects = new ArrayList<>();
+        tables = new ArrayList<>();
     }
 
 
@@ -32,10 +36,14 @@ public class SQLObjectSchema {
         return new ArrayList<>(views);
     }
 
+    public List<Table> getTables() {
+        return new ArrayList<>(tables);
+    }
+
     public List<Query> getSelects() {
         return new ArrayList<>(selects);
     }
-    
+
     /** MODIFIERS **/
 
     public void addAssertion(Assertion assertion) {
@@ -46,21 +54,25 @@ public class SQLObjectSchema {
         views.add(view);
     }
 
+    public void addSelect(Table table) {
+        tables.add(table);
+    }
+
     public void addSelect(Query select) {
         selects.add(select);
     }
 
-
 //    // Use default visitor: SQLServerPrinter
 //    List<String> visit() {
 //        return this.visit(new SQLServerPrinter());
-//    }
 
+//    }
 //    List<String> visit(SQLObjectSchemaVisitor visitor) {
 //        return Stream.concat(
 //            assertions.stream().map(a -> a.visit(visitor)),
 //            views.stream().map(v -> v.visit(visitor))
 //        ).toList();
+
 //    }
 
     /** Syntactic equals implementation **/

@@ -6,11 +6,11 @@ import java.util.Objects;
 
 public class ColumnReference implements ValueExpression {
 
-    private final FullTableName fullTableName;
-    private final String columnName;
+    private final String tableName;
 
-    public ColumnReference(FullTableName tableName, String columnName) {
-        this.fullTableName = tableName;
+    private final String columnName;
+    public ColumnReference(String tableName, String columnName) {
+        this.tableName = tableName;
         this.columnName = Objects.requireNonNull(columnName, "The parameter 'columnName' cannot be null.");
     }
 
@@ -18,16 +18,14 @@ public class ColumnReference implements ValueExpression {
         this(null, columnName);
     }
 
-    public FullTableName getFullTableName() {
-        return fullTableName;
+
+
+    public String getTableName() {
+        return tableName;
     }
 
     public String getColumnName() {
         return columnName;
-    }
-
-    public String getTableName() {
-        return fullTableName.getTableName();
     }
 
     @Override
@@ -39,7 +37,7 @@ public class ColumnReference implements ValueExpression {
     @Override
     public boolean equals(Object o) {
         return o instanceof ColumnReference c
-            && Objects.equals(fullTableName, c.fullTableName)
+            && Objects.equals(tableName, c.tableName)
             && columnName.equals(c.columnName);
     }
 }

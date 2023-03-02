@@ -6,23 +6,19 @@ import java.util.Objects;
 
 public class TableReference extends AliasableRelationalExpression {
 
-    private final FullTableName fullTableName;
+    private final Table table;
 
-    public TableReference(FullTableName tableName, String alias) {
+    public TableReference(Table table, String alias) {
         super(alias);
-        this.fullTableName = Objects.requireNonNull(tableName, "The parameter 'tableName' cannot be null.");
+        this.table = Objects.requireNonNull(table, "A table reference must be linked with a Table object previouslly defined in the IMP-SQL instance.");
     }
 
-    public TableReference(FullTableName tableName) {
-        this(tableName, null);
+    public TableReference(Table table) {
+        this(table, null);
     }
 
-    public FullTableName getFullTableName() {
-        return fullTableName;
-    }
-
-    public String getTableName() {
-        return fullTableName.getTableName();
+    public Table getTable() {
+        return table;
     }
 
     @Override
@@ -32,7 +28,7 @@ public class TableReference extends AliasableRelationalExpression {
 
     @Override
     public AliasableRelationalExpression getAliasedCopy(String newAlias) {
-        return new TableReference(fullTableName, newAlias);
+        return new TableReference(table, newAlias);
     }
 
     /** Syntactic equals implementation **/
@@ -40,6 +36,6 @@ public class TableReference extends AliasableRelationalExpression {
     public boolean equals(Object o) {
         return o instanceof TableReference t
             && Objects.equals(getAlias(), t.getAlias())
-            && fullTableName.equals(t.fullTableName);
+            && table.equals(t.table);
     }
 }

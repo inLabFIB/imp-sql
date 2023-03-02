@@ -52,8 +52,9 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(TableReference tr) {
-        if (tr.getAlias() == null) return tr.getFullTableName().visit(this);
-        return tr.getFullTableName().<String>visit(this) + " AS " + tr.getAlias();
+        String schemaReference = tr.getTable().getSchemaReference().<String>visit(this);
+        String tableName = tr.getTable().getTableName();
+        return tr.getTable().getSchemaReference() == null ? tableName : schemaReference + "." + tableName;
     }
 
     @Override
@@ -67,8 +68,9 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(ColumnReference cr) {
-        if (cr.getFullTableName() == null) return cr.getColumnName();
-        return cr.getFullTableName().<String>visit(this) + "." + cr.getColumnName();
+        String schemaReference = cr.getColumnName();
+        String tableName = cr.getTableName();
+        return schemaReference == null ? tableName : schemaReference + "." + tableName;
     }
 
     @Override
@@ -84,7 +86,11 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
     public String visit(Assertion a) {
         // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
         //  e.g. replace whitespaces with underscores
-        return "CREATE ASSERTION " + a.getAssertionName().<String>visit(this) + " CHECK ( " + a.getBooleanExpression().<String>visit(this) + " );";
+
+        String assertionName = (a.getSchemaReference() != null) ? a.getSchemaReference().visit(this) : "";
+        assertionName += a.getAssertionName();
+
+        return "CREATE ASSERTION " + assertionName + " CHECK ( " + a.getBooleanExpression().<String>visit(this) + " );";
     }
 
     @Override
@@ -92,7 +98,11 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
         if (v.getQuery().getAlias() != null) throw new RuntimeException("Query of View cannot have an alias in TSQL.");
         // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
         //  e.g. replace whitespaces with underscores
-        String viewCreationStatement = "CREATE VIEW " + v.getViewName().<String>visit(this);
+
+        String viewName = (v.getSchemaReference() != null) ? v.getSchemaReference().visit(this) : "";
+        viewName += v.getViewName();
+
+        String viewCreationStatement = "CREATE VIEW " + viewName;
         if (v.getColumnNames() != null && v.getColumnNames().size() > 0) viewCreationStatement += " ( " + String.join(", ", v.getColumnNames()) + " )";
         viewCreationStatement += " AS " + v.getQuery().<String>visit(this) + ";";
         return viewCreationStatement;
@@ -125,11 +135,6 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
     }
 
     @Override
-    public String visit(FullTableName tn) {
-        return tn.getFullTableName();
-    }
-
-    @Override
     public String visit(Asterisk a) {
         return "*";
     }
@@ -138,5 +143,22 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
     public String visit(AliasableSelectItem asi) {
         if (asi.getColumAlias() == null) return asi.getExpression().visit(this);
         return asi.getExpression().<String>visit(this) + " AS " + asi.getColumAlias();
+    }
+
+    @Override
+    public String visit(SchemaReference sr) {
+        return sr.getFullReference();
+    }
+
+    //TODO: implement this
+    @Override
+    public String visit(Table t) {
+        return null;
+    }
+
+    //TODO: implement this
+    @Override
+    public String visit(Attribute a) {
+        return null;
     }
 }

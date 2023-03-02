@@ -21,7 +21,7 @@ public class SQLObjectSchemaParserTest {
 
         // Object built directly in java
         Assertion expectedAssertion = new Assertion(
-            new FullTableName("assertionName"),
+            "assertionName",
             new NotOperation(new ExistsPredicate(
                 new TableExpression(
                     List.of(new AliasableSelectItem(new SQLInteger(1))),
@@ -46,7 +46,9 @@ public class SQLObjectSchemaParserTest {
 
         // Object built directly in java
         View expectedView = new View(
-            new FullTableName("viewName"), List.of("col1"),
+            "viewName",
+            null,
+            List.of("col1"),
             new TableExpression(
                 List.of(new AliasableSelectItem(new SQLInteger(1))),
                 null, null
@@ -65,7 +67,7 @@ public class SQLObjectSchemaParserTest {
 
         // Object built directly in java
         View expectedView = new View(
-            new FullTableName("viewName"),
+            "viewName",
             new TableExpression(
                 List.of(new AliasableSelectItem(new SQLInteger(1))),
                 null, null

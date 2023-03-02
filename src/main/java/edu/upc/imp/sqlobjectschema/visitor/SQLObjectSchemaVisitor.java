@@ -17,7 +17,9 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(SQLInteger d);
     <T> T visit(SQLFloat f);
     <T> T visit(SQLString s);
-    <T> T visit(FullTableName tn);
     <T> T visit(Asterisk a);
     <T> T visit(AliasableSelectItem asi);
+    <T> T visit(Table t);
+    <T> T visit(SchemaReference sr);
+    <T> T visit(Attribute a);
 }

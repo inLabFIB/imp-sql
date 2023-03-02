@@ -17,7 +17,7 @@ class SQLServerPrinterTest {
     public void parseSimpleCreateAssertionStatement() {
         // Object built directly in java
         Assertion assertion = new Assertion(
-            new FullTableName("assertionName"),
+            "assertionName",
             new NotOperation(new ExistsPredicate(
                 new TableExpression(
                     List.of(new AliasableSelectItem(new SQLInteger(1))),
@@ -36,7 +36,7 @@ class SQLServerPrinterTest {
     public void parseCrateViewStatementWithColumnNames() {
         // Object built directly in java
         View view = new View(
-            new FullTableName("viewName"), List.of("col1"),
+            "viewName", null, List.of("col1"),
             new TableExpression(
                 List.of(new AliasableSelectItem(new SQLInteger(1))),
                 null, null
@@ -50,7 +50,7 @@ class SQLServerPrinterTest {
     public void parseCrateViewStatement() {
         // Object built directly in java
         View view = new View(
-            new FullTableName("viewName"),
+            "viewName",
             new TableExpression(
                 List.of(new AliasableSelectItem(new SQLInteger(1))),
                 null, null
