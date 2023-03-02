@@ -68,6 +68,34 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         return ctx.col.stream().map(this::visitId_).toList();
     }
 
+    public Table visitCreate_table(TSqlParser.Create_tableContext ctx) {
+        if (ctx.table_name().BLOCKING_HIERARCHY() != null) throw new RuntimeException("Grammar expression (`BLOCKING_HIERARCHY`) not supported yet!");
+
+        if (!ctx.table_indices().isEmpty()) throw new RuntimeException("Table indices not supported yet!");
+        if (ctx.LOCK() != null) throw new RuntimeException("Grammar expression (`LOCK`) not supported yet!");
+        if (!ctx.table_options().isEmpty()) throw new RuntimeException("Table options not supported yet!");
+        if (ctx.ON() != null || ctx.DEFAULT() != null) throw new RuntimeException("Table options not supported yet!");
+        if (ctx.TEXTIMAGE_ON() != null || ctx.DEFAULT() != null) throw new RuntimeException("Grammar expression (`TEXTIMAGE_ON`) not supported yet!");
+
+        for (TSqlParser.Column_def_table_constraintContext c : ctx.column_def_table_constraints().column_def_table_constraint()) {
+            if (c.materialized_column_definition() != null) throw new RuntimeException("Materialized Columns Definitions not supported yet!");
+            //TODO: finish this
+        }
+
+        Table newTable = null;/* Table(
+            visitId_(ctx.table_name().table),
+            visitTable_name(ctx.table_name()),
+        );*/
+
+
+        schema.addTable(newTable);
+        return newTable;
+    }
+
+    public SchemaReference visitTable_name(TSqlParser.Table_nameContext ctx) {
+        return null;
+    }
+
     /** BOOLEAN EXPRESSION / ASSERTION NODES **/
 
 

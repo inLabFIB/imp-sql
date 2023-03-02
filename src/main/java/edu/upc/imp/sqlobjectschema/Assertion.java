@@ -5,7 +5,7 @@ import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.Objects;
 
-public class Assertion implements SQLObjectSchemaEntity {
+public class Assertion implements Constraint {
 
     private final String assertionName;
 

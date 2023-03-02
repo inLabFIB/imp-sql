@@ -156,9 +156,72 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
         return null;
     }
 
-    //TODO: implement this
+    //TODO: test this
     @Override
     public String visit(Attribute a) {
-        return null;
+        String type = switch (a.getType()) {
+            case CHAR -> " CHAR";
+            case VARCHAR -> " VARCHAR";
+            case BOOL -> " BOOL";
+            case INT -> " INT";
+            case FLOAT -> " FLOAT";
+            case DATE -> " DATETIME2";
+            default -> " " + a.getType().toString();
+        };
+        return a.getName() + type + "(" + a.getBytes() + ")" +
+            (a.isNotNull() ? " NOT NULL" : " ");
+    }
+
+    @Override
+    public String visit(Check c) {
+        String checkCreationStatement = "";
+        if (c.hasName()) checkCreationStatement = "CONSTRAINT " + c.getName() + " ";
+        checkCreationStatement += "CHECK (" +
+            c.getExpression().<String>visit(this) +
+            " )";
+        return checkCreationStatement;
+    }
+
+    @Override
+    public String visit(Default d) {
+        String defaultCreationStatement = "";
+        if (d.hasName()) defaultCreationStatement = "CONSTRAINT " + d.getName() + " ";
+        defaultCreationStatement += "DEFAULT " +
+            d.getExpression().<String>visit(this) +
+            " FOR " +
+            d.getAttribute().getName();
+        return defaultCreationStatement;
+    }
+
+    @Override
+    public String visit(Unique u) {
+        String uniqueCreationStatement = "";
+        if (u.hasName()) uniqueCreationStatement = "CONSTRAINT " + u.getName() + " ";
+        uniqueCreationStatement += "UNIQUE (" +
+            String.join(", ", u.getAttributes().stream().map(Attribute::getName).toList())
+            + ")";
+        return uniqueCreationStatement;
+    }
+
+    @Override
+    public String visit(PrimaryKey pk) {
+        String pkCreationStatement = "";
+        if (pk.hasName()) pkCreationStatement = "CONSTRAINT " + pk.getName() + " ";
+        pkCreationStatement += "PRIMARY KEY (" +
+            String.join(", ", pk.getPkAttributes().stream().map(Attribute::getName).toList())
+            + ")";
+        return pkCreationStatement;
+    }
+
+    @Override
+    public String visit(ForeignKey fk) {
+        String fkCreationStatement = "";
+        if (fk.hasName()) fkCreationStatement = "CONSTRAINT " + fk.getName() + " ";
+        fkCreationStatement += "FOREIGN KEY (" +
+            String.join(", ", fk.getFkAttributes().stream().map(Attribute::getName).toList());
+        fkCreationStatement += ") REFERENCES ("+
+            String.join(", ", fk.getPkReference().stream().map(Attribute::getName).toList())
+            + ")";
+        return fkCreationStatement;
     }
 }

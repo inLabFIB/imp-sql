@@ -22,4 +22,9 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(Table t);
     <T> T visit(SchemaReference sr);
     <T> T visit(Attribute a);
+    <T> T visit(Check c);
+    <T> T visit(Default d);
+    <T> T visit(Unique unique);
+    <T> T visit(PrimaryKey pk);
+    <T> T visit(ForeignKey foreignKey);
 }

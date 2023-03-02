@@ -54,7 +54,7 @@ public class SQLObjectSchema {
         views.add(view);
     }
 
-    public void addSelect(Table table) {
+    public void addTable(Table table) {
         tables.add(table);
     }
 

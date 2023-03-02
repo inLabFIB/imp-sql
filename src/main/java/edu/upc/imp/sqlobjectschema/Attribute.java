@@ -17,13 +17,29 @@ public class Attribute implements SQLObjectSchemaEntity {
     private final String attributeName;
     private final SQLDataType type;
     private final int bytes;
+    private final boolean nullable;
 
-    public Attribute(String attributeName, SQLDataType type, int bytes) {
+    public Attribute(String attributeName, SQLDataType type, int bytes, boolean nullable) {
         this.attributeName = Objects.requireNonNull(attributeName, "The parameter 'attributeName' cannot be null.");
         this.type = Objects.requireNonNull(type, "The parameter 'type' cannot be null.");
         this.bytes = bytes;
+        this.nullable = nullable;
+    }
+    public String getName() {
+        return attributeName;
     }
 
+    public SQLDataType getType() {
+        return type;
+    }
+
+    public int getBytes() {
+        return bytes;
+    }
+
+    public boolean isNotNull() {
+        return !nullable;
+    }
 
     @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
