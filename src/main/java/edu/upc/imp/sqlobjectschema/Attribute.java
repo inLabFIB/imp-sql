@@ -25,6 +25,11 @@ public class Attribute implements SQLObjectSchemaEntity {
         this.bytes = bytes;
         this.nullable = nullable;
     }
+
+    public Attribute(String attributeName, SQLDataType type, int bytes) {
+        this(attributeName, type, bytes, true);
+    }
+
     public String getName() {
         return attributeName;
     }
@@ -39,6 +44,10 @@ public class Attribute implements SQLObjectSchemaEntity {
 
     public boolean isNotNull() {
         return !nullable;
+    }
+
+    public Attribute getNotNullCopy() {
+        return new Attribute(attributeName, type, bytes, false);
     }
 
     @Override

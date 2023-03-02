@@ -1,6 +1,7 @@
 package edu.upc.imp.sqlobjectschema;
 
 public abstract class TableConstraint implements Constraint {
+
     private final String name;
 
     protected TableConstraint(String name) {
