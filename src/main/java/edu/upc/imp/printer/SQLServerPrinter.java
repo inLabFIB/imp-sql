@@ -1,7 +1,10 @@
 package edu.upc.imp.printer;
 
 import edu.upc.imp.sqlobjectschema.*;
+import edu.upc.imp.sqlobjectschema.sql_data_types.*;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
+
+import java.util.List;
 
 @SuppressWarnings("unchecked")
 public class SQLServerPrinter implements SQLObjectSchemaVisitor {
@@ -120,17 +123,17 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
     }
 
     @Override
-    public String visit(SQLInteger i) {
+    public String visit(SQLPrimitiveInteger i) {
         return "" + i.getValue();
     }
 
     @Override
-    public String visit(SQLFloat f) {
+    public String visit(SQLPrimitiveFloat f) {
         return "" + f.getValue();
     }
 
     @Override
-    public String visit(SQLString s) {
+    public String visit(SQLPrimitiveString s) {
         return "'" + s.getValue() + "'";
     }
 
@@ -147,28 +150,31 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(SchemaReference sr) {
-        return sr.getFullReference();
+        // TODO: Check specification, if it is possible to do serverName...tableName, or similar
+        String fullName = "";
+        if (sr.getServerName() != null) fullName += sr.getServerName() + ".";
+        if (sr.getDatabaseName() != null) fullName += sr.getDatabaseName() + ".";
+        else if (sr.getServerName() != null) fullName += ".";
+        fullName += sr.getSchemaName();
+        return fullName;
     }
 
-    //TODO: implement this
     @Override
     public String visit(Table t) {
-        return null;
+        String prefix = "";
+        if (t.getSchemaReference() != null) prefix = t.getSchemaReference().visit(this)+".";
+        List<TableConstraint> tableConstraints = t.getTableConstraints();
+        String constraints = "";
+        if (!tableConstraints.isEmpty()) constraints = ", " +
+            String.join(", ", tableConstraints.stream().map(c -> c.<String>visit(this)).toList());
+        return "CREATE TABLE " + prefix + t.getTableName() + " ( "
+            + String.join(", ", t.getAttributes().stream().map(a -> a.<String>visit(this)).toList())
+            + constraints + " );";
     }
 
-    //TODO: test this
     @Override
     public String visit(Attribute a) {
-        String type = switch (a.getType()) {
-            case CHAR -> " CHAR";
-            case VARCHAR -> " VARCHAR";
-            case BOOL -> " BOOL";
-            case INT -> " INT";
-            case FLOAT -> " FLOAT";
-            case DATE -> " DATETIME2";
-            default -> " " + a.getType().toString();
-        };
-        return a.getName() + type + "(" + a.getBytes() + ")" +
+        return a.getName() + " " + a.getType().<String>visit(this) +
             (a.isNotNull() ? " NOT NULL" : " ");
     }
 
@@ -223,5 +229,53 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
             String.join(", ", fk.getPkReference().stream().map(Attribute::getName).toList())
             + ")";
         return fkCreationStatement;
+    }
+
+    @Override
+    public String visit(SQLChar c) {
+        if (c.getLength() != null) return "CHAR(" + c.getLength() + ")";
+        return "CHAR";
+    }
+
+    @Override
+    public String visit(SQLVarchar v) {
+        return "VARCHAR(" + v.getLength() + ")";
+    }
+
+    @Override
+    public String visit(SQLBit b) {
+        return "BIT";
+    }
+
+    @Override
+    public String visit(SQLInt i) {
+        return "INT";
+    }
+
+    @Override
+    public String visit(SQLSmallint s) {
+        return "SMALLINT";
+    }
+
+    @Override
+    public String visit(SQLFloat f) {
+        if (f.getPrecision() != null) return "FLOAT(" + f.getPrecision() + ")";
+        return "FLOAT";
+    }
+
+    @Override
+    public String visit(SQLReal r) {
+        return "REAL";
+    }
+
+    @Override
+    public String visit(SQLDate d) {
+        if (d.getPrecision() != null) return "DATETIME2(" + d.getPrecision() + ")";
+        return "DATETIME2";
+    }
+
+    @Override
+    public String visit(SQLDoublePrecision dp) {
+        return "DOUBLE PRECISION";
     }
 }

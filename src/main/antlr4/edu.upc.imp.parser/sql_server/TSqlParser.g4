@@ -1518,16 +1518,50 @@ scalar_function_name
     | CHECKSUM
     ;
 
-// https://msdn.microsoft.com/en-us/library/ms187752.aspx
-// TODO: implement runtime check or add new tokens.
 
+// Grammar modified using SQL 92 as reference
+
+//data_type
+//    : scaled=(VARCHAR | NVARCHAR | BINARY_KEYWORD | VARBINARY_KEYWORD | SQUARE_BRACKET_ID) '(' MAX ')'
+//    | ext_type=id_ '(' prec=DECIMAL ',' scale=DECIMAL ')'
+//    | ext_type=id_ '(' prec=DECIMAL ')'
+//    | ext_type=id_ IDENTITY ('(' seed=DECIMAL ',' inc=DECIMAL ')')?
+//    | double_prec=DOUBLE PRECISION?
+//    | unscaled_type=id_
+//    ;
+
+//<character string type> [ CHARACTER SET <character set specification> ] -- for now ignored
+//<inerval ype> -- ignored for now
 data_type
-    : scaled=(VARCHAR | NVARCHAR | BINARY_KEYWORD | VARBINARY_KEYWORD | SQUARE_BRACKET_ID) '(' MAX ')'
-    | ext_type=id_ '(' scale=DECIMAL ',' prec=DECIMAL ')'
-    | ext_type=id_ '(' scale=DECIMAL ')'
-    | ext_type=id_ IDENTITY ('(' seed=DECIMAL ',' inc=DECIMAL ')')?
-    | double_prec=DOUBLE PRECISION?
-    | unscaled_type=id_
+    : CHARACTER ('(' length=DECIMAL ')')?
+    | CHAR ('(' length=DECIMAL ')')?
+    | CHARACTER VARYING '(' length=DECIMAL ')'
+    | CHAR VARYING '(' length=DECIMAL ')'
+    | VARCHAR '(' length=DECIMAL ')'
+
+    | NATIONAL CHARACTER ( '(' length=DECIMAL ')' )?
+    | NATIONAL CHAR ( '(' length=DECIMAL ')' )?
+    | NCHAR ( '(' length=DECIMAL ')' )?
+    | NATIONAL CHARACTER VARYING '(' length=DECIMAL ')'
+    | NATIONAL CHAR VARYING '(' length=DECIMAL ')'
+    | NCHAR VARYING '(' length=DECIMAL ')'
+
+    | BIT ( '(' length=DECIMAL ')' )?
+    | BIT VARYING '(' length=DECIMAL ')'
+
+    | NUMERIC ( '(' prec=DECIMAL ( ',' scale=DECIMAL )? ')' )?
+    | DECIMAL ( '(' prec=DECIMAL ( ',' scale=DECIMAL )? ')' )?
+    | DEC ( '(' prec=DECIMAL ( ',' scale=DECIMAL )? ')' )?
+    | INTEGER
+    | INT
+    | SMALLINT
+    | FLOAT ( '(' prec=DECIMAL ')' )?
+    | REAL
+    | DOUBLE PRECISION
+
+    | DATE
+    | TIME ( '(' time_prec=DECIMAL ')' )? ( WITH TIME ZONE )?
+    | TIMESTAMP ( '(' timestamp_prec=DECIMAL ')' )? ( WITH TIME ZONE )?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms179899.aspx

@@ -2,13 +2,11 @@ package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
-import java.util.Objects;
-
-public class SQLInteger implements PrimitiveConstant {
+public class SQLPrimitiveInteger implements PrimitiveConstant {
 
     private final int value;
 
-    public SQLInteger(int value) {
+    public SQLPrimitiveInteger(int value) {
         this.value = value;
     }
 
@@ -24,7 +22,7 @@ public class SQLInteger implements PrimitiveConstant {
     /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof SQLInteger i
+        return o instanceof SQLPrimitiveInteger i
             && value == i.value;
     }
 }

@@ -1,6 +1,8 @@
 package edu.upc.imp.sqlobjectschema.visitor;
 
 import edu.upc.imp.sqlobjectschema.*;
+import edu.upc.imp.sqlobjectschema.sql_data_types.*;
+import edu.upc.imp.sqlobjectschema.sql_data_types.SQLFloat;
 
 public interface SQLObjectSchemaVisitor {
     <T> T visit(TableExpression te);
@@ -14,9 +16,9 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(View v);
     <T> T visit(NotOperation no);
     <T> T visit(ExistsPredicate ep);
-    <T> T visit(SQLInteger d);
-    <T> T visit(SQLFloat f);
-    <T> T visit(SQLString s);
+    <T> T visit(SQLPrimitiveInteger d);
+    <T> T visit(SQLPrimitiveFloat f);
+    <T> T visit(SQLPrimitiveString s);
     <T> T visit(Asterisk a);
     <T> T visit(AliasableSelectItem asi);
     <T> T visit(Table t);
@@ -24,7 +26,16 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(Attribute a);
     <T> T visit(Check c);
     <T> T visit(Default d);
-    <T> T visit(Unique unique);
+    <T> T visit(Unique u);
     <T> T visit(PrimaryKey pk);
-    <T> T visit(ForeignKey foreignKey);
+    <T> T visit(ForeignKey fk);
+    <T> T visit(SQLChar c);
+    <T> T visit(SQLVarchar v);
+    <T> T visit(SQLBit b);
+    <T> T visit(SQLInt i);
+    <T> T visit(SQLSmallint s);
+    <T> T visit(SQLFloat f);
+    <T> T visit(SQLReal r);
+    <T> T visit(SQLDate d);
+    <T> T visit(SQLDoublePrecision dp);
 }

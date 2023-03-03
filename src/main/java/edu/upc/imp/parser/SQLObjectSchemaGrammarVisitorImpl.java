@@ -4,14 +4,20 @@ import edu.upc.imp.parser.sql_server.TSqlParser;
 import edu.upc.imp.sqlobjectschema.*;
 import edu.upc.imp.parser.sql_server.TSqlParserBaseVisitor;
 import edu.upc.imp.sqlobjectschema.exceptions.MissingReferencedObjectException;
+import edu.upc.imp.sqlobjectschema.sql_data_types.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     private final SQLObjectSchema schema;
+
+    /* STRUCTURES FOR 'CREATE TABLE' STATEMENT PROCESSING */
+    private Attribute attribute = null;
+    private List<Constraint> columnConstraints = new ArrayList<>();
+    private Map<String, Attribute> tableAttributes = new HashMap<>();
+    /* STRUCTURES FOR CREATE TABLE STATEMENT PROCESSING */
+
 
     public SQLObjectSchemaGrammarVisitorImpl(SQLObjectSchema schema) {
         this.schema = schema;
@@ -369,7 +375,14 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     /** TABLE NODES **/
 
-    //TODO: finish this methods
+    public SchemaReference visitTable_name(TSqlParser.Table_nameContext ctx) {
+        //redundant check
+        if (ctx.BLOCKING_HIERARCHY() != null) throw new RuntimeException("Grammar expression (`BLOCKING_HIERARCHY`) not supported yet!");
+
+        if (ctx.schema == null) return null;
+        else if (ctx.database == null) return new SchemaReference(ctx.schema.getText());
+        else return new SchemaReference(ctx.database.getText(), ctx.schema.getText());
+    }
 
     private TableConstraint visitTable_constraint(TSqlParser.Table_constraintContext ctx) {
         if (ctx.CONNECTION() != null) throw new RuntimeException("Grammar expression 'CONNECTION' not supported yet!");
@@ -397,20 +410,31 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         if (ctx.column_index() != null) throw new RuntimeException("Column indexes not supported yet!");
         if (ctx.AS() != null) throw new RuntimeException("Columns defined as expressions not supported yet!");
 
-
+        //search for not nulls
 
         Attribute newAttribute = new Attribute(
             visitId_(ctx.id_()),
-            visitData_type(ctx.data_type()));
+            visitData_type(ctx.data_type()),
+            );
 
-
+        //serach for the rest of column constraints and store in visitor
     }
 
-    private Object visitData_type(TSqlParser.Data_typeContext ctx) {
+    private SQLDataType visitData_type(TSqlParser.Data_typeContext ctx) {
+        if (ctx.VARCHAR() != null) return new SQLVarchar(Integer.parseInt(ctx.length.getText()));
+        else if (ctx.BIT() != null) return ctx.length != null ? new SQLBit(Integer.parseInt(ctx.length.getText())) : new SQLBit();
+        else if (ctx.INT() != null) return new SQLInt();
+        else if (ctx.SMALLINT() != null) return new SQLSmallint();
+        else if (ctx.FLOAT() != null) return  ctx.prec != null ? new SQLFloat(Integer.parseInt(ctx.prec.getText())) : new SQLFloat();
+        else if (ctx.DATE() != null) return new SQLDate();
+        else throw new RuntimeException("Other SQL data types not supported yet!");
+    }
+
+    public TableConstraint visitColumn_Definition_Element(TSqlParser.Column_definition_elementContext ctx) {
         return null;
     }
 
-    public SchemaReference visitTable_name(TSqlParser.Table_nameContext ctx) {
+    public TableConstraint visitColumn_Constraint(TSqlParser.Column_constraintContext ctx) {
         return null;
     }
 
@@ -448,10 +472,10 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     public ValueExpression visitPrimitive_constant(TSqlParser.Primitive_constantContext ctx) {
         if (ctx.STRING() != null) {
             String str = ctx.STRING().getText();
-            return new SQLString(str.substring(1,str.length()-1));
+            return new SQLPrimitiveString(str.substring(1,str.length()-1));
         }
-        else if (ctx.DECIMAL() != null) return new SQLInteger(Integer.parseInt(ctx.DECIMAL().getText()));
-        else if (ctx.FLOAT() != null) return new SQLFloat(Float.parseFloat(ctx.FLOAT().getText()));
+        else if (ctx.DECIMAL() != null) return new SQLPrimitiveInteger(Integer.parseInt(ctx.DECIMAL().getText()));
+        else if (ctx.FLOAT() != null) return new SQLPrimitiveFloat(Float.parseFloat(ctx.FLOAT().getText()));
         else {
             //TODO: V2
             throw new RuntimeException("Grammar expression of other primitive constants not supported yet!");

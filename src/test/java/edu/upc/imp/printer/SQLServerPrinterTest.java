@@ -1,6 +1,5 @@
 package edu.upc.imp.printer;
 
-import edu.upc.imp.parser.SQLObjectSchemaParser;
 import edu.upc.imp.sqlobjectschema.*;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +19,7 @@ class SQLServerPrinterTest {
             "assertionName",
             new NotOperation(new ExistsPredicate(
                 new TableExpression(
-                    List.of(new AliasableSelectItem(new SQLInteger(1))),
+                    List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
                     null, null
                 )
             ))
@@ -38,7 +37,7 @@ class SQLServerPrinterTest {
         View view = new View(
             "viewName", null, List.of("col1"),
             new TableExpression(
-                List.of(new AliasableSelectItem(new SQLInteger(1))),
+                List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
                 null, null
             ));
 
@@ -52,7 +51,7 @@ class SQLServerPrinterTest {
         View view = new View(
             "viewName",
             new TableExpression(
-                List.of(new AliasableSelectItem(new SQLInteger(1))),
+                List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
                 null, null
             ));
 
@@ -74,7 +73,7 @@ class SQLServerPrinterTest {
             new ComparisonPredicate(
                 ComparisonPredicate.ComparisonOperator.EQ,
                 new ColumnReference("pk"),
-                new SQLInteger(1)),
+                new SQLPrimitiveInteger(1)),
             true
         );
 
@@ -98,7 +97,7 @@ class SQLServerPrinterTest {
                 new ColumnReference( new FullTableName("B"),"pk"))),
             new ComparisonPredicate(ComparisonPredicate.ComparisonOperator.EQ,
                 new ColumnReference( new FullTableName("B"),"attr3"),
-                new SQLFloat(1.1f)),
+                new SQLPrimitiveFloat(1.1f)),
             true
         );
 
@@ -126,7 +125,7 @@ class SQLServerPrinterTest {
             new ComparisonPredicate(
                 ComparisonPredicate.ComparisonOperator.EQ,
                 new ColumnReference(null, "a"),
-                new SQLInteger(1)),
+                new SQLPrimitiveInteger(1)),
             true);
 
         String expectedAssertion = "SELECT b AS money, ( SELECT c FROM otherTable ) FROM ( SELECT a, b FROM myTable ) WHERE a = 1;";
@@ -177,21 +176,21 @@ class SQLServerPrinterTest {
                 PredicateOperation.PredicateOperator.AND,
                 new ComparisonPredicate(
                     ComparisonPredicate.ComparisonOperator.EQ,
-                    new SQLInteger(1),
-                    new SQLInteger(0)
+                    new SQLPrimitiveInteger(1),
+                    new SQLPrimitiveInteger(0)
                 ),
                 new PredicateOperation(
                     PredicateOperation.PredicateOperator.AND,
                     new ComparisonPredicate(
                         ComparisonPredicate.ComparisonOperator.EQ,
-                        new SQLString("SQLCommonSense"),
-                        new SQLString("")
+                        new SQLPrimitiveString("SQLCommonSense"),
+                        new SQLPrimitiveString("")
                     ),
                     new NotOperation(new NotOperation(new NotOperation(
                         new ComparisonPredicate(
                             ComparisonPredicate.ComparisonOperator.EQ,
-                            new SQLInteger(0),
-                            new SQLInteger(0)
+                            new SQLPrimitiveInteger(0),
+                            new SQLPrimitiveInteger(0)
                         )
                     )))
                 )

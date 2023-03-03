@@ -37,16 +37,6 @@ public class SchemaReference implements SQLObjectSchemaEntity {
         return schemaName;
     }
 
-    //TODO: should not be implemented? printer should probably do it...
-    public String getFullReference() {
-        // TODO: Check specification, if it is possible to do serverName...tableName, or similar
-        String fullName = "";
-        if (serverName != null) fullName += serverName + ".";
-        if (databaseName != null) fullName += databaseName + ".";
-        fullName += schemaName;
-        return fullName;
-    }
-
     @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);

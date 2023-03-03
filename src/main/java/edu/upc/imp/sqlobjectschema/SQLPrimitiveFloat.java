@@ -2,17 +2,15 @@ package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
-import java.util.Objects;
+public class SQLPrimitiveFloat implements PrimitiveConstant {
 
-public class SQLString implements PrimitiveConstant {
+    private final float value;
 
-    private final String value;
-
-    public SQLString(String value) {
-        this.value = Objects.requireNonNull(value, "The parameter 'value' cannot be null.");
+    public SQLPrimitiveFloat(float value) {
+        this.value = value;
     }
 
-    public String getValue() {
+    public float getValue() {
         return value;
     }
 
@@ -24,7 +22,7 @@ public class SQLString implements PrimitiveConstant {
     /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof SQLString s
-            && value.equals(s.value);
+        return o instanceof SQLPrimitiveFloat f
+            && value == f.value;
     }
 }

@@ -1,19 +1,18 @@
-package edu.upc.imp.sqlobjectschema;
+package edu.upc.imp.sqlobjectschema.sql_data_types;
 
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.Objects;
 
-public class SQLFloat implements PrimitiveConstant {
+public class SQLBit implements SQLDataType {
+    private final Integer length;
 
-    private final float value;
-
-    public SQLFloat(float value) {
-        this.value = value;
+    public SQLBit(){
+        this(null);
     }
 
-    public float getValue() {
-        return value;
+    public SQLBit(Integer length) {
+        this.length = length;
     }
 
     @Override
@@ -24,7 +23,7 @@ public class SQLFloat implements PrimitiveConstant {
     /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof SQLFloat f
-            && value == f.value;
+        return o instanceof SQLBit b
+            && Objects.equals(length, b.length);
     }
 }

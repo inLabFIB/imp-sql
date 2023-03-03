@@ -24,7 +24,7 @@ public class SQLObjectSchemaParserTest {
             "assertionName",
             new NotOperation(new ExistsPredicate(
                 new TableExpression(
-                    List.of(new AliasableSelectItem(new SQLInteger(1))),
+                    List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
                     null, null
                 )
             ))
@@ -50,7 +50,7 @@ public class SQLObjectSchemaParserTest {
             null,
             List.of("col1"),
             new TableExpression(
-                List.of(new AliasableSelectItem(new SQLInteger(1))),
+                List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
                 null, null
             ));
 
@@ -69,7 +69,7 @@ public class SQLObjectSchemaParserTest {
         View expectedView = new View(
             "viewName",
             new TableExpression(
-                List.of(new AliasableSelectItem(new SQLInteger(1))),
+                List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
                 null, null
             ));
 
@@ -96,7 +96,7 @@ public class SQLObjectSchemaParserTest {
             new ComparisonPredicate(
                 ComparisonPredicate.ComparisonOperator.EQ,
                 new ColumnReference("pk"),
-                new SQLInteger(1)),
+                new SQLPrimitiveInteger(1)),
             true
         );
 
@@ -125,7 +125,7 @@ public class SQLObjectSchemaParserTest {
                 new ColumnReference( new FullTableName("B"),"pk"))),
             new ComparisonPredicate(ComparisonPredicate.ComparisonOperator.EQ,
                 new ColumnReference( new FullTableName("B"),"attr3"),
-                new SQLFloat(1.1f)),
+                new SQLPrimitiveFloat(1.1f)),
             true
         );
 
@@ -158,7 +158,7 @@ public class SQLObjectSchemaParserTest {
             new ComparisonPredicate(
                 ComparisonPredicate.ComparisonOperator.EQ,
                 new ColumnReference(null, "a"),
-                new SQLInteger(1)),
+                new SQLPrimitiveInteger(1)),
             true
         );
 
@@ -220,21 +220,21 @@ public class SQLObjectSchemaParserTest {
                 PredicateOperation.PredicateOperator.AND,
                 new ComparisonPredicate(
                     ComparisonPredicate.ComparisonOperator.EQ,
-                    new SQLInteger(1),
-                    new SQLInteger(0)
+                    new SQLPrimitiveInteger(1),
+                    new SQLPrimitiveInteger(0)
                 ),
                 new PredicateOperation(
                     PredicateOperation.PredicateOperator.AND,
                     new ComparisonPredicate(
                         ComparisonPredicate.ComparisonOperator.EQ,
-                        new SQLString("SQLCommonSense"),
-                        new SQLString("")
+                        new SQLPrimitiveString("SQLCommonSense"),
+                        new SQLPrimitiveString("")
                     ),
                     new NotOperation(new NotOperation(new NotOperation(
                         new ComparisonPredicate(
                             ComparisonPredicate.ComparisonOperator.EQ,
-                            new SQLInteger(0),
-                            new SQLInteger(0)
+                            new SQLPrimitiveInteger(0),
+                            new SQLPrimitiveInteger(0)
                         )
                     )))
                 )
