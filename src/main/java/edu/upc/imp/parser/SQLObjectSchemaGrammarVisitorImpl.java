@@ -3,8 +3,15 @@ package edu.upc.imp.parser;
 import edu.upc.imp.parser.sql_server.TSqlParser;
 import edu.upc.imp.sqlobjectschema.*;
 import edu.upc.imp.parser.sql_server.TSqlParserBaseVisitor;
+import edu.upc.imp.sqlobjectschema.boolean_expressions.*;
+import edu.upc.imp.sqlobjectschema.constraints.*;
 import edu.upc.imp.sqlobjectschema.exceptions.MissingReferencedObjectException;
+import edu.upc.imp.sqlobjectschema.relational_expressions.*;
+import edu.upc.imp.sqlobjectschema.selection_expressions.AliasableSelectItem;
+import edu.upc.imp.sqlobjectschema.selection_expressions.Asterisk;
+import edu.upc.imp.sqlobjectschema.selection_expressions.SelectItem;
 import edu.upc.imp.sqlobjectschema.sql_data_types.*;
+import edu.upc.imp.sqlobjectschema.value_expressions.*;
 
 import java.util.*;
 

@@ -1,9 +1,9 @@
 package edu.upc.imp.sqlobjectschema;
 
+import edu.upc.imp.sqlobjectschema.constraints.*;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
-import javax.swing.text.html.HTMLDocument;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

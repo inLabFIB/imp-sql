@@ -1,6 +1,7 @@
 package edu.upc.imp.sqlobjectschema;
 
-import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
+import edu.upc.imp.sqlobjectschema.boolean_expressions.BooleanExpression;
+import edu.upc.imp.sqlobjectschema.constraints.Constraint;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.Objects;

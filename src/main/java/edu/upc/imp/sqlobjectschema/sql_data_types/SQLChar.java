@@ -1,6 +1,5 @@
 package edu.upc.imp.sqlobjectschema.sql_data_types;
 
-import edu.upc.imp.sqlobjectschema.SQLPrimitiveFloat;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.Objects;

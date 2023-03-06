@@ -1,8 +1,23 @@
 package edu.upc.imp.sqlobjectschema.visitor;
 
 import edu.upc.imp.sqlobjectschema.*;
+import edu.upc.imp.sqlobjectschema.boolean_expressions.ComparisonPredicate;
+import edu.upc.imp.sqlobjectschema.boolean_expressions.ExistsPredicate;
+import edu.upc.imp.sqlobjectschema.boolean_expressions.NotOperation;
+import edu.upc.imp.sqlobjectschema.boolean_expressions.PredicateOperation;
+import edu.upc.imp.sqlobjectschema.constraints.*;
+import edu.upc.imp.sqlobjectschema.relational_expressions.CrossJoin;
+import edu.upc.imp.sqlobjectschema.relational_expressions.OnJoin;
+import edu.upc.imp.sqlobjectschema.relational_expressions.TableExpression;
+import edu.upc.imp.sqlobjectschema.relational_expressions.TableReference;
+import edu.upc.imp.sqlobjectschema.selection_expressions.AliasableSelectItem;
+import edu.upc.imp.sqlobjectschema.selection_expressions.Asterisk;
 import edu.upc.imp.sqlobjectschema.sql_data_types.*;
 import edu.upc.imp.sqlobjectschema.sql_data_types.SQLFloat;
+import edu.upc.imp.sqlobjectschema.value_expressions.ColumnReference;
+import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
+import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
+import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveString;
 
 public interface SQLObjectSchemaVisitor {
     <T> T visit(TableExpression te);

@@ -1,7 +1,16 @@
 package edu.upc.imp.printer;
 
 import edu.upc.imp.sqlobjectschema.*;
+import edu.upc.imp.sqlobjectschema.boolean_expressions.*;
+import edu.upc.imp.sqlobjectschema.constraints.*;
+import edu.upc.imp.sqlobjectschema.relational_expressions.*;
+import edu.upc.imp.sqlobjectschema.selection_expressions.AliasableSelectItem;
+import edu.upc.imp.sqlobjectschema.selection_expressions.Asterisk;
 import edu.upc.imp.sqlobjectschema.sql_data_types.*;
+import edu.upc.imp.sqlobjectschema.value_expressions.ColumnReference;
+import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
+import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
+import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveString;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.List;

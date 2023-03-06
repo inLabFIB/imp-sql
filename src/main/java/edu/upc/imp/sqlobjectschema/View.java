@@ -1,5 +1,6 @@
 package edu.upc.imp.sqlobjectschema;
 
+import edu.upc.imp.sqlobjectschema.relational_expressions.Query;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 

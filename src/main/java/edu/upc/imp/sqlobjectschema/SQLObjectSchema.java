@@ -1,11 +1,9 @@
 package edu.upc.imp.sqlobjectschema;
 
-import edu.upc.imp.printer.SQLServerPrinter;
-import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
+import edu.upc.imp.sqlobjectschema.relational_expressions.Query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class SQLObjectSchema {
 
