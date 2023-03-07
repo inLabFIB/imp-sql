@@ -8,6 +8,8 @@ import edu.upc.imp.sqlobjectschema.boolean_expressions.PredicateOperation;
 import edu.upc.imp.sqlobjectschema.relational_expressions.*;
 import edu.upc.imp.sqlobjectschema.selection_expressions.AliasableSelectItem;
 import edu.upc.imp.sqlobjectschema.selection_expressions.Asterisk;
+import edu.upc.imp.sqlobjectschema.sql_data_types.SQLFloat;
+import edu.upc.imp.sqlobjectschema.sql_data_types.SQLInt;
 import edu.upc.imp.sqlobjectschema.value_expressions.ColumnReference;
 import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
 import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
@@ -19,6 +21,28 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class SQLObjectSchemaParserTest {
+
+    /** TABLES **/
+
+    @Test
+    public void parseSimpleCreateTable() {
+        // Object parsed from input string
+        String basicCreateTable = "CREATE TABLE name (col1 int, col2 float);";
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicCreateTable);
+        parser.parse();
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        // Object built directly in java
+        Table expectedTable = new Table(
+            "name",
+            List.of(
+                new Attribute("col1", new SQLInt()),
+                new Attribute("col2", new SQLFloat()))
+        );
+
+        assertThat("Parsed assertion does not equal expected assertion",
+            schema.getTables().get(0).equals(expectedTable));
+    }
 
     /** ASSERTIONS **/
 
@@ -87,173 +111,175 @@ public class SQLObjectSchemaParserTest {
         assertThat("Parsed view does not equal expected view", schema.getViews().get(0).equals(expectedView));
     }
 
+
+    //TODO: remove tests, and change them with view tests
     /** SELECTS **/
 
     //SIMPLE SELECT
-    @Test
-    public void parseSelectStatement() {
-        // Object parsed from input string
-        String basicSelect = "SELECT pk, attr FROM myTable WHERE pk = 1;";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicSelect);
-        parser.parse();
-        SQLObjectSchema schema = parser.getSQLObjectSchema();
-
-        // Object built directly in java
-        Query expectedSelect = new TableExpression(
-            List.of(
-                new AliasableSelectItem(new ColumnReference("pk")),
-                new AliasableSelectItem(new ColumnReference("attr"))),
-            new TableReference(new FullTableName("myTable")),
-            new ComparisonPredicate(
-                ComparisonPredicate.ComparisonOperator.EQ,
-                new ColumnReference("pk"),
-                new SQLPrimitiveInteger(1)),
-            true
-        );
-
-        assertThat("Parsed query does not equal expected query", schema.getSelects().get(0).equals(expectedSelect));
-    }
-
-    //JOINS
-    @Test
-    public void parseSelectWithJoinClause() {
-        // Object parsed from input string
-        String selectWithJoin = "SELECT A.attr1, B.attr2 FROM sameSchema.A INNER JOIN sameSchema.B ON (A.fk = B.pk) WHERE B.attr3 = 1.1;";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(selectWithJoin);
-        parser.parse();
-        SQLObjectSchema schema = parser.getSQLObjectSchema();
-
-        // Object built directly in java
-        Query expectedSelect = new TableExpression(
-            List.of(
-                new AliasableSelectItem(new ColumnReference(new FullTableName("A"),"attr1")),
-                new AliasableSelectItem(new ColumnReference(new FullTableName("B"),"attr2"))
-            ), new OnJoin(OnJoin.JoinOperator.INNER,
-            new TableReference(new FullTableName("sameSchema", "A")),
-            new TableReference(new FullTableName("sameSchema", "B")),
-            new ComparisonPredicate(ComparisonPredicate.ComparisonOperator.EQ,
-                new ColumnReference( new FullTableName("A"),"fk"),
-                new ColumnReference( new FullTableName("B"),"pk"))),
-            new ComparisonPredicate(ComparisonPredicate.ComparisonOperator.EQ,
-                new ColumnReference( new FullTableName("B"),"attr3"),
-                new SQLPrimitiveFloat(1.1f)),
-            true
-        );
-
-        assertThat("Parsed query does not equal expected query", schema.getSelects().get(0).equals(expectedSelect));
-    }
-
-    //SELECT WITH RECURSIVE SELECT
-    @Test
-    public void parseSelectWithRecursiveSelectAndFrom() {
-        // Object parsed from input string
-        String basicSelect = "SELECT b AS money, (SELECT c FROM otherTable) FROM (SELECT a, b FROM myTable) WHERE a = 1;";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicSelect);
-        parser.parse();
-        SQLObjectSchema schema = parser.getSQLObjectSchema();
-
-        // Object built directly in java
-        Query expectedSelect = new TableExpression(
-            List.of(
-                new AliasableSelectItem(new ColumnReference("b"), "money"),
-                new AliasableSelectItem(
-                    new TableExpression(
-                        List.of(new AliasableSelectItem(new ColumnReference("c"))),
-                        new TableReference(new FullTableName("otherTable")),null))),
-            new TableExpression(
-                List.of(
-                    new AliasableSelectItem(new ColumnReference("a")),
-                    new AliasableSelectItem(new ColumnReference("b"))),
-                new TableReference(new FullTableName("myTable")),
-                null),
-            new ComparisonPredicate(
-                ComparisonPredicate.ComparisonOperator.EQ,
-                new ColumnReference(null, "a"),
-                new SQLPrimitiveInteger(1)),
-            true
-        );
-
-        assertThat("Parsed query does not equal expected query", schema.getSelects().get(0).equals(expectedSelect));
-    }
-
-    //MULTIPLE JOINS (check priority)
-    @Test
-    public void parseSelectWithMultipleJoinClausesOfPriority() {
-        // Object parsed from input string
-        String selectWithJoins = "SELECT * FROM A, B INNER JOIN C ON (B.fk = C.pk), (D CROSS JOIN E);";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(selectWithJoins);
-        parser.parse();
-        SQLObjectSchema schema = parser.getSQLObjectSchema();
-
-        // Object built directly in java
-        Query expectedSelect = new TableExpression(
-            List.of(new Asterisk()),
-            new CrossJoin(
-                new CrossJoin(
-                    new TableReference(new FullTableName("A")),
-                    new OnJoin(
-                        OnJoin.JoinOperator.INNER,
-                        new TableReference(new FullTableName("B")),
-                        new TableReference(new FullTableName( "C")),
-                        new ComparisonPredicate(
-                            ComparisonPredicate.ComparisonOperator.EQ,
-                            new ColumnReference( new FullTableName("B"),"fk"),
-                            new ColumnReference( new FullTableName("C"),"pk")
-                        )
-                    )
-                ),
-                new CrossJoin(
-                    new TableReference(new FullTableName("D")),
-                    new TableReference(new FullTableName("E"))
-                )
-            ),
-            null,
-            true
-        );
-
-        assertThat("Parsed query does not equal expected query", schema.getSelects().get(0).equals(expectedSelect));
-    }
-
-    //PREDICATES (not and,...)
-    @Test
-    public void parseSelectStatementWithComplexPredicate() {
-        // Object parsed from input string
-        String basicSelect = "SELECT *, * FROM myTable WHERE 1 = 0 AND ('SQLCommonSense' = '' AND NOT NOT (NOT 0 = 0));";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicSelect);
-        parser.parse();
-        SQLObjectSchema schema = parser.getSQLObjectSchema();
-
-        // Object built directly in java
-        Query expectedSelect = new TableExpression(
-            List.of(new Asterisk(), new Asterisk()),
-            new TableReference(new FullTableName("myTable")),
-            new PredicateOperation(
-                PredicateOperation.PredicateOperator.AND,
-                new ComparisonPredicate(
-                    ComparisonPredicate.ComparisonOperator.EQ,
-                    new SQLPrimitiveInteger(1),
-                    new SQLPrimitiveInteger(0)
-                ),
-                new PredicateOperation(
-                    PredicateOperation.PredicateOperator.AND,
-                    new ComparisonPredicate(
-                        ComparisonPredicate.ComparisonOperator.EQ,
-                        new SQLPrimitiveString("SQLCommonSense"),
-                        new SQLPrimitiveString("")
-                    ),
-                    new NotOperation(new NotOperation(new NotOperation(
-                        new ComparisonPredicate(
-                            ComparisonPredicate.ComparisonOperator.EQ,
-                            new SQLPrimitiveInteger(0),
-                            new SQLPrimitiveInteger(0)
-                        )
-                    )))
-                )
-            ),
-            true
-        );
-
-        assertThat("Parsed query does not equal expected query", schema.getSelects().get(0).equals(expectedSelect));
-    }
+//    @Test
+//    public void parseSelectStatement() {
+//        // Object parsed from input string
+//        String basicSelect = "SELECT pk, attr FROM myTable WHERE pk = 1;";
+//        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicSelect);
+//        parser.parse();
+//        SQLObjectSchema schema = parser.getSQLObjectSchema();
+//
+//        // Object built directly in java
+//        Query expectedSelect = new TableExpression(
+//            List.of(
+//                new AliasableSelectItem(new ColumnReference("pk")),
+//                new AliasableSelectItem(new ColumnReference("attr"))),
+//            new TableReference(new FullTableName("myTable")),
+//            new ComparisonPredicate(
+//                ComparisonPredicate.ComparisonOperator.EQ,
+//                new ColumnReference("pk"),
+//                new SQLPrimitiveInteger(1)),
+//            true
+//        );
+//
+//        assertThat("Parsed query does not equal expected query", schema.getSelects().get(0).equals(expectedSelect));
+//    }
+//
+//    //JOINS
+//    @Test
+//    public void parseSelectWithJoinClause() {
+//        // Object parsed from input string
+//        String selectWithJoin = "SELECT A.attr1, B.attr2 FROM sameSchema.A INNER JOIN sameSchema.B ON (A.fk = B.pk) WHERE B.attr3 = 1.1;";
+//        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(selectWithJoin);
+//        parser.parse();
+//        SQLObjectSchema schema = parser.getSQLObjectSchema();
+//
+//        // Object built directly in java
+//        Query expectedSelect = new TableExpression(
+//            List.of(
+//                new AliasableSelectItem(new ColumnReference(new FullTableName("A"),"attr1")),
+//                new AliasableSelectItem(new ColumnReference(new FullTableName("B"),"attr2"))
+//            ), new OnJoin(OnJoin.JoinOperator.INNER,
+//            new TableReference(new FullTableName("sameSchema", "A")),
+//            new TableReference(new FullTableName("sameSchema", "B")),
+//            new ComparisonPredicate(ComparisonPredicate.ComparisonOperator.EQ,
+//                new ColumnReference( new FullTableName("A"),"fk"),
+//                new ColumnReference( new FullTableName("B"),"pk"))),
+//            new ComparisonPredicate(ComparisonPredicate.ComparisonOperator.EQ,
+//                new ColumnReference( new FullTableName("B"),"attr3"),
+//                new SQLPrimitiveFloat(1.1f)),
+//            true
+//        );
+//
+//        assertThat("Parsed query does not equal expected query", schema.getSelects().get(0).equals(expectedSelect));
+//    }
+//
+//    //SELECT WITH RECURSIVE SELECT
+//    @Test
+//    public void parseSelectWithRecursiveSelectAndFrom() {
+//        // Object parsed from input string
+//        String basicSelect = "SELECT b AS money, (SELECT c FROM otherTable) FROM (SELECT a, b FROM myTable) WHERE a = 1;";
+//        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicSelect);
+//        parser.parse();
+//        SQLObjectSchema schema = parser.getSQLObjectSchema();
+//
+//        // Object built directly in java
+//        Query expectedSelect = new TableExpression(
+//            List.of(
+//                new AliasableSelectItem(new ColumnReference("b"), "money"),
+//                new AliasableSelectItem(
+//                    new TableExpression(
+//                        List.of(new AliasableSelectItem(new ColumnReference("c"))),
+//                        new TableReference(new FullTableName("otherTable")),null))),
+//            new TableExpression(
+//                List.of(
+//                    new AliasableSelectItem(new ColumnReference("a")),
+//                    new AliasableSelectItem(new ColumnReference("b"))),
+//                new TableReference(new FullTableName("myTable")),
+//                null),
+//            new ComparisonPredicate(
+//                ComparisonPredicate.ComparisonOperator.EQ,
+//                new ColumnReference(null, "a"),
+//                new SQLPrimitiveInteger(1)),
+//            true
+//        );
+//
+//        assertThat("Parsed query does not equal expected query", schema.getSelects().get(0).equals(expectedSelect));
+//    }
+//
+//    //MULTIPLE JOINS (check priority)
+//    @Test
+//    public void parseSelectWithMultipleJoinClausesOfPriority() {
+//        // Object parsed from input string
+//        String selectWithJoins = "SELECT * FROM A, B INNER JOIN C ON (B.fk = C.pk), (D CROSS JOIN E);";
+//        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(selectWithJoins);
+//        parser.parse();
+//        SQLObjectSchema schema = parser.getSQLObjectSchema();
+//
+//        // Object built directly in java
+//        Query expectedSelect = new TableExpression(
+//            List.of(new Asterisk()),
+//            new CrossJoin(
+//                new CrossJoin(
+//                    new TableReference(new FullTableName("A")),
+//                    new OnJoin(
+//                        OnJoin.JoinOperator.INNER,
+//                        new TableReference(new FullTableName("B")),
+//                        new TableReference(new FullTableName( "C")),
+//                        new ComparisonPredicate(
+//                            ComparisonPredicate.ComparisonOperator.EQ,
+//                            new ColumnReference( new FullTableName("B"),"fk"),
+//                            new ColumnReference( new FullTableName("C"),"pk")
+//                        )
+//                    )
+//                ),
+//                new CrossJoin(
+//                    new TableReference(new FullTableName("D")),
+//                    new TableReference(new FullTableName("E"))
+//                )
+//            ),
+//            null,
+//            true
+//        );
+//
+//        assertThat("Parsed query does not equal expected query", schema.getSelects().get(0).equals(expectedSelect));
+//    }
+//
+//    //PREDICATES (not and,...)
+//    @Test
+//    public void parseSelectStatementWithComplexPredicate() {
+//        // Object parsed from input string
+//        String basicSelect = "SELECT *, * FROM myTable WHERE 1 = 0 AND ('SQLCommonSense' = '' AND NOT NOT (NOT 0 = 0));";
+//        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicSelect);
+//        parser.parse();
+//        SQLObjectSchema schema = parser.getSQLObjectSchema();
+//
+//        // Object built directly in java
+//        Query expectedSelect = new TableExpression(
+//            List.of(new Asterisk(), new Asterisk()),
+//            new TableReference(new FullTableName("myTable")),
+//            new PredicateOperation(
+//                PredicateOperation.PredicateOperator.AND,
+//                new ComparisonPredicate(
+//                    ComparisonPredicate.ComparisonOperator.EQ,
+//                    new SQLPrimitiveInteger(1),
+//                    new SQLPrimitiveInteger(0)
+//                ),
+//                new PredicateOperation(
+//                    PredicateOperation.PredicateOperator.AND,
+//                    new ComparisonPredicate(
+//                        ComparisonPredicate.ComparisonOperator.EQ,
+//                        new SQLPrimitiveString("SQLCommonSense"),
+//                        new SQLPrimitiveString("")
+//                    ),
+//                    new NotOperation(new NotOperation(new NotOperation(
+//                        new ComparisonPredicate(
+//                            ComparisonPredicate.ComparisonOperator.EQ,
+//                            new SQLPrimitiveInteger(0),
+//                            new SQLPrimitiveInteger(0)
+//                        )
+//                    )))
+//                )
+//            ),
+//            true
+//        );
+//
+//        assertThat("Parsed query does not equal expected query", schema.getSelects().get(0).equals(expectedSelect));
+//    }
 
 }

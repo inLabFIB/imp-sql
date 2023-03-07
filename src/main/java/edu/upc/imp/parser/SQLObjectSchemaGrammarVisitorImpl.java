@@ -84,8 +84,8 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         if (!ctx.table_indices().isEmpty()) throw new RuntimeException("Table indices not supported yet!");
         if (ctx.LOCK() != null) throw new RuntimeException("Grammar expression (`LOCK`) not supported yet!");
         if (!ctx.table_options().isEmpty()) throw new RuntimeException("Table options not supported yet!");
-        if (ctx.ON() != null || ctx.DEFAULT() != null) throw new RuntimeException("Table options not supported yet!");
-        if (ctx.TEXTIMAGE_ON() != null || ctx.DEFAULT() != null) throw new RuntimeException("Grammar expression (`TEXTIMAGE_ON`) not supported yet!");
+        if (ctx.ON() != null || !ctx.DEFAULT().isEmpty()) throw new RuntimeException("Table options not supported yet!");
+        if (ctx.TEXTIMAGE_ON() != null || !ctx.DEFAULT().isEmpty()) throw new RuntimeException("Grammar expression (`TEXTIMAGE_ON`) not supported yet!");
 
         TableBuilder tableBuilder = new TableBuilder(
             visitId_(ctx.table_name().table),
@@ -386,7 +386,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         else if (ctx.BIT() != null) return ctx.length != null ? new SQLBit(Integer.parseInt(ctx.length.getText())) : new SQLBit();
         else if (ctx.INT() != null) return new SQLInt();
         else if (ctx.SMALLINT() != null) return new SQLSmallint();
-        else if (ctx.FLOAT() != null) return  ctx.prec != null ? new SQLFloat(Integer.parseInt(ctx.prec.getText())) : new SQLFloat();
+        else if (ctx.FLOAT_() != null) return  ctx.prec != null ? new SQLFloat(Integer.parseInt(ctx.prec.getText())) : new SQLFloat();
         else if (ctx.DATE() != null) return new SQLDate();
         else throw new RuntimeException("Other SQL data types not supported yet!");
     }

@@ -21,6 +21,8 @@ import static org.hamcrest.Matchers.is;
 
 class SQLServerPrinterTest {
 
+    /** TABLE **/
+
     /** ASSERTIONS **/
 
     @Test
@@ -72,144 +74,144 @@ class SQLServerPrinterTest {
 
     /** SELECTS **/
 
-    //SIMPLE SELECT
-    @Test
-    public void parseSelectStatement() {
-        // Object built directly in java
-        Query select = new TableExpression(
-            List.of(
-                new AliasableSelectItem(new ColumnReference("pk")),
-                new AliasableSelectItem(new ColumnReference("attr"))),
-            new TableReference(new FullTableName("myTable")),
-            new ComparisonPredicate(
-                ComparisonPredicate.ComparisonOperator.EQ,
-                new ColumnReference("pk"),
-                new SQLPrimitiveInteger(1)),
-            true
-        );
-
-        String expectedAssertion = "SELECT pk, attr FROM myTable WHERE pk = 1;";
-        assertThat(select.visit(new SQLServerPrinter()), is(expectedAssertion));
-    }
-
-    //JOINS
-    @Test
-    public void parseSelectWithJoinClause() {
-        // Object built directly in java
-        Query select = new TableExpression(
-            List.of(
-                new AliasableSelectItem(new ColumnReference(new FullTableName("A"),"attr1")),
-                new AliasableSelectItem(new ColumnReference(new FullTableName("B"),"attr2"))
-            ), new OnJoin(OnJoin.JoinOperator.INNER,
-            new TableReference(new FullTableName("sameSchema", "A")),
-            new TableReference(new FullTableName("sameSchema", "B")),
-            new ComparisonPredicate(ComparisonPredicate.ComparisonOperator.EQ,
-                new ColumnReference( new FullTableName("A"),"fk"),
-                new ColumnReference( new FullTableName("B"),"pk"))),
-            new ComparisonPredicate(ComparisonPredicate.ComparisonOperator.EQ,
-                new ColumnReference( new FullTableName("B"),"attr3"),
-                new SQLPrimitiveFloat(1.1f)),
-            true
-        );
-
-        String expectedSelect = "SELECT A.attr1, B.attr2 FROM sameSchema.A INNER JOIN sameSchema.B ON ( A.fk = B.pk ) WHERE B.attr3 = 1.1;";
-        assertThat(select.visit(new SQLServerPrinter()), is(expectedSelect));
-    }
-
-    //SELECT WITH RECURSIVE SELECT
-    @Test
-    public void parseSelectWithRecursiveSelectAndFrom() {
-        // Object built directly in java
-        Query select = new TableExpression(
-            List.of(
-                new AliasableSelectItem(new ColumnReference("b"), "money"),
-                new AliasableSelectItem(
-                    new TableExpression(
-                        List.of(new AliasableSelectItem(new ColumnReference("c"))),
-                        new TableReference(new FullTableName("otherTable")),null))),
-            new TableExpression(
-                List.of(
-                    new AliasableSelectItem(new ColumnReference("a")),
-                    new AliasableSelectItem(new ColumnReference("b"))),
-                new TableReference(new FullTableName("myTable")),
-                null),
-            new ComparisonPredicate(
-                ComparisonPredicate.ComparisonOperator.EQ,
-                new ColumnReference(null, "a"),
-                new SQLPrimitiveInteger(1)),
-            true);
-
-        String expectedAssertion = "SELECT b AS money, ( SELECT c FROM otherTable ) FROM ( SELECT a, b FROM myTable ) WHERE a = 1;";
-        assertThat(select.visit(new SQLServerPrinter()), is(expectedAssertion));
-    }
-
-    //MULTIPLE JOINS (check priority)
-    @Test
-    public void parseSelectWithMultipleJoinClausesOfPriority() {
-        // Object built directly in java
-        Query select = new TableExpression(
-            List.of(new Asterisk()),
-            new CrossJoin(
-                new CrossJoin(
-                    new TableReference(new FullTableName("A")),
-                    new OnJoin(
-                        OnJoin.JoinOperator.INNER,
-                        new TableReference(new FullTableName("B")),
-                        new TableReference(new FullTableName( "C")),
-                        new ComparisonPredicate(
-                            ComparisonPredicate.ComparisonOperator.EQ,
-                            new ColumnReference( new FullTableName("B"),"fk"),
-                            new ColumnReference( new FullTableName("C"),"pk")
-                        )
-                    )
-                ),
-                new CrossJoin(
-                    new TableReference(new FullTableName("D")),
-                    new TableReference(new FullTableName("E"))
-                )
-            ),
-            null,
-            true
-        );
-
-        String expectedSelect = "SELECT * FROM A CROSS JOIN B INNER JOIN C ON ( B.fk = C.pk ) CROSS JOIN ( D CROSS JOIN E );";
-        assertThat(select.visit(new SQLServerPrinter()), is(expectedSelect));
-    }
-
-    //PREDICATES (not and,...)
-    @Test
-    public void parseSelectStatementWithComplexPredicate() {
-        // Object built directly in java
-        Query select = new TableExpression(
-            List.of(new Asterisk(), new Asterisk()),
-            new TableReference(new FullTableName("myTable")),
-            new PredicateOperation(
-                PredicateOperation.PredicateOperator.AND,
-                new ComparisonPredicate(
-                    ComparisonPredicate.ComparisonOperator.EQ,
-                    new SQLPrimitiveInteger(1),
-                    new SQLPrimitiveInteger(0)
-                ),
-                new PredicateOperation(
-                    PredicateOperation.PredicateOperator.AND,
-                    new ComparisonPredicate(
-                        ComparisonPredicate.ComparisonOperator.EQ,
-                        new SQLPrimitiveString("SQLCommonSense"),
-                        new SQLPrimitiveString("")
-                    ),
-                    new NotOperation(new NotOperation(new NotOperation(
-                        new ComparisonPredicate(
-                            ComparisonPredicate.ComparisonOperator.EQ,
-                            new SQLPrimitiveInteger(0),
-                            new SQLPrimitiveInteger(0)
-                        )
-                    )))
-                )
-            ),
-            true
-        );
-
-        String expectedSelect = "SELECT *, * FROM myTable WHERE 1 = 0 AND 'SQLCommonSense' = '' AND NOT ( NOT ( NOT ( 0 = 0 ) ) );";
-        assertThat(select.visit(new SQLServerPrinter()), is(expectedSelect));
-    }
+//    //SIMPLE SELECT
+//    @Test
+//    public void parseSelectStatement() {
+//        // Object built directly in java
+//        Query select = new TableExpression(
+//            List.of(
+//                new AliasableSelectItem(new ColumnReference("pk")),
+//                new AliasableSelectItem(new ColumnReference("attr"))),
+//            new TableReference(new FullTableName("myTable")),
+//            new ComparisonPredicate(
+//                ComparisonPredicate.ComparisonOperator.EQ,
+//                new ColumnReference("pk"),
+//                new SQLPrimitiveInteger(1)),
+//            true
+//        );
+//
+//        String expectedAssertion = "SELECT pk, attr FROM myTable WHERE pk = 1;";
+//        assertThat(select.visit(new SQLServerPrinter()), is(expectedAssertion));
+//    }
+//
+//    //JOINS
+//    @Test
+//    public void parseSelectWithJoinClause() {
+//        // Object built directly in java
+//        Query select = new TableExpression(
+//            List.of(
+//                new AliasableSelectItem(new ColumnReference(new FullTableName("A"),"attr1")),
+//                new AliasableSelectItem(new ColumnReference(new FullTableName("B"),"attr2"))
+//            ), new OnJoin(OnJoin.JoinOperator.INNER,
+//            new TableReference(new FullTableName("sameSchema", "A")),
+//            new TableReference(new FullTableName("sameSchema", "B")),
+//            new ComparisonPredicate(ComparisonPredicate.ComparisonOperator.EQ,
+//                new ColumnReference( new FullTableName("A"),"fk"),
+//                new ColumnReference( new FullTableName("B"),"pk"))),
+//            new ComparisonPredicate(ComparisonPredicate.ComparisonOperator.EQ,
+//                new ColumnReference( new FullTableName("B"),"attr3"),
+//                new SQLPrimitiveFloat(1.1f)),
+//            true
+//        );
+//
+//        String expectedSelect = "SELECT A.attr1, B.attr2 FROM sameSchema.A INNER JOIN sameSchema.B ON ( A.fk = B.pk ) WHERE B.attr3 = 1.1;";
+//        assertThat(select.visit(new SQLServerPrinter()), is(expectedSelect));
+//    }
+//
+//    //SELECT WITH RECURSIVE SELECT
+//    @Test
+//    public void parseSelectWithRecursiveSelectAndFrom() {
+//        // Object built directly in java
+//        Query select = new TableExpression(
+//            List.of(
+//                new AliasableSelectItem(new ColumnReference("b"), "money"),
+//                new AliasableSelectItem(
+//                    new TableExpression(
+//                        List.of(new AliasableSelectItem(new ColumnReference("c"))),
+//                        new TableReference(new FullTableName("otherTable")),null))),
+//            new TableExpression(
+//                List.of(
+//                    new AliasableSelectItem(new ColumnReference("a")),
+//                    new AliasableSelectItem(new ColumnReference("b"))),
+//                new TableReference(new FullTableName("myTable")),
+//                null),
+//            new ComparisonPredicate(
+//                ComparisonPredicate.ComparisonOperator.EQ,
+//                new ColumnReference(null, "a"),
+//                new SQLPrimitiveInteger(1)),
+//            true);
+//
+//        String expectedAssertion = "SELECT b AS money, ( SELECT c FROM otherTable ) FROM ( SELECT a, b FROM myTable ) WHERE a = 1;";
+//        assertThat(select.visit(new SQLServerPrinter()), is(expectedAssertion));
+//    }
+//
+//    //MULTIPLE JOINS (check priority)
+//    @Test
+//    public void parseSelectWithMultipleJoinClausesOfPriority() {
+//        // Object built directly in java
+//        Query select = new TableExpression(
+//            List.of(new Asterisk()),
+//            new CrossJoin(
+//                new CrossJoin(
+//                    new TableReference(new FullTableName("A")),
+//                    new OnJoin(
+//                        OnJoin.JoinOperator.INNER,
+//                        new TableReference(new FullTableName("B")),
+//                        new TableReference(new FullTableName( "C")),
+//                        new ComparisonPredicate(
+//                            ComparisonPredicate.ComparisonOperator.EQ,
+//                            new ColumnReference( new FullTableName("B"),"fk"),
+//                            new ColumnReference( new FullTableName("C"),"pk")
+//                        )
+//                    )
+//                ),
+//                new CrossJoin(
+//                    new TableReference(new FullTableName("D")),
+//                    new TableReference(new FullTableName("E"))
+//                )
+//            ),
+//            null,
+//            true
+//        );
+//
+//        String expectedSelect = "SELECT * FROM A CROSS JOIN B INNER JOIN C ON ( B.fk = C.pk ) CROSS JOIN ( D CROSS JOIN E );";
+//        assertThat(select.visit(new SQLServerPrinter()), is(expectedSelect));
+//    }
+//
+//    //PREDICATES (not and,...)
+//    @Test
+//    public void parseSelectStatementWithComplexPredicate() {
+//        // Object built directly in java
+//        Query select = new TableExpression(
+//            List.of(new Asterisk(), new Asterisk()),
+//            new TableReference(new FullTableName("myTable")),
+//            new PredicateOperation(
+//                PredicateOperation.PredicateOperator.AND,
+//                new ComparisonPredicate(
+//                    ComparisonPredicate.ComparisonOperator.EQ,
+//                    new SQLPrimitiveInteger(1),
+//                    new SQLPrimitiveInteger(0)
+//                ),
+//                new PredicateOperation(
+//                    PredicateOperation.PredicateOperator.AND,
+//                    new ComparisonPredicate(
+//                        ComparisonPredicate.ComparisonOperator.EQ,
+//                        new SQLPrimitiveString("SQLCommonSense"),
+//                        new SQLPrimitiveString("")
+//                    ),
+//                    new NotOperation(new NotOperation(new NotOperation(
+//                        new ComparisonPredicate(
+//                            ComparisonPredicate.ComparisonOperator.EQ,
+//                            new SQLPrimitiveInteger(0),
+//                            new SQLPrimitiveInteger(0)
+//                        )
+//                    )))
+//                )
+//            ),
+//            true
+//        );
+//
+//        String expectedSelect = "SELECT *, * FROM myTable WHERE 1 = 0 AND 'SQLCommonSense' = '' AND NOT ( NOT ( NOT ( 0 = 0 ) ) );";
+//        assertThat(select.visit(new SQLServerPrinter()), is(expectedSelect));
+//    }
 }

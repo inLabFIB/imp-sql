@@ -1550,13 +1550,13 @@ data_type
     | BIT VARYING '(' length=DECIMAL ')'
 
     | NUMERIC ( '(' prec=DECIMAL ( ',' scale=DECIMAL )? ')' )?
-    | DECIMAL ( '(' prec=DECIMAL ( ',' scale=DECIMAL )? ')' )?
-    | DEC ( '(' prec=DECIMAL ( ',' scale=DECIMAL )? ')' )?
+    | DECIMAL_ ( '(' prec=DECIMAL ( ',' scale=DECIMAL )? ')' )?
+    | DEC_ ( '(' prec=DECIMAL ( ',' scale=DECIMAL )? ')' )?
     | INTEGER
     | INT
     | SMALLINT
-    | FLOAT ( '(' prec=DECIMAL ')' )?
-    | REAL
+    | FLOAT_ ( '(' prec=DECIMAL ')' )?
+    | REAL_
     | DOUBLE PRECISION
 
     | DATE

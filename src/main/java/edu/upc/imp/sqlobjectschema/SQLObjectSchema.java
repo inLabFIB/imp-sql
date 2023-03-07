@@ -79,6 +79,7 @@ public class SQLObjectSchema {
         return o instanceof SQLObjectSchema os
             && assertions.equals(os.assertions)
             && views.equals(os.views)
-            && selects.equals(os.selects);
+            && selects.equals(os.selects)
+            && tables.equals(os.tables);
     }
 }

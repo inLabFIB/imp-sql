@@ -29,6 +29,32 @@ lexer grammar TSqlLexer;
 
 options { caseInsensitive = true; }
 
+
+// added types for SQL DataTypes
+
+CHARACTER:                             'CHARACTER';
+//CHAR
+//VARCHAR
+//VARYING
+//NATIONAL
+BIT:                                   'BIT';
+NUMERIC:                               'NUMERIC';
+DECIMAL_:                              'DECIMAL';
+DEC_:                                  'DEC';
+INTEGER:                               'INTEGER';
+//INT
+//SMALLINT
+FLOAT_:                                'FLOAT';
+REAL_:                                 'REAL';
+//DOUBLE
+//PRECISION
+DATE:                                  'DATE';
+TIMESTAMP:                             'TIMESTAMP';
+//WITH
+//TIME
+//ZONE
+
+
 ADD:                                   'ADD';
 ALL:                                   'ALL';
 ALTER:                                 'ALTER';

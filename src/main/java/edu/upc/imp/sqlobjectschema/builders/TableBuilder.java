@@ -16,6 +16,7 @@ public class TableBuilder {
     private String tableName = null;
     private SchemaReference schemaReference = null;
 
+    //FIXME: order of attributes lost in map? check parser table test
     private final Map<String, ProvisionalAttribute> provisionalAttributeMap = new HashMap<>();
 
     private final List<Check> checks = new ArrayList<>();
