@@ -156,13 +156,6 @@ column_name_list_with_order
     : id_ (ASC | DESC)? (',' id_ (ASC | DESC)?)*
     ;
 
-primary_key_options
-    :
-        (WITH FILLFACTOR '=' DECIMAL)?
-        alter_table_index_options?
-        on_partition_or_filegroup?
-    ;
-
 alter_table_index_options
     : WITH '(' alter_table_index_option (',' alter_table_index_option)* ')'
     ;
@@ -219,13 +212,6 @@ on_partition_or_filegroup
         )
     ;
 
-foreign_key_options
-    :
-        REFERENCES table_name '(' pk = column_name_list')'
-        on_delete?
-        on_update?
-        (NOT FOR REPLICATION)?
-    ;
 
 on_delete
     : ON DELETE (NO ACTION | CASCADE | SET NULL_ | SET DEFAULT)
@@ -324,6 +310,20 @@ column_constraint
       )
     ;
 
+primary_key_options
+    :
+        (WITH FILLFACTOR '=' DECIMAL)?
+        alter_table_index_options?
+        on_partition_or_filegroup?
+    ;
+
+foreign_key_options
+    :
+        REFERENCES table_name '(' pk = column_name_list')'
+        on_delete?
+        on_update?
+        (NOT FOR REPLICATION)?
+    ;
 
 table_indices
     : INDEX id_  UNIQUE? clustered? '(' column_name_list_with_order ')'

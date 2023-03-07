@@ -1,6 +1,7 @@
 package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.constraints.*;
+import edu.upc.imp.sqlobjectschema.exceptions.MissingReferencedObjectException;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
@@ -61,6 +62,13 @@ public class Table implements SQLObjectSchemaEntity {
         constraints.addAll(primaryKeyConstraints);
         constraints.addAll(foreignKeyConstraints);
         return constraints;
+    }
+
+    public Attribute getAttribute(String attributeName) {
+        for (Attribute a : attributes) {
+            if (a.getName().equals(attributeName)) return a;
+        }
+        throw new MissingReferencedObjectException("Attribute name not found in table.");
     }
 
     @Override
