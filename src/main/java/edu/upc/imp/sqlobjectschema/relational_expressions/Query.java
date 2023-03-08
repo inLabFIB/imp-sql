@@ -14,6 +14,4 @@ public abstract class Query extends AliasableRelationalExpression implements Val
     public boolean isFirstLevel() {
         return isFirstLevel;
     }
-
-    public abstract Query getFirstLevelCopy();
 }

@@ -1,16 +1,26 @@
 package edu.upc.imp.fetcher;
 
+import edu.upc.imp.parser.SQLObjectSchemaGrammarVisitorImpl;
 import edu.upc.imp.sqlobjectschema.Attribute;
 import edu.upc.imp.sqlobjectschema.SQLObjectSchema;
 import edu.upc.imp.sqlobjectschema.SchemaReference;
 import edu.upc.imp.sqlobjectschema.Table;
+import edu.upc.imp.sqlobjectschema.boolean_expressions.BooleanExpression;
 import edu.upc.imp.sqlobjectschema.builders.TableBuilder;
+import edu.upc.imp.sqlobjectschema.constraints.Check;
 import edu.upc.imp.sqlobjectschema.constraints.PrimaryKey;
 import edu.upc.imp.sqlobjectschema.sql_data_types.*;
+import edu.upc.imp.sqlobjectschema.value_expressions.ValueExpression;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CodePointCharStream;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.springframework.jdbc.core.JdbcTemplate;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.jdbc.support.rowset.SqlRowSetMetaData;
+
+import edu.upc.imp.parser.sql_server.TSqlLexer;
+import edu.upc.imp.parser.sql_server.TSqlParser;
 
 import java.sql.JDBCType;
 import java.util.*;
@@ -45,18 +55,41 @@ public class SQLServerFetcher implements DatabaseFetcher {
         readPrimaryKeysAndUniques(schemaReference.getSchemaName(), tables);
         // Read FKs
         readForeignKeys(schemaReference.getSchemaName(), schema, tables);
-
-        // TODO: Solve parsing expressions and add next two functions following the examples above.
+        // TODO: Test parsing of two functions bellow.
         // Read Defaults
+        readDefaults(schemaReference.getSchemaName(), tables);
         // Read Checks
+        readChecks(schemaReference.getSchemaName(), tables);
 
-        return tables.values().stream().map(TableBuilder::getTable).toList();
+        // Order tables by FK dependencies:
+        List<Table> processedTables = new ArrayList<>();
+        while(!tables.isEmpty()) {
+            TableBuilder nextTableToProcess = tables.values().iterator().next();
+            buildTable(nextTableToProcess, tables, new HashSet<>(), processedTables);
+        }
+
+        return processedTables;
+    }
+
+    private void buildTable(TableBuilder table, Map<String, TableBuilder> tablesToProcess, Set<String> beingProcessed, List<Table> processedTables) {
+        if (beingProcessed.contains(table.getTableName())) throw new RuntimeException("Foreign Key dependency cycle");
+        beingProcessed.add(table.getTableName());
+
+        List<String> namesToProcess = tablesToProcess.values().stream().map(TableBuilder::getTableName).toList();
+        List<String> shouldProcessFirst = table.getTableReferences().stream().filter(namesToProcess::contains).toList();
+        for (String s : shouldProcessFirst) {
+            TableBuilder nextTableToProcess = tablesToProcess.get(s);
+            buildTable(nextTableToProcess, tablesToProcess, beingProcessed, processedTables);
+        }
+
+        processedTables.add(table.getTable(processedTables));
+        tablesToProcess.remove(table.getTableName());
     }
 
     public void readAttributes(SchemaReference schema, Map<String, TableBuilder> tables) {
         // Execute SQL statement to obtain information about attributes
         String statement =
-            "select tab.name as table_name, col.name as column_name, ty.name as data_type, col.max_length as [length], col.[precision], col.[scale], col.is_nullable as nullable\n" +
+            "select tab.name as table_name, col.name as column_name, col.column_id as column_position, ty.name as data_type, col.max_length as [length], col.[precision], col.[scale], col.is_nullable as nullable\n" +
             "from sys.tables tab join sys.columns col on (tab.object_id = col.object_id) join sys.types ty on (col.system_type_id = ty.system_type_id)\n" +
             "where SCHEMA_NAME(tab.schema_id) = '" + schema.getSchemaName() + "'\n" +
             "order by table_name, col.column_id;";
@@ -65,6 +98,7 @@ public class SQLServerFetcher implements DatabaseFetcher {
         while (resultSet.next()) {
             String tableName = resultSet.getString("table_name");
             String attrName = resultSet.getString("column_name");
+            int attrPos = resultSet.getInt("column_position");
             String type = resultSet.getString("data_type");
             int length = resultSet.getInt("length");
             int precision = resultSet.getInt("precision");
@@ -76,10 +110,10 @@ public class SQLServerFetcher implements DatabaseFetcher {
             TableBuilder tb = tables.get(tableName);
             if (tb == null) {
                 tb = new TableBuilder(tableName, schema);
-                tb.addAttribute(attrName, nullable, dataType);
+                tb.addAttribute(attrName, attrPos, nullable, dataType);
                 tables.put(tableName, tb);
             } else {
-                tb.addAttribute(attrName, nullable, dataType);
+                tb.addAttribute(attrName, attrPos, nullable, dataType);
             }
         }
     }
@@ -152,7 +186,7 @@ public class SQLServerFetcher implements DatabaseFetcher {
             "    inner join sys.foreign_key_columns fk_cols\n" +
             "        on fk_cols.constraint_object_id = fk.object_id\n" +
             "where SCHEMA_NAME(fk_tab.schema_id) = '" + schemaName + "'\n" +
-            "order by foreign_table, fk_constraint_name;";
+            "order by foreign_table, constraint_name;";
         SqlRowSet resultSet = jdbcTemplate.queryForRowSet(statement);
         // Populate table builders
         while (resultSet.next()) {
@@ -164,28 +198,103 @@ public class SQLServerFetcher implements DatabaseFetcher {
 
             TableBuilder tb = tables.get(tableName);
             if (tb == null) continue; // Somehow detected a constraint on a table not yet found (with no attributes). Maybe should create an empty table builder?
-            Table refTable = schema.getTables().stream().filter(t -> t.getTableName().equalsIgnoreCase(refTableName)).findFirst().orElseThrow();
-            Attribute refAttribute = refTable.getAttributes().stream().filter(a -> a.getName().equals(refAttrName)).findFirst().orElseThrow();
-            tb.addForeignKeyConstraint(constraintName, attrName, refAttribute);
+            tb.addForeignKeyConstraint(constraintName, attrName, refTableName, refAttrName);
         }
     }
 
-    /* SQL Queries to obtain all necessary info to build tables, attributes, and constraints
+    public void readDefaults(String schemaName, Map<String, TableBuilder> tables) {
+        // Execute SQL statement to obtain information about attributes
+        String statement =
+            "select tab.name as table_name, def.name as constraint_name, col.name as column_name, definition as value\n" +
+            "from sys.default_constraints def\n" +
+            "    join sys.tables tab on (def.parent_object_id = tab.object_id)\n" +
+            "    join sys.columns col on (tab.object_id = col.object_id and def.parent_column_id = col.column_id)\n" +
+            "where SCHEMA_NAME(def.schema_id) = '" + schemaName + "'\n" +
+            "order by table_name, constraint_name;";
+        SqlRowSet resultSet = jdbcTemplate.queryForRowSet(statement);
+        // Populate table builders
+        while (resultSet.next()) {
+            String tableName = resultSet.getString("table_name");
+            String constraintName = resultSet.getString("constraint_name");
+            String attrName = resultSet.getString("column_name");
+            String valueExpression = resultSet.getString("value");
 
--- Checks
-select tab.name as table_name, chck.name as constraint_name, definition as value
-from sys.check_constraints chck
-	join sys.tables tab on (chck.parent_object_id = tab.object_id)
-where SCHEMA_NAME(chck.schema_id) = 'user_schema'
-order by table_name, constraint_name;
+            TableBuilder tb = tables.get(tableName);
+            if (tb == null) continue; // Somehow detected a constraint on a table not yet found (with no attributes). Maybe should create an empty table builder?
+            tb.addDefaultConstraint(constraintName, attrName, parseValueExpression(valueExpression));
+        }
+    }
 
--- Defaults
-select tab.name as table_name, def.name as constraint_name, col.name as column_name, definition as value
-from sys.default_constraints def
-	join sys.tables tab on (def.parent_object_id = tab.object_id)
-	join sys.columns col on (tab.object_id = col.object_id and def.parent_column_id = col.column_id)
-where SCHEMA_NAME(def.schema_id) = 'user_schema'
-order by table_name, constraint_name;
+    private ValueExpression parseValueExpression(String valueExpression) {
+        CodePointCharStream input = CharStreams.fromString(valueExpression);
+        TSqlLexer lexer = new TSqlLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        TSqlParser parser = new TSqlParser(tokens);
 
-    */
+        TSqlParser.ExpressionContext tree = parser.expression();
+        SQLValueExpressionCapturingGrammarVisitorImpl visitor = new SQLValueExpressionCapturingGrammarVisitorImpl();
+        visitor.visit(tree);
+        return visitor.getResult();
+    }
+
+    private class SQLValueExpressionCapturingGrammarVisitorImpl extends SQLObjectSchemaGrammarVisitorImpl {
+        private ValueExpression result;
+        public SQLValueExpressionCapturingGrammarVisitorImpl() {
+            super(new SQLObjectSchema());
+        }
+        public ValueExpression visitSearch_condition(TSqlParser.ExpressionContext ctx) {
+            result = super.visitExpression(ctx);
+            return result;
+        }
+        public ValueExpression getResult() {
+            return result;
+        }
+    }
+
+    public void readChecks(String schemaName, Map<String, TableBuilder> tables) {
+        // Execute SQL statement to obtain information about attributes
+        String statement =
+            "select tab.name as table_name, chck.name as constraint_name, definition as value\n" +
+            "from sys.check_constraints chck\n" +
+            "    join sys.tables tab on (chck.parent_object_id = tab.object_id)\n" +
+            "where SCHEMA_NAME(chck.schema_id) = '" + schemaName + "'\n" +
+            "order by table_name, constraint_name;";
+        SqlRowSet resultSet = jdbcTemplate.queryForRowSet(statement);
+        // Populate table builders
+        while (resultSet.next()) {
+            String tableName = resultSet.getString("table_name");
+            String constraintName = resultSet.getString("constraint_name");
+            String booleanExpression = resultSet.getString("value");
+
+            TableBuilder tb = tables.get(tableName);
+            if (tb == null) continue; // Somehow detected a constraint on a table not yet found (with no attributes). Maybe should create an empty table builder?
+            tb.addCheckConstraint(new Check(constraintName, parseBooleanExpression(booleanExpression)));
+        }
+    }
+
+    private BooleanExpression parseBooleanExpression(String booleanExpression) {
+        CodePointCharStream input = CharStreams.fromString(booleanExpression);
+        TSqlLexer lexer = new TSqlLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        TSqlParser parser = new TSqlParser(tokens);
+
+        TSqlParser.Search_conditionContext tree = parser.search_condition();
+        SQLBooleanExpressionCapturingGrammarVisitorImpl visitor = new SQLBooleanExpressionCapturingGrammarVisitorImpl();
+        visitor.visit(tree);
+        return visitor.getResult();
+    }
+
+    private class SQLBooleanExpressionCapturingGrammarVisitorImpl extends SQLObjectSchemaGrammarVisitorImpl {
+        private BooleanExpression result;
+        public SQLBooleanExpressionCapturingGrammarVisitorImpl() {
+            super(new SQLObjectSchema());
+        }
+        public BooleanExpression visitSearch_condition(TSqlParser.Search_conditionContext ctx) {
+            result = super.visitSearch_condition(ctx);
+            return result;
+        }
+        public BooleanExpression getResult() {
+            return result;
+        }
+    }
 }

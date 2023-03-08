@@ -81,11 +81,6 @@ public class TableExpression extends Query {
         return new TableExpression(selectClause, fromClause, whereClause, newAlias);
     }
 
-    @Override
-    public Query getFirstLevelCopy() {
-        return new TableExpression(selectClause, fromClause, whereClause, true);
-    }
-
     /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {

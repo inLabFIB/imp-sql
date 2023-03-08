@@ -45,12 +45,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     public Query visitSelect_statement_standalone(TSqlParser.Select_statement_standaloneContext ctx)  {
         if (ctx.with_expression() != null) throw new RuntimeException("Grammar expression (`WITH`) not supported yet!");
-        Query selectStatement =  visitSelect_statement(ctx.select_statement());
-        if (ctx.getParent() instanceof TSqlParser.Dml_clauseContext) {
-            selectStatement = selectStatement.getFirstLevelCopy();
-            schema.addSelect(selectStatement);
-        }
-        return selectStatement;
+        return visitSelect_statement(ctx.select_statement());
     }
 
     public Query visitSelect_statement(TSqlParser.Select_statementContext ctx) {
@@ -95,7 +90,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
             visitColumn_def_table_constraint(c, tableBuilder);
         }
 
-        Table newTable = tableBuilder.getTable();
+        Table newTable = tableBuilder.getTable(schema.getTables());
         schema.addTable(newTable);
         return newTable;
     }
@@ -386,7 +381,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         else if (ctx.BIT() != null) return ctx.length != null ? new SQLBit(Integer.parseInt(ctx.length.getText())) : new SQLBit();
         else if (ctx.INT() != null) return new SQLInt();
         else if (ctx.SMALLINT() != null) return new SQLSmallint();
-        else if (ctx.FLOAT_() != null) return  ctx.prec != null ? new SQLFloat(Integer.parseInt(ctx.prec.getText())) : new SQLFloat();
+        else if (ctx.FLOAT_() != null) return ctx.prec != null ? new SQLFloat(Integer.parseInt(ctx.prec.getText())) : new SQLFloat();
         else if (ctx.DATE() != null) return new SQLDate();
         else throw new RuntimeException("Other SQL data types not supported yet!");
     }
@@ -451,10 +446,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     public void visitForeign_key_options(TSqlParser.Foreign_key_optionsContext ctx, TableBuilder tableBuilder, List<String> attributeNames, String constraintName) {
         if (ctx.on_delete() != null || ctx.on_update() != null || ctx.REPLICATION() != null)
             throw new RuntimeException("FK options not supported yet!");
-
-        Table table = findExistingTableObject(ctx.table_name());
-        List<Attribute> refAttributes = visitColumn_name_list(ctx.pk).stream().map(table::getAttribute).toList();
-        tableBuilder.addForeignKeyConstraint(constraintName, attributeNames, refAttributes);
+        tableBuilder.addForeignKeyConstraint(constraintName, attributeNames, visitId_(ctx.table_name().table), visitColumn_name_list(ctx.pk));
     }
 
 

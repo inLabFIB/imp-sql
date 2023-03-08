@@ -9,10 +9,9 @@ import java.util.Objects;
 public class Assertion implements Constraint {
 
     private final String assertionName;
-
     private final SchemaReference schemaReference;
-
     private final BooleanExpression booleanExpression;
+
     public Assertion(String assertionName, SchemaReference schemaReference, BooleanExpression booleanExpression) {
         this.assertionName = Objects.requireNonNull(assertionName, "The parameter 'assertionName' cannot be null.");
         this.schemaReference = schemaReference;

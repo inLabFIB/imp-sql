@@ -1,77 +1,60 @@
 package edu.upc.imp.sqlobjectschema;
 
-import edu.upc.imp.sqlobjectschema.relational_expressions.Query;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class SQLObjectSchema {
 
-    private final List<Assertion> assertions;
-    private final List<View> views;
+    /**
+     * Tables should be ordered in a way that any the i-th table does not reference a j-th table if j < i.
+     */
     private final List<Table> tables;
-
-    //TODO: remove selects
-    private final List<Query> selects;
+    private final List<View> views;
+    private final List<Assertion> assertions;
 
     /** CONSTRUCTORS **/
 
     public SQLObjectSchema() {
-        assertions = new ArrayList<>();
-        views = new ArrayList<>();
-        selects = new ArrayList<>();
         tables = new ArrayList<>();
+        views = new ArrayList<>();
+        assertions = new ArrayList<>();
     }
 
+    /*public SQLObjectSchema(SQLObjectSchema oldSchema) {
+        this.tables = oldSchema.tables.stream().map(t -> new Table(t, this)).toList();
+        this.views = oldSchema.views.stream().map(v -> new View(v, this)).toList();
+        this.assertions = oldSchema.assertions.stream().map(a -> new Assertion(a, this)).toList();
+    }*/
 
     /** GETTERS **/
 
-    public List<Assertion> getAssertions() {
-        return new ArrayList<>(assertions);
+    public List<Table> getTables() {
+        return new ArrayList<>(tables);
     }
 
     public List<View> getViews() {
         return new ArrayList<>(views);
     }
 
-    public List<Table> getTables() {
-        return new ArrayList<>(tables);
-    }
-
-    public List<Query> getSelects() {
-        return new ArrayList<>(selects);
+    public List<Assertion> getAssertions() {
+        return new ArrayList<>(assertions);
     }
 
     /** MODIFIERS **/
 
-    public void addAssertion(Assertion assertion) {
-        assertions.add(assertion);
+    public void addTable(Table table) {
+        tables.add(table);
     }
 
     public void addView(View view) {
         views.add(view);
     }
 
-    public void addTable(Table table) {
-        tables.add(table);
+    public void addAssertion(Assertion assertion) {
+        assertions.add(assertion);
     }
 
-    public void addSelect(Query select) {
-        selects.add(select);
-    }
-
-//    // Use default visitor: SQLServerPrinter
-//    List<String> visit() {
-//        return this.visit(new SQLServerPrinter());
-
-//    }
-//    List<String> visit(SQLObjectSchemaVisitor visitor) {
-//        return Stream.concat(
-//            assertions.stream().map(a -> a.visit(visitor)),
-//            views.stream().map(v -> v.visit(visitor))
-//        ).toList();
-
-//    }
+    /** OTHER **/
 
     /** Syntactic equals implementation **/
     @Override
@@ -79,7 +62,6 @@ public class SQLObjectSchema {
         return o instanceof SQLObjectSchema os
             && assertions.equals(os.assertions)
             && views.equals(os.views)
-            && selects.equals(os.selects)
             && tables.equals(os.tables);
     }
 }

@@ -9,14 +9,14 @@ import edu.upc.imp.sqlobjectschema.sql_data_types.SQLDataType;
 import edu.upc.imp.sqlobjectschema.value_expressions.ValueExpression;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TableBuilder {
 
     /* TABLE INFO */
-    private String tableName = null;
-    private SchemaReference schemaReference = null;
+    private String tableName;
+    private SchemaReference schemaReference;
 
-    //FIXME: order of attributes lost in map? check parser table test
     private final Map<String, ProvisionalAttribute> provisionalAttributeMap = new HashMap<>();
 
     private final List<Check> checks = new ArrayList<>();
@@ -28,13 +28,19 @@ public class TableBuilder {
     /* ATTRIBUTES */
     public class ProvisionalAttribute {
         private final String attrName;
+        private final int attrPosition;
         private SQLDataType type;
         private boolean isNullable;
 
-        public ProvisionalAttribute(String attrName, SQLDataType type, boolean isNullable) {
+        public ProvisionalAttribute(String attrName, int attrPosition, SQLDataType type, boolean isNullable) {
             this.attrName = attrName;
+            this.attrPosition = attrPosition;
             this.type = type;
             this.isNullable = isNullable;
+        }
+
+        public int getAttrPosition() {
+            return attrPosition;
         }
 
         public Attribute getAttributeObject() {
@@ -112,28 +118,36 @@ public class TableBuilder {
     public class ProvisionalForeignKey {
         private final String constraintName;
         private final List<String> fkAttributes;
-        private final List<Attribute> referencedAttr;
+        private final String referencedTable;
+        private final List<String> referencedAttr;
 
-        public ProvisionalForeignKey(String constraintName, String attr, Attribute ref) {
+        public ProvisionalForeignKey(String constraintName, String attr, String refTable, String refAttr) {
             this.constraintName = constraintName;
             this.fkAttributes = new ArrayList<>();
             this.fkAttributes.add(attr);
+            this.referencedTable = refTable;
             this.referencedAttr = new ArrayList<>();
-            this.referencedAttr.add(ref);
+            this.referencedAttr.add(refAttr);
         }
-        public ProvisionalForeignKey(String constraintName, List<String> attr, List<Attribute> ref) {
+        public ProvisionalForeignKey(String constraintName, List<String> attr, String refTable, List<String> refAttr) {
             this.constraintName = constraintName;
             this.fkAttributes = new ArrayList<>();
             this.fkAttributes.addAll(attr);
+            this.referencedTable = refTable;
             this.referencedAttr = new ArrayList<>();
-            this.referencedAttr.addAll(ref);
+            this.referencedAttr.addAll(refAttr);
         }
 
-        public ForeignKey getForeignKeyObject(Map<String, Attribute> attributesMap) {
+        public ForeignKey getForeignKeyObject(Map<String, Attribute> attributesMap, List<Table> referencableTables) {
+            Table refTable = referencableTables.stream().filter(t -> t.getTableName().equalsIgnoreCase(this.referencedTable)).findFirst().orElseThrow();
+            List<Attribute> refAttributes = new ArrayList<>();
+            for (String ref : this.referencedAttr) {
+                refAttributes.add(refTable.getAttributes().stream().filter(a -> a.getName().equals(ref)).findFirst().orElseThrow());
+            }
             return new ForeignKey(
                 constraintName,
                 fkAttributes.stream().map(attributesMap::get).toList(),
-                referencedAttr
+                refAttributes
             );
         }
     }
@@ -152,7 +166,15 @@ public class TableBuilder {
 
     /* GETTERS */
 
-    public Table getTable() {
+    public String getTableName() {
+        return tableName;
+    }
+
+    public List<String> getTableReferences() {
+        return this.provisionalForeignKeyMap.values().stream().map(f -> f.referencedTable).distinct().toList();
+    }
+
+    public Table getTable(List<Table> referencableTables) {
         if (this.tableName == null) throw new IllegalArgumentException("Table build error. Table name was null.");
 
         List<Attribute> attributes = new ArrayList<>();
@@ -162,7 +184,8 @@ public class TableBuilder {
         List<ForeignKey> foreignKeyConstraints = new ArrayList<>();
 
         Map<String, Attribute> attributesMap = new HashMap<>();
-        for (ProvisionalAttribute pa : this.provisionalAttributeMap.values()) {
+        for (ProvisionalAttribute pa : this.provisionalAttributeMap.values().stream()
+            .sorted(Comparator.comparingInt(ProvisionalAttribute::getAttrPosition)).toList()) {
             Attribute newAttribute = pa.getAttributeObject();
             attributes.add(newAttribute);
             attributesMap.put(pa.attrName, newAttribute);
@@ -180,7 +203,7 @@ public class TableBuilder {
             primaryKeyConstraints.add(ppk.getPrimaryKeyObject(attributesMap));
         }
         for (ProvisionalForeignKey pfk : this.provisionalForeignKeyMap.values()) {
-            foreignKeyConstraints.add(pfk.getForeignKeyObject(attributesMap));
+            foreignKeyConstraints.add(pfk.getForeignKeyObject(attributesMap, referencableTables));
         }
 
         return new Table(
@@ -202,20 +225,22 @@ public class TableBuilder {
     /* - For attributes */
 
     public void addAttribute(String attrName) {
-        addAttribute(attrName, true, null);
+        addAttribute(attrName, provisionalAttributeMap.values().size()+1, true, null);
     }
 
     public void addAttribute(String attrName, SQLDataType type) {
-        addAttribute(attrName, true, type);
+        addAttribute(attrName, provisionalAttributeMap.values().size()+1, true, type);
     }
 
     public void addAttribute(String attrName, boolean isNullable) {
-        addAttribute(attrName, isNullable, null);
+        addAttribute(attrName, provisionalAttributeMap.values().size()+1, isNullable, null);
     }
 
-    public void addAttribute(String attrName, boolean isNullable, SQLDataType type) {
+    public void addAttribute(String attrName, int attrPosition, boolean isNullable, SQLDataType type) {
         if (provisionalAttributeMap.containsKey(attrName)) throw new IllegalArgumentException("Attribute name already in use.");
-        provisionalAttributeMap.put(attrName, new ProvisionalAttribute(attrName, type, isNullable));
+        if (provisionalAttributeMap.values().stream().anyMatch(a -> a.attrPosition == attrPosition))
+            throw new IllegalArgumentException("Position of attribute already in use.");
+        provisionalAttributeMap.put(attrName, new ProvisionalAttribute(attrName, attrPosition, type, isNullable));
     }
 
     public void setAttributeNullable(String attrName, boolean isNullable) {
@@ -272,23 +297,23 @@ public class TableBuilder {
         else pk.pkAttributes.addAll(attrNames);
     }
 
-    public void addForeignKeyConstraint(String constraintName, String attrName, Attribute referencedKey) {
+    public void addForeignKeyConstraint(String constraintName, String attrName, String referencedTable, String referencedKey) {
         if (attrName == null || referencedKey == null)
             throw new IllegalArgumentException("Some constructor parameter was null (FOREIGN KEY)");
         ProvisionalForeignKey fk = provisionalForeignKeyMap.get(constraintName);
-        if (fk == null) provisionalForeignKeyMap.put(constraintName, new ProvisionalForeignKey(constraintName, attrName, referencedKey));
+        if (fk == null) provisionalForeignKeyMap.put(constraintName, new ProvisionalForeignKey(constraintName, attrName, referencedTable, referencedKey));
         else {
             fk.fkAttributes.add(attrName);
             fk.referencedAttr.add(referencedKey);
         }
     }
-    public void addForeignKeyConstraint(String constraintName, List<String> attrNames, List<Attribute> referencedKeys) {
+    public void addForeignKeyConstraint(String constraintName, List<String> attrNames, String referencedTable, List<String> referencedKeys) {
         if (constraintName == null || attrNames == null || referencedKeys == null)
             throw new IllegalArgumentException("Some constructor parameter was null (FOREIGN KEY)");
         if (attrNames.size() != referencedKeys.size() || attrNames.isEmpty())
             throw new IllegalArgumentException("Must have the same number of attr. and refs. (not empty)");
         ProvisionalForeignKey fk = provisionalForeignKeyMap.get(constraintName);
-        if (fk == null) provisionalForeignKeyMap.put(constraintName, new ProvisionalForeignKey(constraintName, attrNames, referencedKeys));
+        if (fk == null) provisionalForeignKeyMap.put(constraintName, new ProvisionalForeignKey(constraintName, attrNames, referencedTable, referencedKeys));
         else {
             fk.fkAttributes.addAll(attrNames);
             fk.referencedAttr.addAll(referencedKeys);

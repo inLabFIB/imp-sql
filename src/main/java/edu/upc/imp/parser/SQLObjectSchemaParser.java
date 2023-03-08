@@ -8,18 +8,21 @@ import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 public class SQLObjectSchemaParser {
+    private final SQLObjectSchema schema;
 
-    private final String sqlStatements;
-    private final SQLObjectSchema schema = new SQLObjectSchema();
-
-    public SQLObjectSchemaParser(String sqlStatements) {
-        if (sqlStatements == null) throw new IllegalArgumentException("Parser input can not be null.");
-        this.sqlStatements = sqlStatements;
+    public SQLObjectSchemaParser() {
+        this.schema = new SQLObjectSchema();
     }
 
-    public void parse() {
+    //TODO: implement this
+    /*public SQLObjectSchemaParser(SQLObjectSchema schema) {
+        this.schema = new SQLObjectSchema(schema);
+    }*/
+
+    public void parse(String sqlStatements) {
+        if (sqlStatements == null) throw new IllegalArgumentException("Parser input can not be null.");
         CodePointCharStream input = CharStreams.fromString(sqlStatements);
-        edu.upc.imp.parser.sql_server.TSqlLexer lexer = new TSqlLexer(input);
+        TSqlLexer lexer = new TSqlLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         TSqlParser parser = new TSqlParser(tokens);
 

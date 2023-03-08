@@ -12,6 +12,9 @@ import java.util.Objects;
 public class Table implements SQLObjectSchemaEntity {
 
     private final String tableName;
+    /**
+     * NULLABLE
+     */
     private final SchemaReference schemaReference;
     private final List<Attribute> attributes;
 

@@ -15,7 +15,7 @@ public class TSQLIntegrationTest {
     @Test
     public void cv2Assertions() {
         String cv2Assertions = StatementsProvider.getCV2Assertions();
-        SQLObjectSchemaParser parser1 = new SQLObjectSchemaParser(cv2Assertions);
+        SQLObjectSchemaParser parser1 =new SQLObjectSchemaParser(cv2Assertions);
         parser1.parse();
         SQLObjectSchema schema1 = parser1.getSQLObjectSchema();
 
