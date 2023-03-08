@@ -19,19 +19,12 @@ public class TableExpression extends Query {
     private final List<AliasableRelationalExpression> fromClauseTerminalExpressions;
 
     public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause) {
-        this(selectClause, fromClause, whereClause, null, false);
+        this(selectClause, fromClause, whereClause, null);
     }
 
-    public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause, boolean isFirstLevel) {
-        this(selectClause, fromClause, whereClause, null, isFirstLevel);
-    }
 
     public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause, String alias) {
-        this(selectClause, fromClause, whereClause, alias, false);
-    }
-
-    public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause, String alias, boolean isFirstLevel) {
-        super(alias, isFirstLevel);
+        super(alias);
         this.selectClause = Objects.requireNonNull(selectClause, "The select clause of a TableExpression cannot be null.");
         this.fromClause = fromClause;
         this.whereClause = whereClause;

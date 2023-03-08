@@ -6,6 +6,7 @@ import edu.upc.imp.sqlobjectschema.Table;
 import org.junit.jupiter.api.Test;
 
 public class SQLServerFetcherTest {
+
     @Test
     public void fetchCV2Tables() {
         SQLObjectSchemaFetcher fetcher = new SQLObjectSchemaFetcher(

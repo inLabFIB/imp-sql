@@ -14,10 +14,10 @@ public class SQLObjectSchemaParser {
         this.schema = new SQLObjectSchema();
     }
 
-    //TODO: implement this
-    /*public SQLObjectSchemaParser(SQLObjectSchema schema) {
-        this.schema = new SQLObjectSchema(schema);
-    }*/
+    //TODO: future work -> store a copy of the schema
+    public SQLObjectSchemaParser(SQLObjectSchema schema) {
+        this.schema = schema;
+    }
 
     public void parse(String sqlStatements) {
         if (sqlStatements == null) throw new IllegalArgumentException("Parser input can not be null.");

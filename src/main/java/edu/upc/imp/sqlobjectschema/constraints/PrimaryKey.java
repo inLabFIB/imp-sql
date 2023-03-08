@@ -29,6 +29,7 @@ public class PrimaryKey extends TableConstraint {
     @Override
     public boolean equals(Object o) {
         return o instanceof PrimaryKey pk
+            && getName().equals(pk.getName())
             && pkAttributes.equals(pk.pkAttributes);
     }
 }

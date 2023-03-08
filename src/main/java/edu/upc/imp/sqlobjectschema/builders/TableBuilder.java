@@ -139,10 +139,14 @@ public class TableBuilder {
         }
 
         public ForeignKey getForeignKeyObject(Map<String, Attribute> attributesMap, List<Table> referencableTables) {
-            Table refTable = referencableTables.stream().filter(t -> t.getTableName().equalsIgnoreCase(this.referencedTable)).findFirst().orElseThrow();
+            Table refTable = referencableTables.stream()
+                .filter(t -> t.getTableName().equalsIgnoreCase(this.referencedTable))
+                .findFirst().orElseThrow(() -> new MissingReferencedObjectException("Foreign Key reference not found!"));
             List<Attribute> refAttributes = new ArrayList<>();
             for (String ref : this.referencedAttr) {
-                refAttributes.add(refTable.getAttributes().stream().filter(a -> a.getName().equals(ref)).findFirst().orElseThrow());
+                refAttributes.add(refTable.getAttributes()
+                    .stream().filter(a -> a.getName().equals(ref))
+                    .findFirst().orElseThrow(() -> new MissingReferencedObjectException("Foreign Key reference not found!")));
             }
             return new ForeignKey(
                 constraintName,

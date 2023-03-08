@@ -34,6 +34,7 @@ public class Default extends TableConstraint {
     @Override
     public boolean equals(Object o) {
         return o instanceof Default d
+            && getName().equals(d.getName())
             && attribute.equals(d.attribute)
             && expression.equals(d.expression);
     }

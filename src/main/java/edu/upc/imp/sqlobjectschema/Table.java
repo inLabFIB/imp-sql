@@ -92,4 +92,14 @@ public class Table implements SQLObjectSchemaEntity {
             && primaryKeyConstraints.equals(t.primaryKeyConstraints)
             && foreignKeyConstraints.equals(t.foreignKeyConstraints);
     }
+
+    public boolean hasSameIdentifier(Table t) {
+        return tableName.equals(t.tableName)
+            && Objects.equals(schemaReference, t.schemaReference);
+    }
+
+    public boolean hasSameIdentifier(String tableName, SchemaReference schemaReference) {
+        return this.tableName.equals(tableName)
+            && Objects.equals(this.schemaReference, schemaReference);
+    }
 }

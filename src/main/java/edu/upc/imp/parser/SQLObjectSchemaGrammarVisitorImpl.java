@@ -325,7 +325,9 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
                 || ctx.with_table_hints() != null
                 || ctx.sybase_legacy_hints() != null) throw new RuntimeException("Grammar expression related to table_source_item not supported yet!");
 
-            return new TableReference(findExistingTableObject(ctx.full_table_name()), alias);
+            String tableName = visitId_(ctx.full_table_name().table);
+            SchemaReference schemaReference = visitFull_table_name(ctx.full_table_name());
+            return new TableReference(schema.getTable(tableName, schemaReference), alias);
         }
         if (ctx.derived_table() != null) return visitDerived_table(ctx.derived_table()).getAliasedCopy(alias);
         if (ctx.table_source() != null) return visitTable_source(ctx.table_source());
@@ -387,7 +389,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     }
 
     public void visitColumn_Definition_Element(TSqlParser.Column_definition_elementContext ctx, TableBuilder tableBuilder, String attributeName) {
-        if (ctx.CONSTRAINT() != null) {
+        if (ctx.DEFAULT() != null) {
             String constraintName = ctx.constraint != null ? ctx.constraint.getText() : unnamedConstraintName + unnamedConstraintNumber++;
             tableBuilder.addDefaultConstraint(constraintName, attributeName, visitExpression(ctx.constant_expr));
         }
@@ -401,11 +403,11 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         if (ctx.null_notnull() != null) tableBuilder.setAttributeNullable(attributeName, false);
         else if (ctx.PRIMARY() != null) {
             if (ctx.clustered() != null) throw new RuntimeException("PK options not supported yet!");
-            if (ctx.primary_key_options() != null) throw new RuntimeException("PK options not supported yet!");
+            if (ctx.primary_key_options().getChildCount() != 0) throw new RuntimeException("PK options not supported yet!");
             tableBuilder.addPrimaryKeyConstraint(constraintName, attributeName);
         } else if (ctx.UNIQUE() != null) {
             if (ctx.clustered() != null) throw new RuntimeException("PK options not supported yet!");
-            if (ctx.primary_key_options() != null) throw new RuntimeException("PK options not supported yet!");
+            if (ctx.primary_key_options().getChildCount() != 0) throw new RuntimeException("PK options not supported yet!");
             tableBuilder.addUniqueConstraint(constraintName, attributeName);
         } else if (ctx.foreign_key_options() != null) visitForeign_key_options(ctx.foreign_key_options(), tableBuilder, List.of(attributeName), constraintName);
         else if (ctx.check_constraint() != null)
@@ -418,11 +420,11 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
         if (ctx.PRIMARY() != null) {
             if (ctx.clustered() != null) throw new RuntimeException("PK options not supported yet!");
-            if (ctx.primary_key_options() != null) throw new RuntimeException("PK options not supported yet!");
+            if (ctx.primary_key_options().getChildCount() != 0) throw new RuntimeException("PK options not supported yet!");
             tableBuilder.addPrimaryKeyConstraint(constraintName, visitColumn_name_list_with_order(ctx.column_name_list_with_order()));
         } else if (ctx.UNIQUE() != null) {
             if (ctx.clustered() != null) throw new RuntimeException("PK options not supported yet!");
-            if (ctx.primary_key_options() != null) throw new RuntimeException("PK options not supported yet!");
+            if (ctx.primary_key_options().getChildCount() != 0) throw new RuntimeException("PK options not supported yet!");
             tableBuilder.addPrimaryKeyConstraint(constraintName, visitColumn_name_list_with_order(ctx.column_name_list_with_order()));
         } else if (ctx.FOREIGN() != null) {
             visitForeign_key_options(ctx.foreign_key_options(), tableBuilder, visitColumn_name_list(ctx.column_name_list()), constraintName);
@@ -506,32 +508,4 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         return ctx.getText();
     }
 
-
-    private Table findExistingTableObject(TSqlParser.Full_table_nameContext ctx) {
-
-        String tableName = visitId_(ctx.table);
-        SchemaReference schemaReference = visitFull_table_name(ctx);
-
-        for (Table t : schema.getTables()) {
-            if (t.getTableName().equals(tableName) && Objects.equals(schemaReference, t.getSchemaReference())) {
-                return t;
-            }
-        }
-
-        throw new MissingReferencedObjectException("Referenced Table Object not found....") ;
-    }
-
-    private Table findExistingTableObject(TSqlParser.Table_nameContext ctx) {
-
-        String tableName = visitId_(ctx.table);
-        SchemaReference schemaReference = visitTable_name(ctx);
-
-        for (Table t : schema.getTables()) {
-            if (t.getTableName().equals(tableName) && Objects.equals(schemaReference, t.getSchemaReference())) {
-                return t;
-            }
-        }
-
-        throw new MissingReferencedObjectException("Referenced Table Object not found....") ;
-    }
 }

@@ -29,6 +29,7 @@ public class Unique extends TableConstraint {
     @Override
     public boolean equals(Object o) {
         return o instanceof Unique u
+            && getName().equals(u.getName())
             && attributes.equals(u.attributes);
     }
 }

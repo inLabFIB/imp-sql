@@ -1,82 +1,43 @@
 package edu.upc.imp.parser;
 
-import edu.upc.imp.sqlobjectschema.*;
+import edu.upc.imp.sqlobjectschema.Attribute;
+import edu.upc.imp.sqlobjectschema.SQLObjectSchema;
+import edu.upc.imp.sqlobjectschema.Table;
+import edu.upc.imp.sqlobjectschema.View;
 import edu.upc.imp.sqlobjectschema.boolean_expressions.ComparisonPredicate;
-import edu.upc.imp.sqlobjectschema.boolean_expressions.ExistsPredicate;
-import edu.upc.imp.sqlobjectschema.boolean_expressions.NotOperation;
-import edu.upc.imp.sqlobjectschema.boolean_expressions.PredicateOperation;
-import edu.upc.imp.sqlobjectschema.relational_expressions.*;
+import edu.upc.imp.sqlobjectschema.relational_expressions.TableExpression;
+import edu.upc.imp.sqlobjectschema.relational_expressions.TableReference;
 import edu.upc.imp.sqlobjectschema.selection_expressions.AliasableSelectItem;
-import edu.upc.imp.sqlobjectschema.selection_expressions.Asterisk;
-import edu.upc.imp.sqlobjectschema.sql_data_types.SQLFloat;
 import edu.upc.imp.sqlobjectschema.sql_data_types.SQLInt;
 import edu.upc.imp.sqlobjectschema.value_expressions.ColumnReference;
-import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
 import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
-import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveString;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class SQLObjectSchemaParserTest {
+public class ViewsSQLObjectSchemaParserTest {
 
-    /** TABLES **/
-
-    @Test
-    public void parseSimpleCreateTable() {
-        // Object parsed from input string
-        String basicCreateTable = "CREATE TABLE name (col1 int, col2 float);";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicCreateTable);
-        parser.parse();
-        SQLObjectSchema schema = parser.getSQLObjectSchema();
-
-        // Object built directly in java
-        Table expectedTable = new Table(
-            "name",
-            List.of(
-                new Attribute("col1", new SQLInt()),
-                new Attribute("col2", new SQLFloat()))
+    //TODO: maybe create a tables provider
+    private final String myTableCreateTableStatement = """
+        CREATE TABLE myTable (
+            a int,
+            b int,
         );
-
-        assertThat("Parsed assertion does not equal expected assertion",
-            schema.getTables().get(0).equals(expectedTable));
-    }
-
-    /** ASSERTIONS **/
-
-    @Test
-    public void parseSimpleCreateAssertionStatement() {
-        // Object parsed from input string
-        String basicAssertion = "CREATE ASSERTION assertionName CHECK ( NOT EXISTS ( SELECT 1))";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicAssertion);
-        parser.parse();
-        SQLObjectSchema schema = parser.getSQLObjectSchema();
-
-        // Object built directly in java
-        Assertion expectedAssertion = new Assertion(
-            "assertionName",
-            new NotOperation(new ExistsPredicate(
-                new TableExpression(
-                    List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
-                    null, null
-                )
-            ))
+                
+        CREATE TABLE otherTable (
+            c int,
+            d int,
         );
-
-        assertThat("Parsed assertion does not equal expected assertion",
-            schema.getAssertions().get(0).equals(expectedAssertion));
-    }
-
-    /** VIEWS **/
+        """;
 
     @Test
-    public void parseCrateViewStatementWithColumnNames() {
+    public void parseTrivialCrateViewStatementWithColumnNames() {
         // Object parsed from input string
         String basicView = "CREATE VIEW viewName (col1) AS SELECT 1;";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicView);
-        parser.parse();
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(basicView);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
         // Object built directly in java
@@ -93,11 +54,11 @@ public class SQLObjectSchemaParserTest {
     }
 
     @Test
-    public void parseCrateViewStatement() {
+    public void parseTrivialCrateViewStatement() {
         // Object parsed from input string
         String basicView = "CREATE VIEW viewName AS SELECT 1;";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicView);
-        parser.parse();
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(basicView);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
         // Object built directly in java
@@ -111,36 +72,44 @@ public class SQLObjectSchemaParserTest {
         assertThat("Parsed view does not equal expected view", schema.getViews().get(0).equals(expectedView));
     }
 
-
     //TODO: remove tests, and change them with view tests
-    /** SELECTS **/
 
-    //SIMPLE SELECT
-//    @Test
-//    public void parseSelectStatement() {
-//        // Object parsed from input string
-//        String basicSelect = "SELECT pk, attr FROM myTable WHERE pk = 1;";
-//        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(basicSelect);
-//        parser.parse();
-//        SQLObjectSchema schema = parser.getSQLObjectSchema();
-//
-//        // Object built directly in java
-//        Query expectedSelect = new TableExpression(
-//            List.of(
-//                new AliasableSelectItem(new ColumnReference("pk")),
-//                new AliasableSelectItem(new ColumnReference("attr"))),
-//            new TableReference(new FullTableName("myTable")),
-//            new ComparisonPredicate(
-//                ComparisonPredicate.ComparisonOperator.EQ,
-//                new ColumnReference("pk"),
-//                new SQLPrimitiveInteger(1)),
-//            true
-//        );
-//
-//        assertThat("Parsed query does not equal expected query", schema.getSelects().get(0).equals(expectedSelect));
-//    }
-//
-//    //JOINS
+
+    @Test
+    public void parseCreateViewStatementWithSimpleSelect() {
+        // Object parsed from input string
+        String basicSelect = "CREATE VIEW viewName AS SELECT a, b FROM myTable WHERE a = 1;";
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(myTableCreateTableStatement);
+        parser.parse(basicSelect);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        Table myTable = new Table(
+            "myTable",
+            List.of(
+                new Attribute("a", new SQLInt()),
+                new Attribute("b", new SQLInt())
+            )
+        );
+
+        // Object built directly in java
+        View expectedView = new View(
+            "viewName",
+            new TableExpression(
+                List.of(
+                    new AliasableSelectItem(new ColumnReference("a")),
+                    new AliasableSelectItem(new ColumnReference("b"))),
+                new TableReference(myTable),
+                new ComparisonPredicate(
+                    ComparisonPredicate.ComparisonOperator.EQ,
+                    new ColumnReference("a"),
+                    new SQLPrimitiveInteger(1))
+            ));
+
+        assertThat("Parsed view does not equal expected view", schema.getViews().get(0).equals(expectedView));
+    }
+
+    //TODO: rewrite this tests
 //    @Test
 //    public void parseSelectWithJoinClause() {
 //        // Object parsed from input string
@@ -281,5 +250,4 @@ public class SQLObjectSchemaParserTest {
 //
 //        assertThat("Parsed query does not equal expected query", schema.getSelects().get(0).equals(expectedSelect));
 //    }
-
 }

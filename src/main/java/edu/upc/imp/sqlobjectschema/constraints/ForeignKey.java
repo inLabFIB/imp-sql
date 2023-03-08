@@ -35,6 +35,7 @@ public class ForeignKey extends TableConstraint {
     @Override
     public boolean equals(Object o) {
         return o instanceof ForeignKey fk
+            && getName().equals(fk.getName())
             && fkAttributes.equals(fk.fkAttributes)
             && pkReference.equals(fk.pkReference);
     }

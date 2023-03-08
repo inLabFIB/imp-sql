@@ -29,9 +29,7 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
         BooleanExpression whereClause = te.getWhereClause();
         if (whereClause != null) subquery.append(" WHERE ").append(whereClause.<String>visit(this));
 
-        if (te.getAlias() == null) {
-            return te.isFirstLevel() ? subquery + ";" : "( " + subquery + " )";
-        }
+        if (te.getAlias() == null) return "( " + subquery + " )";
         return "( " + subquery + " ) AS " + te.getAlias();
     }
 

@@ -27,6 +27,7 @@ public class Check extends TableConstraint {
     @Override
     public boolean equals(Object o) {
         return o instanceof Check c
+            && getName().equals(c.getName())
             && expression.equals(c.expression);
     }
 }
