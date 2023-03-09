@@ -6,7 +6,7 @@ import edu.upc.imp.printer.SQLServerPrinter;
 import edu.upc.imp.sqlobjectschema.*;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 import org.junit.jupiter.api.Test;
-import utils.StatementsProvider;
+import utils.TintinAssertionsProvider;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class TSQLIntegrationTest {
             !cv2FetchedSchema.getTables().isEmpty());
 
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser(cv2FetchedSchema);
-        parser.parse(StatementsProvider.getCV2Assertions());
+        parser.parse(TintinAssertionsProvider.getCV2Assertions());
         SQLObjectSchema cv2SchemaWithAssertions = parser.getSQLObjectSchema();
 
         assertThat("Assertions were not parsed correctly.",
@@ -56,7 +56,7 @@ public class TSQLIntegrationTest {
         SQLObjectSchema cv2FetchedSchema = cv2Fetcher.getSQLObjectSchema();
 
         SQLObjectSchemaParser parser1 = new SQLObjectSchemaParser(cv2FetchedSchema);
-        parser1.parse(StatementsProvider.getCV2Assertions());
+        parser1.parse(TintinAssertionsProvider.getCV2Assertions());
         SQLObjectSchema schema1 = parser1.getSQLObjectSchema();
 
         List<Assertion> expectedAssertions = schema1.getAssertions();

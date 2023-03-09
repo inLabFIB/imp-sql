@@ -1,14 +1,54 @@
 package utils;
 
-public class StatementsProvider {
+public class TintinAssertionsProvider {
+
+    /* --------------------------- TPC-H related methods --------------------------- */
+
+    public static String getTPCHAssertions() {
+        return CORRECT_DATES_ASSERTION +
+            AT_LEAST_ONE_ITEM_ASSERTION +
+            SUPPLIER_NOT_CUSTOMER_ASSERTION +
+            SUPPLIER_HAS_OTHER_SUPPLIER_ASSERTION;
+    }
+
+    public static String getTPCHCorrectDatesAssertion() {
+        return CORRECT_DATES_ASSERTION;
+    }
+
+    public static String getTPCHAtLeastOneItemAssertion() {
+        return AT_LEAST_ONE_ITEM_ASSERTION;
+    }
+
+    public static String getTPCHSupplierNotCustomerAssertion() {
+        return SUPPLIER_NOT_CUSTOMER_ASSERTION;
+    }
+
+    public static String getTPCHSupplierHasOtherSupplierAssertion() {
+        return SUPPLIER_HAS_OTHER_SUPPLIER_ASSERTION;
+    }
+
+    /* --------------------------- CV2 related methods --------------------------- */
+
+    public static String getCV2Assertions() {
+        return NATIONAL_INTERNATIONAL +
+            FAST_QUALITY_EXPENSIVE +
+            AT_LEAST_ONE_SERVICE;
+    }
+
+    public static String getCV2NationalInternational() {
+        return NATIONAL_INTERNATIONAL;
+    }
+
+    public static String getCV2FastQualityExpensive() {
+        return FAST_QUALITY_EXPENSIVE;
+    }
+
+    public static String getCV2AtLeastOneService() {
+        return AT_LEAST_ONE_SERVICE;
+    }
+
 
     /* --------------------------- TPC-H related assertions --------------------------- */
-
-    private static final String CORRECT_DATES_ASSERTION_SELECT = """
-        SELECT *
-        FROM LINEITEM AS l JOIN ORDERS AS o ON (l.L_ORDERKEY = o.O_ORDERKEY)
-        WHERE l.L_COMMITDATE < o.O_ORDERDATE
-        """;
 
     private static final String CORRECT_DATES_ASSERTION = """
         CREATE ASSERTION correctDates CHECK ( NOT EXISTS (
@@ -54,33 +94,6 @@ public class StatementsProvider {
                 
         """;
 
-    public static String getCorrectDatesAssertionSelect() {
-        return CORRECT_DATES_ASSERTION_SELECT;
-    }
-
-    public static String getTPCHAssertions() {
-        return CORRECT_DATES_ASSERTION +
-            AT_LEAST_ONE_ITEM_ASSERTION +
-            SUPPLIER_NOT_CUSTOMER_ASSERTION +
-            SUPPLIER_HAS_OTHER_SUPPLIER_ASSERTION;
-    }
-
-    public static String getTPCHCorrectDatesAssertion() {
-        return CORRECT_DATES_ASSERTION;
-    }
-
-    public static String getTPCHAtLeastOneItemAssertion() {
-        return AT_LEAST_ONE_ITEM_ASSERTION;
-    }
-
-    public static String getTPCHSupplierNotCustomerAssertion() {
-        return SUPPLIER_NOT_CUSTOMER_ASSERTION;
-    }
-
-    public static String getTPCHSupplierHasOtherSupplierAssertion() {
-        return SUPPLIER_HAS_OTHER_SUPPLIER_ASSERTION;
-    }
-
     /* --------------------------- CV2 related assertions --------------------------- */
 
     private static final String NATIONAL_INTERNATIONAL = """
@@ -115,21 +128,4 @@ public class StatementsProvider {
                 
         """;
 
-    public static String getCV2Assertions() {
-        return NATIONAL_INTERNATIONAL +
-            FAST_QUALITY_EXPENSIVE +
-            AT_LEAST_ONE_SERVICE;
-    }
-
-    public static String getCV2NationalInternational() {
-        return NATIONAL_INTERNATIONAL;
-    }
-
-    public static String getCV2FastQualityExpensive() {
-        return FAST_QUALITY_EXPENSIVE;
-    }
-
-    public static String getCV2AtLeastOneService() {
-        return AT_LEAST_ONE_SERVICE;
-    }
 }

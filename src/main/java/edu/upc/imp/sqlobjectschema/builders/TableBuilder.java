@@ -5,6 +5,7 @@ import edu.upc.imp.sqlobjectschema.SchemaReference;
 import edu.upc.imp.sqlobjectschema.Table;
 import edu.upc.imp.sqlobjectschema.constraints.*;
 import edu.upc.imp.sqlobjectschema.exceptions.MissingReferencedObjectException;
+import edu.upc.imp.sqlobjectschema.exceptions.SQLObjectAlreadyExistsException;
 import edu.upc.imp.sqlobjectschema.sql_data_types.SQLDataType;
 import edu.upc.imp.sqlobjectschema.value_expressions.ValueExpression;
 
@@ -241,7 +242,7 @@ public class TableBuilder {
     }
 
     public void addAttribute(String attrName, int attrPosition, boolean isNullable, SQLDataType type) {
-        if (provisionalAttributeMap.containsKey(attrName)) throw new IllegalArgumentException("Attribute name already in use.");
+        if (provisionalAttributeMap.containsKey(attrName)) throw new SQLObjectAlreadyExistsException("Attribute name already in use.");
         if (provisionalAttributeMap.values().stream().anyMatch(a -> a.attrPosition == attrPosition))
             throw new IllegalArgumentException("Position of attribute already in use.");
         provisionalAttributeMap.put(attrName, new ProvisionalAttribute(attrName, attrPosition, type, isNullable));

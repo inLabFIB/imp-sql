@@ -187,7 +187,7 @@ public class TablesSQLObjectSchemaParserTest {
 
     @Test
     public void parseTableWithForeignKeyColumnConstraint() {
-        String createTable = """
+        String createTables = """
             CREATE TABLE tableA (
                 colPk int,
                 colAttr1 int
@@ -199,7 +199,7 @@ public class TablesSQLObjectSchemaParserTest {
             );
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
-        parser.parse(createTable);
+        parser.parse(createTables);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
         Attribute referencedAttribute = new Attribute("colAttr1", new SQLInt());
@@ -246,6 +246,56 @@ public class TablesSQLObjectSchemaParserTest {
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
 
         assertThrows(MissingReferencedObjectException.class, () -> {
+            parser.parse(createTable);
+        });
+    }
+
+    @Test
+    public void parsingTableWithMissingForeignKeyReferenceAttributeRaisesException() {
+        String createTables = """
+            CREATE TABLE tableA (
+                colPk int,
+                colAttr1 int
+            );
+            
+            CREATE TABLE tableB (
+                colPk int,
+                colFk int CONSTRAINT fk1 FOREIGN KEY REFERENCES tableA (nonExistingAttr)
+            );
+            """;
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+
+        assertThrows(MissingReferencedObjectException.class, () -> {
+            parser.parse(createTables);
+        });
+    }
+
+    @Test
+    public void parsingTableWithRepeatedAttributesRaisesException() {
+        String createTable = """
+            CREATE TABLE tableName (
+                col int,
+                col int
+            );
+            """;
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+
+        assertThrows(SQLObjectAlreadyExistsException.class, () -> {
+            parser.parse(createTable);
+        });
+    }
+
+    @Test
+    public void parsingTableWithRepeatedAttributesButWithDifferentTypesRaisesException() {
+        String createTable = """
+            CREATE TABLE tableName (
+                col int,
+                col varchar(10)
+            );
+            """;
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+
+        assertThrows(SQLObjectAlreadyExistsException.class, () -> {
             parser.parse(createTable);
         });
     }
