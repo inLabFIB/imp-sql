@@ -388,10 +388,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     }
 
     public void visitColumn_Definition_Element(TSqlParser.Column_definition_elementContext ctx, TableBuilder tableBuilder, String attributeName) {
-        if (ctx.DEFAULT() != null) {
-            String constraintName = ctx.constraint != null ? ctx.constraint.getText() : unnamedConstraintName + unnamedConstraintNumber++;
-            tableBuilder.addDefaultConstraint(constraintName, attributeName, visitExpression(ctx.constant_expr));
-        }
+        if (ctx.DEFAULT() != null) tableBuilder.setAttributeDefaultExpression(attributeName, visitExpression(ctx.constant_expr));
         else if (ctx.column_constraint() != null) visitColumn_Constraint(ctx.column_constraint(), tableBuilder, attributeName);
         else throw new RuntimeException("Other column_definition_elements not supported yet!");
     }
@@ -414,7 +411,6 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     }
 
     public void visitTable_constraint(TSqlParser.Table_constraintContext ctx, TableBuilder tableBuilder) {
-        if (ctx.CONNECTION() != null) throw new RuntimeException("Grammar expression 'CONNECTION' not supported yet!");
         String constraintName = ctx.constraint != null ? ctx.constraint.getText() : unnamedConstraintName + unnamedConstraintNumber++;
 
         if (ctx.PRIMARY() != null) {
@@ -427,8 +423,6 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
             tableBuilder.addUniqueConstraint(constraintName, visitColumn_name_list_with_order(ctx.column_name_list_with_order()));
         } else if (ctx.FOREIGN() != null) {
             visitForeign_key_options(ctx.foreign_key_options(), tableBuilder, visitColumn_name_list(ctx.column_name_list()), constraintName);
-        } else if (ctx.DEFAULT() != null) {
-            tableBuilder.addDefaultConstraint(constraintName, visitId_(ctx.column), visitExpression(ctx.constant_expr));
         } else if (ctx.check_constraint() != null) {
             tableBuilder.addCheckConstraint(new Check(constraintName, visitCheck_constraint(ctx.check_constraint())));
         }

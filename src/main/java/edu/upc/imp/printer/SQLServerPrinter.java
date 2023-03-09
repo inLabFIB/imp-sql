@@ -182,7 +182,8 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
     @Override
     public String visit(Attribute a) {
         return a.getName() + " " + a.getType().<String>visit(this) +
-            (a.isNotNull() ? " NOT NULL" : " ");
+            (a.hasDefaultExpression() ? " DEFAULT " + a.getDefaultExpression().<String>visit(this) : "") +
+            (a.isNotNull() ? " NOT NULL" : "");
     }
 
     @Override
@@ -193,17 +194,6 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
             c.getExpression().<String>visit(this) +
             " )";
         return checkCreationStatement;
-    }
-
-    @Override
-    public String visit(Default d) {
-        String defaultCreationStatement = "";
-        if (d.hasName()) defaultCreationStatement = "CONSTRAINT " + d.getName() + " ";
-        defaultCreationStatement += "DEFAULT " +
-            d.getExpression().<String>visit(this) +
-            " FOR " +
-            d.getAttribute().getName();
-        return defaultCreationStatement;
     }
 
     @Override

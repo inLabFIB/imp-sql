@@ -2,6 +2,7 @@ package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.sql_data_types.SQLDataType;
 import edu.upc.imp.sqlobjectschema.sql_data_types.SQLVarchar;
+import edu.upc.imp.sqlobjectschema.value_expressions.ValueExpression;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
@@ -12,15 +13,22 @@ public class Attribute implements SQLObjectSchemaEntity {
     private final String attributeName;
     private final SQLDataType type;
     private final boolean nullable;
+    private final ValueExpression defaultExpression;
 
     public Attribute(String attributeName, SQLDataType type) {
-        this(attributeName, type, true);
+        this(attributeName, type, true, null);
     }
-
     public Attribute(String attributeName, SQLDataType type, boolean nullable) {
+        this(attributeName, type, nullable, null);
+    }
+    public Attribute(String attributeName, SQLDataType type, ValueExpression defaultExpression){
+        this(attributeName, type, true, defaultExpression);
+    }
+    public Attribute(String attributeName, SQLDataType type, boolean nullable, ValueExpression defaultExpression) {
         this.attributeName = Objects.requireNonNull(attributeName, "The parameter 'attributeName' cannot be null.");
         this.type = Objects.requireNonNull(type, "The parameter 'type' cannot be null.");
         this.nullable = nullable;
+        this.defaultExpression = defaultExpression;
     }
 
     public String getName() {
@@ -35,8 +43,11 @@ public class Attribute implements SQLObjectSchemaEntity {
         return !nullable;
     }
 
-    public Attribute getNotNullCopy() {
-        return new Attribute(attributeName, type, false);
+    public boolean hasDefaultExpression() {
+        return defaultExpression != null;
+    }
+    public ValueExpression getDefaultExpression() {
+        return defaultExpression;
     }
 
     @Override
@@ -50,6 +61,7 @@ public class Attribute implements SQLObjectSchemaEntity {
         return o instanceof Attribute a
             && attributeName.equals(a.attributeName)
             && type.equals(a.type)
-            && nullable == a.nullable;
+            && nullable == a.nullable
+            && Objects.equals(defaultExpression, a.defaultExpression);
     }
 }

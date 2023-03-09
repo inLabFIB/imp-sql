@@ -109,6 +109,7 @@ public class TablesSQLObjectSchemaParserTest {
         assertThrows(SQLObjectAlreadyExistsException.class, () -> parser.parse(createTable));
     }
 
+
     /* COLUMN CONSTRAINTS */
 
     /** Coupled to parser naming of unnamed constraints! **/
@@ -116,26 +117,20 @@ public class TablesSQLObjectSchemaParserTest {
     public void parseTableWithDefaultColumnConstraints() {
         String createTable = """
             CREATE TABLE name (
-                col1 int CONSTRAINT default1 DEFAULT 1,
-                col2 int DEFAULT 10
+                col1 int DEFAULT 1
             );
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
         parser.parse(createTable);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-        Attribute a1 = new Attribute("col1", new SQLInt());
-        Attribute a2 = new Attribute("col2", new SQLInt());
+        Attribute a1 = new Attribute("col1", new SQLInt(), new SQLPrimitiveInteger(1));
 
         Table expectedTable = new Table(
             "name",
             null,
-            List.of(a1, a2),
+            List.of(a1),
             new ArrayList<>(),
-            List.of(
-                new Default("default1", a1, new SQLPrimitiveInteger(1)),
-                new Default("constraint1", a2, new SQLPrimitiveInteger(10))
-                ),
             new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>()
@@ -166,7 +161,6 @@ public class TablesSQLObjectSchemaParserTest {
             null,
             List.of(a1, a2),
             new ArrayList<>(),
-            new ArrayList<>(),
             List.of(new Unique("constraint1", List.of(a2))),
             List.of(new PrimaryKey("pk1", List.of(a1))),
             new ArrayList<>()
@@ -196,7 +190,6 @@ public class TablesSQLObjectSchemaParserTest {
                     ComparisonPredicate.ComparisonOperator.EQ,
                     new ColumnReference("col"),
                     new SQLPrimitiveString("hello")))),
-            new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>()
@@ -245,7 +238,6 @@ public class TablesSQLObjectSchemaParserTest {
             new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>(),
-            new ArrayList<>(),
             List.of(new ForeignKey("fk1", List.of(linkedAttribute), List.of(referencedAttribute)))
         );
 
@@ -287,12 +279,11 @@ public class TablesSQLObjectSchemaParserTest {
         assertThrows(MissingReferencedObjectException.class, () -> parser.parse(createTables));
     }
 
-    /** TABLE CONSTRAINTS **/
 
-    //TODO: decide what is a default constraint
+    /* TABLE CONSTRAINTS */
 
     /** Coupled to parser naming of unnamed constraints! **/
-    //TODO: change how the builder stores things
+//TODO: change how the builder stores things
     @Disabled
     @Test
     public void parseTableWithPrimaryKeyAndUniqueTableConstraints() {
@@ -316,7 +307,6 @@ public class TablesSQLObjectSchemaParserTest {
             null,
             List.of(a1, a2),
             new ArrayList<>(),
-            new ArrayList<>(),
             List.of(new Unique("constraint1", List.of(a2))),
             List.of(new PrimaryKey("pk1", List.of(a1, a2))),
             new ArrayList<>()
@@ -326,6 +316,7 @@ public class TablesSQLObjectSchemaParserTest {
             schema.getTables().get(0).equals(expectedTable));
     }
 
+//TODO: make a constraint with a little bit of sense
     @Test
     public void parseTableWithCheckTableConstraints() {
         String createTable = """
@@ -352,11 +343,11 @@ public class TablesSQLObjectSchemaParserTest {
                     new ColumnReference("col2")))),
             new ArrayList<>(),
             new ArrayList<>(),
-            new ArrayList<>(),
             new ArrayList<>()
         );
     }
 
+//TODO: make a constraint with multiple attributes
     @Test
     public void parseTableWithForeignKeyTableConstraint() {
         String createTables = """
@@ -397,7 +388,6 @@ public class TablesSQLObjectSchemaParserTest {
             new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>(),
-            new ArrayList<>(),
             List.of(new ForeignKey("fk1", List.of(linkedAttribute), List.of(referencedAttribute)))
         );
 
@@ -410,7 +400,9 @@ public class TablesSQLObjectSchemaParserTest {
 
     /** CONSTRAINTS INTEGRATION **/
 
+//TODO: finish test
     @Test
+    @Disabled
     public void parseTableWithMultipleConstraints() {
         String createTables = """
             CREATE TABLE A (
@@ -420,7 +412,7 @@ public class TablesSQLObjectSchemaParserTest {
             
             CREATE TABLE B (
               B_a1 int DEFAULT 0,
-              B_a2 int,
+              B_a2 int CONSTRAINT unique1 UNIQUE,
               B_a3 int,
               B_a4 int,
               B_a5 int,
@@ -436,7 +428,7 @@ public class TablesSQLObjectSchemaParserTest {
 
         // Object built directly in java
         Table expectedTableA = new Table(
-            "tableA",
+            "A",
             List.of(
                 new Attribute("colPk", new SQLInt()),
                 referencedAttribute
@@ -450,7 +442,6 @@ public class TablesSQLObjectSchemaParserTest {
                 new Attribute("colPk", new SQLInt()),
                 linkedAttribute
             ),
-            new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>(),

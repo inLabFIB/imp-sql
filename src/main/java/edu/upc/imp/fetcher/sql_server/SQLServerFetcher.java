@@ -52,22 +52,17 @@ public class SQLServerFetcher implements DatabaseFetcher {
         readPrimaryKeysAndUniques(schemaReference.getSchemaName(), tables);
         // Read FKs
         readForeignKeys(schemaReference.getSchemaName(), schema, tables);
-        // TODO: Test parsing of two functions bellow.
-        // Read Defaults
-        readDefaults(schemaReference.getSchemaName(), tables);
         // Read Checks
         readChecks(schemaReference.getSchemaName(), tables);
 
         // Order tables by FK dependencies:
         List<Table> processedTables = new ArrayList<>();
         while(!tables.isEmpty()) {
-            // TODO: Test FK sorting, may not be working.
             TableBuilder nextTableToProcess = tables.values().iterator().next();
             buildTable(nextTableToProcess, tables, new HashSet<>(), processedTables);
         }
 
         return processedTables;
-        //return tables.values().stream().map(t->t.build(new ArrayList<>())).toList();
     }
 
     private void buildTable(TableBuilder table, Map<String, TableBuilder> tablesToProcess, Set<String> beingProcessed, List<Table> processedTables) {
@@ -88,9 +83,11 @@ public class SQLServerFetcher implements DatabaseFetcher {
     public void readAttributes(SchemaReference schema, Map<String, TableBuilder> tables) {
         // Execute SQL statement to obtain information about attributes
         String statement =
-            "select tab.name as table_name, col.name as column_name, col.column_id as column_position, ty.name as data_type, col.max_length as [length], col.[precision], col.[scale], col.is_nullable as nullable\n" +
-            "from sys.tables tab join sys.columns col on (tab.object_id = col.object_id) join sys.types ty on (col.system_type_id = ty.system_type_id)\n" +
-            "where SCHEMA_NAME(tab.schema_id) = '" + schema.getSchemaName() + "'\n" +
+            "select tab.name as table_name, col.name as column_name, col.column_id as column_position, ty.name as data_type, col.max_length as [length], col.[precision], col.[scale], col.is_nullable as nullable, def.definition as default_value " +
+            "from sys.tables tab join sys.columns col on (tab.object_id = col.object_id) " +
+            "    join sys.types ty on (col.system_type_id = ty.system_type_id) " +
+            "    left join sys.default_constraints def on (def.parent_object_id = tab.object_id and def.parent_column_id = col.column_id) " +
+            "where SCHEMA_NAME(tab.schema_id) = '" + schema.getSchemaName() + "' " +
             "order by table_name, col.column_id;";
         SqlRowSet resultSet = jdbcTemplate.queryForRowSet(statement);
         // Populate table builders
@@ -103,16 +100,17 @@ public class SQLServerFetcher implements DatabaseFetcher {
             int precision = resultSet.getInt("precision");
             int scale = resultSet.getInt("scale");
             boolean nullable = resultSet.getBoolean("nullable");
+            String valueExpression = resultSet.getString("default_value");
 
             SQLDataType dataType = createDataTypeForName(type, length, precision, scale);
 
             TableBuilder tb = tables.get(tableName);
             if (tb == null) {
                 tb = new TableBuilder(tableName, schema);
-                tb.addAttribute(attrName, attrPos, nullable, dataType);
+                tb.addAttribute(attrName, attrPos, nullable, dataType, valueExpression == null ? null : parseValueExpression(valueExpression, tableName));
                 tables.put(tableName, tb);
             } else {
-                tb.addAttribute(attrName, attrPos, nullable, dataType);
+                tb.addAttribute(attrName, attrPos, nullable, dataType, valueExpression == null ? null : parseValueExpression(valueExpression, tableName));
             }
         }
     }
@@ -198,29 +196,6 @@ public class SQLServerFetcher implements DatabaseFetcher {
             TableBuilder tb = tables.get(tableName);
             if (tb == null) continue; // Somehow detected a constraint on a table not yet found (with no attributes). Maybe should create an empty table builder?
             tb.addForeignKeyConstraint(constraintName, attrName, refTableName, refAttrName);
-        }
-    }
-
-    public void readDefaults(String schemaName, Map<String, TableBuilder> tables) {
-        // Execute SQL statement to obtain information about attributes
-        String statement =
-            "select tab.name as table_name, def.name as constraint_name, col.name as column_name, definition as value\n" +
-            "from sys.default_constraints def\n" +
-            "    join sys.tables tab on (def.parent_object_id = tab.object_id)\n" +
-            "    join sys.columns col on (tab.object_id = col.object_id and def.parent_column_id = col.column_id)\n" +
-            "where SCHEMA_NAME(def.schema_id) = '" + schemaName + "'\n" +
-            "order by table_name, constraint_name;";
-        SqlRowSet resultSet = jdbcTemplate.queryForRowSet(statement);
-        // Populate table builders
-        while (resultSet.next()) {
-            String tableName = resultSet.getString("table_name");
-            String constraintName = resultSet.getString("constraint_name");
-            String attrName = resultSet.getString("column_name");
-            String valueExpression = resultSet.getString("value");
-
-            TableBuilder tb = tables.get(tableName);
-            if (tb == null) continue; // Somehow detected a constraint on a table not yet found (with no attributes). Maybe should create an empty table builder?
-            tb.addDefaultConstraint(constraintName, attrName, parseValueExpression(valueExpression, tableName));
         }
     }
 

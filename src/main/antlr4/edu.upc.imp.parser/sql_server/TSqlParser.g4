@@ -134,15 +134,6 @@ table_constraint
                 '(' fk = column_name_list ')'
                 foreign_key_options
             )
-            |
-            (
-                CONNECTION
-                '(' connection_node ( ',' connection_node )* ')'
-            )
-            |
-            (
-                DEFAULT constant_expr=expression FOR column=id_ (WITH VALUES)?
-            )
             | check_constraint
         )
     ;
@@ -276,7 +267,7 @@ column_definition_element
     | COLLATE collation_name=id_
     | SPARSE
     | MASKED WITH '(' FUNCTION '=' mask_function=STRING ')'
-    | (CONSTRAINT constraint=id_)? DEFAULT  constant_expr=expression
+    | DEFAULT  constant_expr=expression
     | IDENTITY ('(' seed=DECIMAL ',' increment=DECIMAL ')')?
     | NOT FOR REPLICATION
     | GENERATED ALWAYS AS ( ROW | TRANSACTION_ID | SEQUENCE_NUMBER ) ( START | END ) HIDDEN_KEYWORD?

@@ -24,7 +24,6 @@ public class TableBuilder {
     private final Map<String, ProvisionalAttribute> provisionalAttributeMap = new HashMap<>();
 
     private final List<Check> checks = new ArrayList<>();
-    private final Map<String, ProvisionalDefault> provisionalDefaultMap = new HashMap<>();
     private final Map<String, ProvisionalUnique> provisionalUniqueMap = new HashMap<>();
     private final Map<String, ProvisionalPrimaryKey> provisionalPrimaryKeyMap = new HashMap<>();
     private final Map<String, ProvisionalForeignKey> provisionalForeignKeyMap = new HashMap<>();
@@ -35,12 +34,14 @@ public class TableBuilder {
         private final int attrPosition;
         private SQLDataType type;
         private boolean isNullable;
+        private ValueExpression defaultExpression;
 
-        public ProvisionalAttribute(String attrName, int attrPosition, SQLDataType type, boolean isNullable) {
+        public ProvisionalAttribute(String attrName, int attrPosition, SQLDataType type, boolean isNullable, ValueExpression defaultExpression) {
             this.attrName = attrName;
             this.attrPosition = attrPosition;
             this.type = type;
             this.isNullable = isNullable;
+            this.defaultExpression = defaultExpression;
         }
 
         public int getAttrPosition() {
@@ -48,28 +49,7 @@ public class TableBuilder {
         }
 
         public Attribute getAttributeObject() {
-            return new Attribute(attrName, type, isNullable);
-        }
-    }
-
-    /* CONSTRAINTS */
-    public class ProvisionalDefault {
-        private final String constraintName;
-        private final String attributeName;
-        private final ValueExpression expression;
-
-        public ProvisionalDefault(String constraintName, String attributeName, ValueExpression expression) {
-            this.constraintName = constraintName;
-            this.attributeName = attributeName;
-            this.expression = expression;
-        }
-
-        public Default getDefaultObject(Map<String, Attribute> attributesMap) {
-            return new Default(
-                constraintName,
-                attributesMap.get(attributeName),
-                expression
-            );
+            return new Attribute(attrName, type, isNullable, defaultExpression);
         }
     }
 
@@ -172,21 +152,10 @@ public class TableBuilder {
         this.schemaReference = schemaReference;
     }
 
-    /* GETTERS */
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public List<String> getTableReferences() {
-        return this.provisionalForeignKeyMap.values().stream().map(f -> f.referencedTable).distinct().toList();
-    }
-
     public Table build(List<Table> referencableTables) {
         if (this.tableName == null) throw new IllegalArgumentException("Table build error. Table name was null.");
 
         List<Attribute> attributes = new ArrayList<>();
-        List<Default> defaultConstraints = new ArrayList<>();
         List<Unique> uniqueConstraints = new ArrayList<>();
         List<PrimaryKey> primaryKeyConstraints = new ArrayList<>();
         List<ForeignKey> foreignKeyConstraints = new ArrayList<>();
@@ -201,9 +170,6 @@ public class TableBuilder {
 
         if (attributes.isEmpty()) throw new IllegalArgumentException("Table build error. No attributes found for table.");
 
-        for (ProvisionalDefault pd : this.provisionalDefaultMap.values()) {
-            defaultConstraints.add(pd.getDefaultObject(attributesMap));
-        }
         for (ProvisionalUnique pu : this.provisionalUniqueMap.values()) {
             uniqueConstraints.add(pu.getUniqueObject(attributesMap));
         }
@@ -216,9 +182,23 @@ public class TableBuilder {
 
         return new Table(
             this.tableName, this.schemaReference, attributes,
-            checks, defaultConstraints, uniqueConstraints, primaryKeyConstraints, foreignKeyConstraints
+            checks, uniqueConstraints, primaryKeyConstraints, foreignKeyConstraints
         );
     }
+
+    /* GETTERS */
+
+    //TODO: doesn't follow builder pattern
+    public String getTableName() {
+        return tableName;
+    }
+
+    //TODO: doesn't follow builder pattern
+    public List<String> getTableReferences() {
+        return this.provisionalForeignKeyMap.values().stream().map(f -> f.referencedTable).distinct().toList();
+    }
+
+
 
     /* SETTERS */
 
@@ -233,22 +213,29 @@ public class TableBuilder {
     /* - For attributes */
 
     public void addAttribute(String attrName) {
-        addAttribute(attrName, provisionalAttributeMap.values().size()+1, true, null);
+        addAttribute(attrName, provisionalAttributeMap.values().size()+1, true, null, null);
     }
 
     public void addAttribute(String attrName, SQLDataType type) {
-        addAttribute(attrName, provisionalAttributeMap.values().size()+1, true, type);
+        addAttribute(attrName, provisionalAttributeMap.values().size()+1, true, type, null);
     }
 
     public void addAttribute(String attrName, boolean isNullable) {
-        addAttribute(attrName, provisionalAttributeMap.values().size()+1, isNullable, null);
+        addAttribute(attrName, provisionalAttributeMap.values().size()+1, isNullable, null, null);
     }
 
     public void addAttribute(String attrName, int attrPosition, boolean isNullable, SQLDataType type) {
         if (provisionalAttributeMap.containsKey(attrName)) throw new SQLObjectAlreadyExistsException("Attribute name already in use.");
         if (provisionalAttributeMap.values().stream().anyMatch(a -> a.attrPosition == attrPosition))
             throw new IllegalArgumentException("Position of attribute already in use.");
-        provisionalAttributeMap.put(attrName, new ProvisionalAttribute(attrName, attrPosition, type, isNullable));
+        provisionalAttributeMap.put(attrName, new ProvisionalAttribute(attrName, attrPosition, type, isNullable, null));
+    }
+
+    public void addAttribute(String attrName, int attrPosition, boolean isNullable, SQLDataType type, ValueExpression defaultExpression) {
+        if (provisionalAttributeMap.containsKey(attrName)) throw new SQLObjectAlreadyExistsException("Attribute name already in use.");
+        if (provisionalAttributeMap.values().stream().anyMatch(a -> a.attrPosition == attrPosition))
+            throw new IllegalArgumentException("Position of attribute already in use.");
+        provisionalAttributeMap.put(attrName, new ProvisionalAttribute(attrName, attrPosition, type, isNullable, defaultExpression));
     }
 
     public void setAttributeNullable(String attrName, boolean isNullable) {
@@ -263,16 +250,16 @@ public class TableBuilder {
         attr.type = type;
     }
 
-    /* - For constraints */
+    public void setAttributeDefaultExpression(String attrName, ValueExpression defaultExpression) {
+        ProvisionalAttribute attr = provisionalAttributeMap.get(attrName);
+        if (attr == null) throw new MissingReferencedObjectException("Attribute with name '"+attrName+"' not defined.");
+        attr.defaultExpression = defaultExpression;
+    }
+
+    /* for constraints */
 
     public void addCheckConstraint(Check checkConstraint) {
         checks.add(checkConstraint);
-    }
-
-    public void addDefaultConstraint(String constraintName, String attrName, ValueExpression value) {
-        if (constraintName == null || attrName == null || value  == null)
-            throw new MissingReferencedObjectException("Some constructor parameter was null (DEFAULT)");
-        provisionalDefaultMap.put(constraintName, new ProvisionalDefault(constraintName, attrName, value));
     }
 
     public void addUniqueConstraint(String constraintName, String attrName) {
