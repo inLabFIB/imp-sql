@@ -1,5 +1,7 @@
 package edu.upc.imp.sqlobjectschema;
 
+import edu.upc.imp.parser.SQLObjectSchemaParser;
+import edu.upc.imp.printer.SQLServerPrinter;
 import edu.upc.imp.sqlobjectschema.exceptions.MissingReferencedObjectException;
 import edu.upc.imp.sqlobjectschema.exceptions.SQLObjectAlreadyExistsException;
 
@@ -22,12 +24,6 @@ public class SQLObjectSchema {
         views = new ArrayList<>();
         assertions = new ArrayList<>();
     }
-
-    /*public SQLObjectSchema(SQLObjectSchema oldSchema) {
-        this.tables = oldSchema.tables.stream().map(t -> new Table(t, this)).toList();
-        this.views = oldSchema.views.stream().map(v -> new View(v, this)).toList();
-        this.assertions = oldSchema.assertions.stream().map(a -> new Assertion(a, this)).toList();
-    }*/
 
     /** GETTERS **/
 
@@ -69,12 +65,24 @@ public class SQLObjectSchema {
 
     /** OTHER **/
 
+    //TODO: improve this. Avoid calling printer + parser.
+    public SQLObjectSchema getCopy() {
+        String schemaString = "";
+        schemaString += String.join("\n\n", tables.stream().map(s -> s.<String>visit(new SQLServerPrinter())).toList());
+        schemaString += String.join("\n\n", views.stream().map(s -> s.<String>visit(new SQLServerPrinter())).toList());
+        schemaString += String.join("\n\n", assertions.stream().map(s -> s.<String>visit(new SQLServerPrinter())).toList());
+
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(schemaString);
+        return parser.getSQLObjectSchema();
+    }
+
     /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
         return o instanceof SQLObjectSchema os
-            && assertions.equals(os.assertions)
+            && tables.equals(os.tables)
             && views.equals(os.views)
-            && tables.equals(os.tables);
+            && assertions.equals(os.assertions);
     }
 }

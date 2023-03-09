@@ -15,7 +15,6 @@ import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
 import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveString;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.Attr;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +23,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TablesSQLObjectSchemaParserTest {
+
+    /* CREATE TABLE WITHOUT CONSTRAINTS */
 
     @Test
     public void parseSimpleCreateTable() {
@@ -48,9 +49,7 @@ public class TablesSQLObjectSchemaParserTest {
         String basicCreateTable = "CREATE TABLE tableName (col1 int, col2 float);";
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
 
-        assertThrows(SQLObjectAlreadyExistsException.class, () -> {
-            parser.parse(basicCreateTable+basicCreateTable);
-        });
+        assertThrows(SQLObjectAlreadyExistsException.class, () -> parser.parse(basicCreateTable+basicCreateTable));
     }
 
     @Test
@@ -59,9 +58,7 @@ public class TablesSQLObjectSchemaParserTest {
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
         parser.parse(basicCreateTable);
 
-        assertThrows(SQLObjectAlreadyExistsException.class, () -> {
-            parser.parse(basicCreateTable);
-        });
+        assertThrows(SQLObjectAlreadyExistsException.class, () -> parser.parse(basicCreateTable));
     }
 
     @Test
@@ -70,9 +67,7 @@ public class TablesSQLObjectSchemaParserTest {
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
         parser.parse(basicCreateTable);
 
-        assertThrows(SQLObjectAlreadyExistsException.class, () -> {
-            parser.parse(basicCreateTable);
-        });
+        assertThrows(SQLObjectAlreadyExistsException.class, () -> parser.parse(basicCreateTable));
     }
 
     @Test
@@ -88,8 +83,35 @@ public class TablesSQLObjectSchemaParserTest {
 
     }
 
-    //TODO: modify how nameless constraints are processed
-    @Disabled
+    @Test
+    public void parsingTableWithRepeatedAttributesRaisesException() {
+        String createTable = """
+            CREATE TABLE tableName (
+                col int,
+                col int
+            );
+            """;
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+
+        assertThrows(SQLObjectAlreadyExistsException.class, () -> parser.parse(createTable));
+    }
+
+    @Test
+    public void parsingTableWithRepeatedAttributesButWithDifferentTypesRaisesException() {
+        String createTable = """
+            CREATE TABLE tableName (
+                col int,
+                col varchar(10)
+            );
+            """;
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+
+        assertThrows(SQLObjectAlreadyExistsException.class, () -> parser.parse(createTable));
+    }
+
+    /* COLUMN CONSTRAINTS */
+
+    /** Coupled to parser naming of unnamed constraints! **/
     @Test
     public void parseTableWithDefaultColumnConstraints() {
         String createTable = """
@@ -112,7 +134,7 @@ public class TablesSQLObjectSchemaParserTest {
             new ArrayList<>(),
             List.of(
                 new Default("default1", a1, new SQLPrimitiveInteger(1)),
-                new Default("??", a2, new SQLPrimitiveInteger(10))
+                new Default("constraint1", a2, new SQLPrimitiveInteger(10))
                 ),
             new ArrayList<>(),
             new ArrayList<>(),
@@ -123,8 +145,7 @@ public class TablesSQLObjectSchemaParserTest {
             schema.getTables().get(0).equals(expectedTable));
     }
 
-    //TODO: modify how nameless constraints are processed
-    @Disabled
+    /** Coupled to parser naming of unnamed constraints! **/
     @Test
     public void parseTableWithPrimaryKeyAndUniqueColumnConstraints() {
         String createTable = """
@@ -146,7 +167,7 @@ public class TablesSQLObjectSchemaParserTest {
             List.of(a1, a2),
             new ArrayList<>(),
             new ArrayList<>(),
-            List.of(new Unique("??", List.of(a2))),
+            List.of(new Unique("constraint1", List.of(a2))),
             List.of(new PrimaryKey("pk1", List.of(a1))),
             new ArrayList<>()
         );
@@ -159,7 +180,7 @@ public class TablesSQLObjectSchemaParserTest {
     public void parseTableWithCheckColumnConstraints() {
         String createTable = """
             CREATE TABLE name (
-                col varchar(10) CONSTRAINT c1 CHECK ( col5 = 'hello' )
+                col varchar(10) CONSTRAINT c1 CHECK ( col = 'hello' )
             );
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
@@ -173,7 +194,7 @@ public class TablesSQLObjectSchemaParserTest {
             List.of(new Check("c1",
                 new ComparisonPredicate(
                     ComparisonPredicate.ComparisonOperator.EQ,
-                    new ColumnReference("col5"),
+                    new ColumnReference("col"),
                     new SQLPrimitiveString("hello")))),
             new ArrayList<>(),
             new ArrayList<>(),
@@ -245,9 +266,7 @@ public class TablesSQLObjectSchemaParserTest {
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
 
-        assertThrows(MissingReferencedObjectException.class, () -> {
-            parser.parse(createTable);
-        });
+        assertThrows(MissingReferencedObjectException.class, () -> parser.parse(createTable));
     }
 
     @Test
@@ -265,42 +284,183 @@ public class TablesSQLObjectSchemaParserTest {
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
 
-        assertThrows(MissingReferencedObjectException.class, () -> {
-            parser.parse(createTables);
-        });
+        assertThrows(MissingReferencedObjectException.class, () -> parser.parse(createTables));
     }
 
+    /** TABLE CONSTRAINTS **/
+
+    //TODO: decide what is a default constraint
+
+    /** Coupled to parser naming of unnamed constraints! **/
+    //TODO: change how the builder stores things
+    @Disabled
     @Test
-    public void parsingTableWithRepeatedAttributesRaisesException() {
+    public void parseTableWithPrimaryKeyAndUniqueTableConstraints() {
         String createTable = """
-            CREATE TABLE tableName (
-                col int,
-                col int
+            CREATE TABLE name (
+                col1 int,
+                col2 int,
+                CONSTRAINT pk1 PRIMARY KEY (col1, col2),
+                UNIQUE (col2)
             );
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(createTable);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-        assertThrows(SQLObjectAlreadyExistsException.class, () -> {
-            parser.parse(createTable);
-        });
+        Attribute a1 = new Attribute("col1", new SQLInt());
+        Attribute a2 = new Attribute("col2", new SQLInt());
+
+        Table expectedTable = new Table(
+            "name",
+            null,
+            List.of(a1, a2),
+            new ArrayList<>(),
+            new ArrayList<>(),
+            List.of(new Unique("constraint1", List.of(a2))),
+            List.of(new PrimaryKey("pk1", List.of(a1, a2))),
+            new ArrayList<>()
+        );
+
+        assertThat("Parsed table does not equal expected table.",
+            schema.getTables().get(0).equals(expectedTable));
     }
 
     @Test
-    public void parsingTableWithRepeatedAttributesButWithDifferentTypesRaisesException() {
+    public void parseTableWithCheckTableConstraints() {
         String createTable = """
-            CREATE TABLE tableName (
-                col int,
-                col varchar(10)
+            CREATE TABLE name (
+                col1 int,
+                col2 int,
+                CONSTRAINT c1 CHECK ( col1 = col2 )
             );
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(createTable);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-        assertThrows(SQLObjectAlreadyExistsException.class, () -> {
-            parser.parse(createTable);
-        });
+        Table expectedTable = new Table(
+            "name",
+            null,
+            List.of(
+                new Attribute("col1", new SQLInt()),
+                new Attribute("col2", new SQLInt())),
+            List.of(new Check("c1",
+                new ComparisonPredicate(
+                    ComparisonPredicate.ComparisonOperator.EQ,
+                    new ColumnReference("col1"),
+                    new ColumnReference("col2")))),
+            new ArrayList<>(),
+            new ArrayList<>(),
+            new ArrayList<>(),
+            new ArrayList<>()
+        );
     }
 
-    //TODO: add table constraint checks
+    @Test
+    public void parseTableWithForeignKeyTableConstraint() {
+        String createTables = """
+            CREATE TABLE tableA (
+                colPk int,
+                colAttr1 int
+            );
+            
+            CREATE TABLE tableB (
+                colPk int,
+                colFk int,
+                CONSTRAINT fk1 FOREIGN KEY (colFk) REFERENCES tableA (colAttr1)
+            );
+            """;
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(createTables);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-    //TODO: add a test integrating multiple different constraints
+        Attribute referencedAttribute = new Attribute("colAttr1", new SQLInt());
+        Attribute linkedAttribute = new Attribute("colFk", new SQLInt());
+
+        // Object built directly in java
+        Table expectedTableA = new Table(
+            "tableA",
+            List.of(
+                new Attribute("colPk", new SQLInt()),
+                referencedAttribute
+            )
+        );
+
+        Table expectedTableB = new Table(
+            "tableB",
+            null,
+            List.of(
+                new Attribute("colPk", new SQLInt()),
+                linkedAttribute
+            ),
+            new ArrayList<>(),
+            new ArrayList<>(),
+            new ArrayList<>(),
+            new ArrayList<>(),
+            List.of(new ForeignKey("fk1", List.of(linkedAttribute), List.of(referencedAttribute)))
+        );
+
+        assertThat("Parsed table 'tableA' does not equal expected table.",
+            schema.getTables().get(0).equals(expectedTableA));
+
+        assertThat("Parsed table 'tableB' does not equal expected table.",
+            schema.getTables().get(1).equals(expectedTableB));
+    }
+
+    /** CONSTRAINTS INTEGRATION **/
+
+    @Test
+    public void parseTableWithMultipleConstraints() {
+        String createTables = """
+            CREATE TABLE A (
+              A_a1 int,
+              A_a2 int
+            );
+            
+            CREATE TABLE B (
+              B_a1 int DEFAULT 0,
+              B_a2 int,
+              B_a3 int,
+              B_a4 int,
+              B_a5 int,
+              CONSTRAINT fk1 FOREIGN KEY (B_a1) REFERENCES tableA (A_a1)
+            );
+            """;
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(createTables);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        Attribute referencedAttribute = new Attribute("colAttr1", new SQLInt());
+        Attribute linkedAttribute = new Attribute("colFk", new SQLInt());
+
+        // Object built directly in java
+        Table expectedTableA = new Table(
+            "tableA",
+            List.of(
+                new Attribute("colPk", new SQLInt()),
+                referencedAttribute
+            )
+        );
+
+        Table expectedTableB = new Table(
+            "tableB",
+            null,
+            List.of(
+                new Attribute("colPk", new SQLInt()),
+                linkedAttribute
+            ),
+            new ArrayList<>(),
+            new ArrayList<>(),
+            new ArrayList<>(),
+            new ArrayList<>(),
+            List.of(new ForeignKey("fk1", List.of(linkedAttribute), List.of(referencedAttribute)))
+        );
+
+        assertThat("Parsed table 'tableA' does not equal expected table.",
+            schema.getTables().get(0).equals(expectedTableA));
+
+        assertThat("Parsed table 'tableB' does not equal expected table.",
+            schema.getTables().get(1).equals(expectedTableB));
+    }
 }

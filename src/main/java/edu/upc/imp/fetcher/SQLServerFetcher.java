@@ -1,14 +1,12 @@
 package edu.upc.imp.fetcher;
 
 import edu.upc.imp.parser.SQLObjectSchemaGrammarVisitorImpl;
-import edu.upc.imp.sqlobjectschema.Attribute;
 import edu.upc.imp.sqlobjectschema.SQLObjectSchema;
 import edu.upc.imp.sqlobjectschema.SchemaReference;
 import edu.upc.imp.sqlobjectschema.Table;
 import edu.upc.imp.sqlobjectschema.boolean_expressions.BooleanExpression;
 import edu.upc.imp.sqlobjectschema.builders.TableBuilder;
 import edu.upc.imp.sqlobjectschema.constraints.Check;
-import edu.upc.imp.sqlobjectschema.constraints.PrimaryKey;
 import edu.upc.imp.sqlobjectschema.sql_data_types.*;
 import edu.upc.imp.sqlobjectschema.value_expressions.ValueExpression;
 import org.antlr.v4.runtime.CharStreams;
@@ -17,12 +15,10 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.springframework.jdbc.core.JdbcTemplate;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.jdbc.support.rowset.SqlRowSetMetaData;
 
 import edu.upc.imp.parser.sql_server.TSqlLexer;
 import edu.upc.imp.parser.sql_server.TSqlParser;
 
-import java.sql.JDBCType;
 import java.util.*;
 
 public class SQLServerFetcher implements DatabaseFetcher {
@@ -82,7 +78,7 @@ public class SQLServerFetcher implements DatabaseFetcher {
             buildTable(nextTableToProcess, tablesToProcess, beingProcessed, processedTables);
         }
 
-        processedTables.add(table.getTable(processedTables));
+        processedTables.add(table.build(processedTables));
         tablesToProcess.remove(table.getTableName());
     }
 

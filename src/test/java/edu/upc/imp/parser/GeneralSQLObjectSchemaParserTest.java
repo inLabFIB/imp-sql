@@ -19,8 +19,6 @@ public class GeneralSQLObjectSchemaParserTest {
 
     /** GENERAL **/
 
-    //TODO: parser needs to store a input schema copy
-    @Disabled
     @Test
     public void parsingOverAnExistingSchemaDoesntModifyIt() {
         String modifyingStatement = "CREATE VIEW viewName AS SELECT 1;";

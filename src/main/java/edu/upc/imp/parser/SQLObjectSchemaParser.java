@@ -7,16 +7,20 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 
+/**
+ * The parser stores a copy of the schema (possibly) passed as a parameter to the constructor.
+ * From this point on, all the schemas returned are the same object, and parse() method calls can modify it.
+ */
 public class SQLObjectSchemaParser {
+
     private final SQLObjectSchema schema;
 
     public SQLObjectSchemaParser() {
         this.schema = new SQLObjectSchema();
     }
 
-    //TODO: future work -> store a copy of the schema
     public SQLObjectSchemaParser(SQLObjectSchema schema) {
-        this.schema = schema;
+        this.schema = schema.getCopy();
     }
 
     public void parse(String sqlStatements) {

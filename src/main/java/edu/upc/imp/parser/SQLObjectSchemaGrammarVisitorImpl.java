@@ -6,7 +6,6 @@ import edu.upc.imp.parser.sql_server.TSqlParserBaseVisitor;
 import edu.upc.imp.sqlobjectschema.boolean_expressions.*;
 import edu.upc.imp.sqlobjectschema.builders.TableBuilder;
 import edu.upc.imp.sqlobjectschema.constraints.*;
-import edu.upc.imp.sqlobjectschema.exceptions.MissingReferencedObjectException;
 import edu.upc.imp.sqlobjectschema.relational_expressions.*;
 import edu.upc.imp.sqlobjectschema.selection_expressions.AliasableSelectItem;
 import edu.upc.imp.sqlobjectschema.selection_expressions.Asterisk;
@@ -90,7 +89,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
             visitColumn_def_table_constraint(c, tableBuilder);
         }
 
-        Table newTable = tableBuilder.getTable(schema.getTables());
+        Table newTable = tableBuilder.build(schema.getTables());
         schema.addTable(newTable);
         return newTable;
     }
@@ -425,7 +424,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         } else if (ctx.UNIQUE() != null) {
             if (ctx.clustered() != null) throw new RuntimeException("PK options not supported yet!");
             if (ctx.primary_key_options().getChildCount() != 0) throw new RuntimeException("PK options not supported yet!");
-            tableBuilder.addPrimaryKeyConstraint(constraintName, visitColumn_name_list_with_order(ctx.column_name_list_with_order()));
+            tableBuilder.addUniqueConstraint(constraintName, visitColumn_name_list_with_order(ctx.column_name_list_with_order()));
         } else if (ctx.FOREIGN() != null) {
             visitForeign_key_options(ctx.foreign_key_options(), tableBuilder, visitColumn_name_list(ctx.column_name_list()), constraintName);
         } else if (ctx.DEFAULT() != null) {

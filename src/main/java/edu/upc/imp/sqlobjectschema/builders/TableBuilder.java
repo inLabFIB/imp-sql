@@ -10,9 +10,12 @@ import edu.upc.imp.sqlobjectschema.sql_data_types.SQLDataType;
 import edu.upc.imp.sqlobjectschema.value_expressions.ValueExpression;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class TableBuilder {
+
+    //TODO: try to follow a builder pattern (avoid getter)
+
+    //TODO: store list for each map/set to avoid losing order of constraint and attribute orders
 
     /* TABLE INFO */
     private String tableName;
@@ -179,7 +182,7 @@ public class TableBuilder {
         return this.provisionalForeignKeyMap.values().stream().map(f -> f.referencedTable).distinct().toList();
     }
 
-    public Table getTable(List<Table> referencableTables) {
+    public Table build(List<Table> referencableTables) {
         if (this.tableName == null) throw new IllegalArgumentException("Table build error. Table name was null.");
 
         List<Attribute> attributes = new ArrayList<>();
