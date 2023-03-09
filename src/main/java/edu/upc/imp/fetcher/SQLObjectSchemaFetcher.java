@@ -1,5 +1,6 @@
 package edu.upc.imp.fetcher;
 
+import edu.upc.imp.fetcher.sql_server.SQLServerFetcher;
 import edu.upc.imp.sqlobjectschema.SQLObjectSchema;
 
 public class SQLObjectSchemaFetcher {

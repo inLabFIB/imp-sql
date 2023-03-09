@@ -1,5 +1,6 @@
-package edu.upc.imp.fetcher;
+package edu.upc.imp.fetcher.sql_server;
 
+import edu.upc.imp.fetcher.DatabaseFetcher;
 import edu.upc.imp.parser.SQLObjectSchemaGrammarVisitorImpl;
 import edu.upc.imp.sqlobjectschema.SQLObjectSchema;
 import edu.upc.imp.sqlobjectschema.SchemaReference;
@@ -17,7 +18,7 @@ import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import edu.upc.imp.parser.sql_server.TSqlLexer;
-import edu.upc.imp.parser.sql_server.TSqlParser;
+import edu.upc.imp.parser.sql_server.TSqlExpressionParser;
 
 import java.util.*;
 
@@ -60,11 +61,13 @@ public class SQLServerFetcher implements DatabaseFetcher {
         // Order tables by FK dependencies:
         List<Table> processedTables = new ArrayList<>();
         while(!tables.isEmpty()) {
+            // TODO: Test FK sorting, may not be working.
             TableBuilder nextTableToProcess = tables.values().iterator().next();
             buildTable(nextTableToProcess, tables, new HashSet<>(), processedTables);
         }
 
         return processedTables;
+        //return tables.values().stream().map(t->t.build(new ArrayList<>())).toList();
     }
 
     private void buildTable(TableBuilder table, Map<String, TableBuilder> tablesToProcess, Set<String> beingProcessed, List<Table> processedTables) {
@@ -217,34 +220,20 @@ public class SQLServerFetcher implements DatabaseFetcher {
 
             TableBuilder tb = tables.get(tableName);
             if (tb == null) continue; // Somehow detected a constraint on a table not yet found (with no attributes). Maybe should create an empty table builder?
-            tb.addDefaultConstraint(constraintName, attrName, parseValueExpression(valueExpression));
+            tb.addDefaultConstraint(constraintName, attrName, parseValueExpression(valueExpression, tableName));
         }
     }
 
-    private ValueExpression parseValueExpression(String valueExpression) {
+    private ValueExpression parseValueExpression(String valueExpression, String tableName) {
         CodePointCharStream input = CharStreams.fromString(valueExpression);
         TSqlLexer lexer = new TSqlLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        TSqlParser parser = new TSqlParser(tokens);
+        TSqlExpressionParser parser = new TSqlExpressionParser(tokens);
 
-        TSqlParser.ExpressionContext tree = parser.expression();
-        SQLValueExpressionCapturingGrammarVisitorImpl visitor = new SQLValueExpressionCapturingGrammarVisitorImpl();
+        TSqlExpressionParser.ExpressionContext tree = parser.expression();
+        TSQLExpressionGrammarVisitorImpl visitor = new TSQLExpressionGrammarVisitorImpl(tableName);
         visitor.visit(tree);
-        return visitor.getResult();
-    }
-
-    private class SQLValueExpressionCapturingGrammarVisitorImpl extends SQLObjectSchemaGrammarVisitorImpl {
-        private ValueExpression result;
-        public SQLValueExpressionCapturingGrammarVisitorImpl() {
-            super(new SQLObjectSchema());
-        }
-        public ValueExpression visitSearch_condition(TSqlParser.ExpressionContext ctx) {
-            result = super.visitExpression(ctx);
-            return result;
-        }
-        public ValueExpression getResult() {
-            return result;
-        }
+        return visitor.getValueExpression();
     }
 
     public void readChecks(String schemaName, Map<String, TableBuilder> tables) {
@@ -264,33 +253,19 @@ public class SQLServerFetcher implements DatabaseFetcher {
 
             TableBuilder tb = tables.get(tableName);
             if (tb == null) continue; // Somehow detected a constraint on a table not yet found (with no attributes). Maybe should create an empty table builder?
-            tb.addCheckConstraint(new Check(constraintName, parseBooleanExpression(booleanExpression)));
+            tb.addCheckConstraint(new Check(constraintName, parseBooleanExpression(booleanExpression, tableName)));
         }
     }
 
-    private BooleanExpression parseBooleanExpression(String booleanExpression) {
+    private BooleanExpression parseBooleanExpression(String booleanExpression, String tableName) {
         CodePointCharStream input = CharStreams.fromString(booleanExpression);
         TSqlLexer lexer = new TSqlLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        TSqlParser parser = new TSqlParser(tokens);
+        TSqlExpressionParser parser = new TSqlExpressionParser(tokens);
 
-        TSqlParser.Search_conditionContext tree = parser.search_condition();
-        SQLBooleanExpressionCapturingGrammarVisitorImpl visitor = new SQLBooleanExpressionCapturingGrammarVisitorImpl();
+        TSqlExpressionParser.ExpressionContext tree = parser.expression();
+        TSQLExpressionGrammarVisitorImpl visitor = new TSQLExpressionGrammarVisitorImpl(tableName);
         visitor.visit(tree);
-        return visitor.getResult();
-    }
-
-    private class SQLBooleanExpressionCapturingGrammarVisitorImpl extends SQLObjectSchemaGrammarVisitorImpl {
-        private BooleanExpression result;
-        public SQLBooleanExpressionCapturingGrammarVisitorImpl() {
-            super(new SQLObjectSchema());
-        }
-        public BooleanExpression visitSearch_condition(TSqlParser.Search_conditionContext ctx) {
-            result = super.visitSearch_condition(ctx);
-            return result;
-        }
-        public BooleanExpression getResult() {
-            return result;
-        }
+        return visitor.getBooleanExpression();
     }
 }
