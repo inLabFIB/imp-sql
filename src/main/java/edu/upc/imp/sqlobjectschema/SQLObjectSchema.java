@@ -55,6 +55,10 @@ public class SQLObjectSchema {
         tables.add(table);
     }
 
+    public void addTables(List<Table> tables) {
+        for (Table t : tables) this.addTable(t);
+    }
+
     public void addView(View view) {
         views.add(view);
     }

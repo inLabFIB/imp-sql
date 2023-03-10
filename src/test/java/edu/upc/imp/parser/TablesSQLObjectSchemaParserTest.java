@@ -238,7 +238,7 @@ public class TablesSQLObjectSchemaParserTest {
             new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>(),
-            List.of(new ForeignKey("fk1", List.of(linkedAttribute), List.of(referencedAttribute)))
+            List.of(new ForeignKey("fk1", List.of(linkedAttribute), expectedTableA, List.of(referencedAttribute)))
         );
 
         assertThat("Parsed table 'tableA' does not equal expected table.",
@@ -388,7 +388,7 @@ public class TablesSQLObjectSchemaParserTest {
             new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>(),
-            List.of(new ForeignKey("fk1", List.of(linkedAttribute), List.of(referencedAttribute)))
+            List.of(new ForeignKey("fk1", List.of(linkedAttribute), expectedTableA, List.of(referencedAttribute)))
         );
 
         assertThat("Parsed table 'tableA' does not equal expected table.",
@@ -445,7 +445,7 @@ public class TablesSQLObjectSchemaParserTest {
             new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>(),
-            List.of(new ForeignKey("fk1", List.of(linkedAttribute), List.of(referencedAttribute)))
+            List.of(new ForeignKey("fk1", List.of(linkedAttribute), expectedTableA, List.of(referencedAttribute)))
         );
 
         assertThat("Parsed table 'tableA' does not equal expected table.",

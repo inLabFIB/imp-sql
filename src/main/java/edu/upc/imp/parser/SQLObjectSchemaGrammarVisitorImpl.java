@@ -4,7 +4,7 @@ import edu.upc.imp.parser.sql_server.TSqlParser;
 import edu.upc.imp.sqlobjectschema.*;
 import edu.upc.imp.parser.sql_server.TSqlParserBaseVisitor;
 import edu.upc.imp.sqlobjectschema.boolean_expressions.*;
-import edu.upc.imp.sqlobjectschema.builders.TableBuilder;
+import edu.upc.imp.sqlobjectschema.builders.TableSetBuilder;
 import edu.upc.imp.sqlobjectschema.constraints.*;
 import edu.upc.imp.sqlobjectschema.relational_expressions.*;
 import edu.upc.imp.sqlobjectschema.selection_expressions.AliasableSelectItem;
@@ -19,16 +19,29 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     private final SQLObjectSchema schema;
 
+    private TableSetBuilder builder;
+    private boolean tablesInStandBy;
+
     private final String unnamedConstraintName = "constraint";
     private int unnamedConstraintNumber = 1;
 
     public SQLObjectSchemaGrammarVisitorImpl(SQLObjectSchema schema) {
         this.schema = schema;
+        this.builder = new TableSetBuilder();
+        this.tablesInStandBy = false;
     }
 
-    /** TOP LEVEL STATEMENTS NODES **/
+    private void generateTableBatch() {
+        schema.addTables(builder.build());
+        this.builder = new TableSetBuilder();
+        this.tablesInStandBy = false;
+    }
+
+    /* TOP LEVEL STATEMENTS NODES */
 
     public Assertion visitCreate_assertion(TSqlParser.Create_assertionContext ctx) {
+        if (tablesInStandBy) generateTableBatch();
+
         Assertion newAssertion = new Assertion(
             visitId_(ctx.simple_name().name),
             visitSimple_name(ctx.simple_name()),
@@ -57,6 +70,8 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     public View visitCreate_view(TSqlParser.Create_viewContext ctx) {
         if (ctx.WITH().size() > 0) throw new RuntimeException("Grammar expression (`WITH ...`) in create view not supported yet!");
 
+        if (tablesInStandBy) generateTableBatch();
+
         List<String> columnNames = null;
         if (ctx.column_name_list() != null) columnNames = visitColumn_name_list(ctx.column_name_list());
         View view = new View(
@@ -81,17 +96,15 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         if (ctx.ON() != null || !ctx.DEFAULT().isEmpty()) throw new RuntimeException("Table options not supported yet!");
         if (ctx.TEXTIMAGE_ON() != null || !ctx.DEFAULT().isEmpty()) throw new RuntimeException("Grammar expression (`TEXTIMAGE_ON`) not supported yet!");
 
-        TableBuilder tableBuilder = new TableBuilder(
-            visitId_(ctx.table_name().table),
-            visitTable_name(ctx.table_name()));
+        SchemaReference schemaReference = visitTable_name(ctx.table_name());
+        String tableName = visitId_(ctx.table_name().table);
+        this.builder.addTable(schemaReference, tableName);
+        this.tablesInStandBy = true;
 
         for (TSqlParser.Column_def_table_constraintContext c : ctx.column_def_table_constraints().column_def_table_constraint()) {
-            visitColumn_def_table_constraint(c, tableBuilder);
+            visitColumn_def_table_constraint(c, schemaReference, tableName);
         }
-
-        Table newTable = tableBuilder.build(schema.getTables());
-        schema.addTable(newTable);
-        return newTable;
+        return null;
     }
 
     /** BOOLEAN EXPRESSION / ASSERTION NODES **/
@@ -359,21 +372,21 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         else return new SchemaReference(ctx.database.getText(), ctx.schema.getText());
     }
 
-    public void visitColumn_def_table_constraint(TSqlParser.Column_def_table_constraintContext ctx, TableBuilder tableBuilder) {
+    public void visitColumn_def_table_constraint(TSqlParser.Column_def_table_constraintContext ctx, SchemaReference schemaReference, String tableName) {
         if (ctx.materialized_column_definition() != null) throw new RuntimeException("Materialized column definition not supported yet!");
-        if (ctx.column_definition() != null) visitColumn_definition(ctx.column_definition(), tableBuilder);
-        else if (ctx.table_constraint() != null) visitTable_constraint(ctx.table_constraint(), tableBuilder);
+        if (ctx.column_definition() != null) visitColumn_definition(ctx.column_definition(), schemaReference, tableName);
+        else if (ctx.table_constraint() != null) visitTable_constraint(ctx.table_constraint(), schemaReference, tableName);
     }
 
-    private void visitColumn_definition(TSqlParser.Column_definitionContext ctx, TableBuilder tableBuilder) {
+    private void visitColumn_definition(TSqlParser.Column_definitionContext ctx, SchemaReference schemaReference, String tableName) {
         if (ctx.column_index() != null) throw new RuntimeException("Column indexes not supported yet!");
         if (ctx.AS() != null) throw new RuntimeException("Columns defined as expressions not supported yet!");
 
         String attributeName = visitId_(ctx.id_());
-        tableBuilder.addAttribute(attributeName, visitData_type(ctx.data_type()));
+        builder.addAttribute(schemaReference, tableName, attributeName, visitData_type(ctx.data_type()));
 
         for (TSqlParser.Column_definition_elementContext defCtx : ctx.column_definition_element()) {
-            visitColumn_Definition_Element(defCtx, tableBuilder, attributeName);
+            visitColumn_Definition_Element(defCtx, schemaReference, tableName, attributeName);
         }
     }
 
@@ -387,44 +400,44 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         else throw new RuntimeException("Other SQL data types not supported yet!");
     }
 
-    public void visitColumn_Definition_Element(TSqlParser.Column_definition_elementContext ctx, TableBuilder tableBuilder, String attributeName) {
-        if (ctx.DEFAULT() != null) tableBuilder.setAttributeDefaultExpression(attributeName, visitExpression(ctx.constant_expr));
-        else if (ctx.column_constraint() != null) visitColumn_Constraint(ctx.column_constraint(), tableBuilder, attributeName);
+    public void visitColumn_Definition_Element(TSqlParser.Column_definition_elementContext ctx, SchemaReference schemaReference, String tableName, String attributeName) {
+        if (ctx.DEFAULT() != null) builder.setAttributeDefaultExpression(schemaReference, tableName, attributeName, visitExpression(ctx.constant_expr));
+        else if (ctx.column_constraint() != null) visitColumn_Constraint(ctx.column_constraint(), schemaReference, tableName, attributeName);
         else throw new RuntimeException("Other column_definition_elements not supported yet!");
     }
 
-    public void visitColumn_Constraint(TSqlParser.Column_constraintContext ctx, TableBuilder tableBuilder, String attributeName) {
+    public void visitColumn_Constraint(TSqlParser.Column_constraintContext ctx, SchemaReference schemaReference, String tableName, String attributeName) {
         String constraintName = ctx.constraint != null ? ctx.constraint.getText() : unnamedConstraintName + unnamedConstraintNumber++;
 
-        if (ctx.null_notnull() != null) tableBuilder.setAttributeNullable(attributeName, false);
+        if (ctx.null_notnull() != null) builder.setAttributeNullable(schemaReference, tableName, attributeName, false);
         else if (ctx.PRIMARY() != null) {
             if (ctx.clustered() != null) throw new RuntimeException("PK options not supported yet!");
             if (ctx.primary_key_options().getChildCount() != 0) throw new RuntimeException("PK options not supported yet!");
-            tableBuilder.addPrimaryKeyConstraint(constraintName, attributeName);
+            builder.addPrimaryKeyConstraint(schemaReference, tableName, constraintName, attributeName);
         } else if (ctx.UNIQUE() != null) {
             if (ctx.clustered() != null) throw new RuntimeException("PK options not supported yet!");
             if (ctx.primary_key_options().getChildCount() != 0) throw new RuntimeException("PK options not supported yet!");
-            tableBuilder.addUniqueConstraint(constraintName, attributeName);
-        } else if (ctx.foreign_key_options() != null) visitForeign_key_options(ctx.foreign_key_options(), tableBuilder, List.of(attributeName), constraintName);
+            builder.addUniqueConstraint(schemaReference, tableName, constraintName, attributeName);
+        } else if (ctx.foreign_key_options() != null) visitForeign_key_options(ctx.foreign_key_options(), schemaReference, tableName, List.of(attributeName), constraintName);
         else if (ctx.check_constraint() != null)
-            tableBuilder.addCheckConstraint(new Check(constraintName, visitCheck_constraint(ctx.check_constraint())));
+            builder.addCheckConstraint(schemaReference, tableName, new Check(constraintName, visitCheck_constraint(ctx.check_constraint())));
     }
 
-    public void visitTable_constraint(TSqlParser.Table_constraintContext ctx, TableBuilder tableBuilder) {
+    public void visitTable_constraint(TSqlParser.Table_constraintContext ctx, SchemaReference schemaReference, String tableName) {
         String constraintName = ctx.constraint != null ? ctx.constraint.getText() : unnamedConstraintName + unnamedConstraintNumber++;
 
         if (ctx.PRIMARY() != null) {
             if (ctx.clustered() != null) throw new RuntimeException("PK options not supported yet!");
             if (ctx.primary_key_options().getChildCount() != 0) throw new RuntimeException("PK options not supported yet!");
-            tableBuilder.addPrimaryKeyConstraint(constraintName, visitColumn_name_list_with_order(ctx.column_name_list_with_order()));
+            builder.addPrimaryKeyConstraint(schemaReference, tableName, constraintName, visitColumn_name_list_with_order(ctx.column_name_list_with_order()));
         } else if (ctx.UNIQUE() != null) {
             if (ctx.clustered() != null) throw new RuntimeException("PK options not supported yet!");
             if (ctx.primary_key_options().getChildCount() != 0) throw new RuntimeException("PK options not supported yet!");
-            tableBuilder.addUniqueConstraint(constraintName, visitColumn_name_list_with_order(ctx.column_name_list_with_order()));
+            builder.addUniqueConstraint(schemaReference, tableName, constraintName, visitColumn_name_list_with_order(ctx.column_name_list_with_order()));
         } else if (ctx.FOREIGN() != null) {
-            visitForeign_key_options(ctx.foreign_key_options(), tableBuilder, visitColumn_name_list(ctx.column_name_list()), constraintName);
+            visitForeign_key_options(ctx.foreign_key_options(), schemaReference, tableName, visitColumn_name_list(ctx.column_name_list()), constraintName);
         } else if (ctx.check_constraint() != null) {
-            tableBuilder.addCheckConstraint(new Check(constraintName, visitCheck_constraint(ctx.check_constraint())));
+            builder.addCheckConstraint(schemaReference, tableName, new Check(constraintName, visitCheck_constraint(ctx.check_constraint())));
         }
     }
 
@@ -438,10 +451,10 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         return visitSearch_condition(ctx.search_condition());
     }
 
-    public void visitForeign_key_options(TSqlParser.Foreign_key_optionsContext ctx, TableBuilder tableBuilder, List<String> attributeNames, String constraintName) {
+    public void visitForeign_key_options(TSqlParser.Foreign_key_optionsContext ctx, SchemaReference schemaReference, String tableName, List<String> attributeNames, String constraintName) {
         if (ctx.on_delete() != null || ctx.on_update() != null || ctx.REPLICATION() != null)
             throw new RuntimeException("FK options not supported yet!");
-        tableBuilder.addForeignKeyConstraint(constraintName, attributeNames, visitId_(ctx.table_name().table), visitColumn_name_list(ctx.pk));
+        builder.addForeignKeyConstraint(schemaReference, tableName, constraintName, attributeNames, visitTable_name(ctx.table_name()), visitId_(ctx.table_name().table), visitColumn_name_list(ctx.pk));
     }
 
 

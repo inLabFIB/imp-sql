@@ -18,10 +18,10 @@ public class Table implements SQLObjectSchemaEntity {
     private final SchemaReference schemaReference;
     private final List<Attribute> attributes;
 
-    private final List<Check> checkConstraints;
-    private final List<Unique> uniqueConstraints;
-    private final List<PrimaryKey> primaryKeyConstraints;
-    private final List<ForeignKey> foreignKeyConstraints;
+    protected final List<Check> checkConstraints;
+    protected final List<Unique> uniqueConstraints;
+    protected final List<PrimaryKey> primaryKeyConstraints;
+    protected final List<ForeignKey> foreignKeyConstraints;
 
     public Table(String tableName, SchemaReference schemaReference, List<Attribute> attributes,
                  List<Check> checkConstraints, List<Unique> uniqueConstraints,

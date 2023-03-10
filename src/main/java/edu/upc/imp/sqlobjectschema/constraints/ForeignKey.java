@@ -1,6 +1,7 @@
 package edu.upc.imp.sqlobjectschema.constraints;
 
 import edu.upc.imp.sqlobjectschema.Attribute;
+import edu.upc.imp.sqlobjectschema.Table;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.ArrayList;
@@ -10,16 +11,23 @@ import java.util.Objects;
 public class ForeignKey extends TableConstraint {
 
     private final List<Attribute> fkAttributes;
+
+    private final Table pkReferenceTable;
     private final List<Attribute> pkReference;
 
-    public ForeignKey(String name, List<Attribute> fkAttributes, List<Attribute> pkReference) {
+    public ForeignKey(String name, List<Attribute> fkAttributes, Table pkReferenceTable, List<Attribute> pkReference) {
         super(name);
         this.fkAttributes = Objects.requireNonNull(fkAttributes, "The parameter 'fkColumns' cannot be null.");
+        this.pkReferenceTable = Objects.requireNonNull(pkReferenceTable, "The parameter 'pkReferenceTable' cannot be null.");
         this.pkReference = Objects.requireNonNull(pkReference, "The parameter 'pkReference' cannot be null.");
     }
 
     public List<Attribute> getFkAttributes() {
         return new ArrayList<>(fkAttributes);
+    }
+
+    public Table getPkReferenceTable() {
+        return pkReferenceTable;
     }
 
     public List<Attribute> getPkReference() {
@@ -37,6 +45,7 @@ public class ForeignKey extends TableConstraint {
         return o instanceof ForeignKey fk
             && getName().equals(fk.getName())
             && fkAttributes.equals(fk.fkAttributes)
+            && pkReferenceTable.hasSameIdentifier(fk.pkReferenceTable)
             && pkReference.equals(fk.pkReference);
     }
 }
