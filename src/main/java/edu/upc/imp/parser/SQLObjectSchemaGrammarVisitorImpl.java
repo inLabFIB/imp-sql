@@ -39,6 +39,12 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     /* TOP LEVEL STATEMENTS NODES */
 
+    public Object visitTsql_file(TSqlParser.Tsql_fileContext ctx) {
+        Object o = visitChildren(ctx);
+        generateTableBatch(); // If input ends with CREATE TABLE statements, they need to be created at the EOF.
+        return o;
+    }
+
     public Assertion visitCreate_assertion(TSqlParser.Create_assertionContext ctx) {
         if (tablesInStandBy) generateTableBatch();
 

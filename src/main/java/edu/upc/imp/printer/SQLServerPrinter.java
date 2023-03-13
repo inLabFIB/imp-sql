@@ -157,7 +157,6 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(SchemaReference sr) {
-        // TODO: Check specification, if it is possible to do serverName...tableName, or similar
         String fullName = "";
         if (sr.getServerName() != null) fullName += sr.getServerName() + ".";
         if (sr.getDatabaseName() != null) fullName += sr.getDatabaseName() + ".";
@@ -218,11 +217,14 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(ForeignKey fk) {
+        String prefix = "";
+        if (fk.getPkReferenceTable().getSchemaReference() != null)
+            prefix = fk.getPkReferenceTable().getSchemaReference().visit(this)+".";
         String fkCreationStatement = "";
         if (fk.hasName()) fkCreationStatement = "CONSTRAINT " + fk.getName() + " ";
         fkCreationStatement += "FOREIGN KEY (" +
             String.join(", ", fk.getFkAttributes().stream().map(Attribute::getName).toList());
-        fkCreationStatement += ") REFERENCES ("+
+        fkCreationStatement += ") REFERENCES " + prefix + fk.getPkReferenceTable().getTableName() + " ("+
             String.join(", ", fk.getPkReference().stream().map(Attribute::getName).toList())
             + ")";
         return fkCreationStatement;

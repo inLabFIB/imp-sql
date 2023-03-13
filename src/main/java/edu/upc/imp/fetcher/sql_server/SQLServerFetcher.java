@@ -161,7 +161,8 @@ public class SQLServerFetcher implements DatabaseFetcher {
             String referenced_schema = resultSet.getString("referenced_schema");
             String refTableName = resultSet.getString("referenced_table");
             String refAttrName = resultSet.getString("referenced_column");
-            tableSetBuilder.addForeignKeyConstraint(schemaReference, tableName, constraintName, attrName, new SchemaReference(referenced_schema), refTableName, refAttrName);
+            tableSetBuilder.addForeignKeyConstraint(schemaReference, tableName, constraintName, attrName,
+                new SchemaReference(schemaReference.getDatabaseName(), referenced_schema), refTableName, refAttrName);
         }
     }
 
