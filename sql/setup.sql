@@ -1,30 +1,51 @@
 USE master;
 GO
-IF DB_ID (N'user_db') IS NOT NULL
-DROP DATABASE [user_db];
+IF DB_ID (N'test_db') IS NOT NULL
+DROP DATABASE [test_db];
 GO
-CREATE DATABASE [user_db];
+CREATE DATABASE [test_db];
 GO
+BEGIN TRANSACTION
 
-USE [user_db];
+USE [test_db];
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE SCHEMA user_schema
+CREATE SCHEMA ref_test_schema
 GO
-CREATE TABLE user_schema.test_referenced (
-  pk1 int,
-  pk2 int,
-  CONSTRAINT test_ref_pk UNIQUE (pk1, pk2)
+CREATE TABLE ref_test_schema.test_referenced_table (
+  pk1 BIT,
+  pk2 CHAR(8),
+  CONSTRAINT test_ref_pk PRIMARY KEY (pk1, pk2)
 );
 GO
-CREATE TABLE user_schema.test (
-  pk1 int,
-  pk2 int check (pk2 = 3),
-  fk1 int NOT NULL,
-  fk2 int DEFAULT 1,
-  CONSTRAINT test_pk PRIMARY KEY (pk1, pk2),
-  CONSTRAINT test_fk_c FOREIGN KEY (fk1, fk2) REFERENCES user_schema.test_referenced(pk1, pk2),
-  CONSTRAINT test_check CHECK (pk2 = fk1)
+CREATE SCHEMA test_schema
+GO
+CREATE TABLE test_schema.test_referenced_table (
+  pk1 INT,
+  pk2 VARCHAR(64),
+  CONSTRAINT test_ref_pk PRIMARY KEY (pk1),
+  CONSTRAINT test_ref_u UNIQUE (pk2)
 );
+GO
+CREATE TABLE test_schema.test (
+  btAttr BIT,
+  chAttr CHAR(8),
+  dtAttr DATETIME2(7),
+  dpAttr DOUBLE PRECISION,
+  flAttr FLOAT(16),
+  itAttr INT DEFAULT 1,
+  rlAttr REAL NOT NULL,
+  siAttr SMALLINT CHECK (siAttr = 5),
+  vcAttr VARCHAR(64),
+  selfRl REAL,
+  CONSTRAINT test_pk PRIMARY KEY (chAttr, itAttr),
+  CONSTRAINT test_fk_1 FOREIGN KEY (btAttr, chAttr) REFERENCES ref_test_schema.test_referenced_table(pk1, pk2),
+  CONSTRAINT test_fk_2 FOREIGN KEY (vcAttr) REFERENCES test_schema.test_referenced_table(pk2),
+  CONSTRAINT test_fk_self FOREIGN KEY (selfRl) REFERENCES test_schema.test(rlAttr),
+  CONSTRAINT test_ck CHECK (dpAttr = flAttr),
+  CONSTRAINT test_u UNIQUE (rlAttr)
+);
+GO
+COMMIT
