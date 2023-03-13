@@ -26,6 +26,5 @@ CREATE TABLE user_schema.test (
   fk2 int DEFAULT 1,
   CONSTRAINT test_pk PRIMARY KEY (pk1, pk2),
   CONSTRAINT test_fk_c FOREIGN KEY (fk1, fk2) REFERENCES user_schema.test_referenced(pk1, pk2),
-  CONSTRAINT test_fk_s FOREIGN KEY (fk1) REFERENCES user_schema.international_company(c_fk),
   CONSTRAINT test_check CHECK (pk2 = fk1)
 );

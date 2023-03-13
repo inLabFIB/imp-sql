@@ -6,7 +6,6 @@
 
   <groupId>edu.upc.imp</groupId>
   <artifactId>imp-sql</artifactId>
-  <packaging>pom</packaging>
   <version>1.0-SNAPSHOT</version>
 
   <name>IMP SQL</name>
