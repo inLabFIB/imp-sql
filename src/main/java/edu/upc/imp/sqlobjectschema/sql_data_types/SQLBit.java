@@ -7,7 +7,7 @@ import java.util.Objects;
 public class SQLBit implements SQLDataType {
     private final Integer length;
 
-    public SQLBit(){
+    public SQLBit() {
         this(null);
     }
 

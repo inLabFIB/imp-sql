@@ -5,9 +5,14 @@ import edu.upc.imp.sqlobjectschema.boolean_expressions.ComparisonPredicate;
 import edu.upc.imp.sqlobjectschema.boolean_expressions.ExistsPredicate;
 import edu.upc.imp.sqlobjectschema.boolean_expressions.NotOperation;
 import edu.upc.imp.sqlobjectschema.boolean_expressions.PredicateOperation;
+import edu.upc.imp.sqlobjectschema.constraints.Check;
+import edu.upc.imp.sqlobjectschema.constraints.ForeignKey;
+import edu.upc.imp.sqlobjectschema.constraints.PrimaryKey;
+import edu.upc.imp.sqlobjectschema.constraints.Unique;
 import edu.upc.imp.sqlobjectschema.relational_expressions.*;
 import edu.upc.imp.sqlobjectschema.selection_expressions.AliasableSelectItem;
 import edu.upc.imp.sqlobjectschema.selection_expressions.Asterisk;
+import edu.upc.imp.sqlobjectschema.sql_data_types.*;
 import edu.upc.imp.sqlobjectschema.value_expressions.ColumnReference;
 import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
 import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
@@ -24,8 +29,69 @@ import static org.hamcrest.Matchers.is;
 class SQLServerPrinterTest {
 
     /** TABLE **/
+    @Test
+    public void printTableWithAttrTypes() {
+        // Object built directly in Java
+        Table table = new Table(
+            "tableName",
+            new SchemaReference("schemaName"),
+            List.of(
+                new Attribute("btAttr", new SQLBit()),
+                new Attribute("chAttr", new SQLChar(8)),
+                new Attribute("dtAttr", new SQLDate(7)),
+                new Attribute("dpAttr", new SQLDoublePrecision()),
+                new Attribute("flAttr", new SQLFloat(16)),
+                new Attribute("itAttr", new SQLInt(), new SQLPrimitiveInteger(1)),
+                new Attribute("rlAttr", new SQLReal(), false),
+                new Attribute("siAttr", new SQLSmallint()),
+                new Attribute("vcAttr", new SQLVarchar(64))
+            )
+        );
 
-    //TODO: add table tests
+        String expectedTable = "CREATE TABLE schemaName.tableName ( btAttr BIT, chAttr CHAR(8), dtAttr DATETIME2(7), " +
+            "dpAttr DOUBLE PRECISION, flAttr FLOAT(16), itAttr INT DEFAULT 1, rlAttr REAL NOT NULL, siAttr SMALLINT, " +
+            "vcAttr VARCHAR(64) );";
+        assertThat(table.visit(new SQLServerPrinter()), is(expectedTable));
+    }
+
+    @Test
+    public void printTableWithConstraints() {
+        Attribute attrA = new Attribute("attrA", new SQLInt());
+        Attribute attrB = new Attribute("attrB", new SQLVarchar(64));
+
+        Attribute refPk = new Attribute("pk", new SQLVarchar(64));
+        Table refTable = new Table("refTable", null, List.of(refPk));
+        // Object built directly in Java
+        Table table = new Table(
+            "tableName",
+            new SchemaReference("schemaName"),
+            List.of(attrA, attrB),
+            List.of(
+                new Check("CK", new ComparisonPredicate(
+                    ComparisonPredicate.ComparisonOperator.EQ,
+                    new ColumnReference("attrA"),
+                    new SQLPrimitiveInteger(1)
+                ))
+            ),
+            List.of(new Unique("U", List.of(attrB))),
+            List.of(
+                new PrimaryKey("PK", List.of(attrA, attrB))
+            ),
+            List.of(
+                new ForeignKey(
+                    "FK",
+                    List.of(attrB),
+                    refTable,
+                    List.of(refPk)
+                )
+            )
+        );
+
+        String expectedTable = "CREATE TABLE schemaName.tableName ( attrA INT, attrB VARCHAR(64), " +
+            "CONSTRAINT CK CHECK (attrA = 1), CONSTRAINT U UNIQUE (attrB), CONSTRAINT PK PRIMARY KEY (attrA, attrB), " +
+            "CONSTRAINT FK FOREIGN KEY (attrB) REFERENCES refTable (pk) );";
+        assertThat(table.visit(new SQLServerPrinter()), is(expectedTable));
+    }
 
     /** ASSERTIONS **/
 
@@ -76,8 +142,8 @@ class SQLServerPrinterTest {
         assertThat(view.visit(new SQLServerPrinter()), is(expectedView));
     }
 
-    /** VIEWS **/
-    /** All prints contain parenthesis and no ending ';' because they are interpreted as subqueries. **/
+    /** SELECTS **/
+    /* All prints contain parenthesis and no ending ';' because they are interpreted as subqueries. */
 
     //SIMPLE SELECT
     @Test

@@ -191,7 +191,7 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
         if (c.hasName()) checkCreationStatement = "CONSTRAINT " + c.getName() + " ";
         checkCreationStatement += "CHECK (" +
             c.getExpression().<String>visit(this) +
-            " )";
+            ")";
         return checkCreationStatement;
     }
 
