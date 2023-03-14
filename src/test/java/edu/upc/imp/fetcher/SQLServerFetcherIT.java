@@ -5,6 +5,8 @@ import edu.upc.imp.sqlobjectschema.SQLObjectSchema;
 import edu.upc.imp.sqlobjectschema.Table;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 public class SQLServerFetcherIT {
 
     @Test
@@ -12,8 +14,8 @@ public class SQLServerFetcherIT {
         SQLObjectSchemaFetcher fetcher = new SQLObjectSchemaFetcher(
             "localhost",
             1433,
-            "cv2_db",
-            "user_schema",
+            "test_db",
+            List.of("test_schema", "ref_test_schema"),
             "SA",
             "PasswordO1.",
             SQLObjectSchemaFetcher.DBType.SQLServer

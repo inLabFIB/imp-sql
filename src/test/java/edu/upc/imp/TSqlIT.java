@@ -22,7 +22,7 @@ public class TSqlIT {
             "localhost",
             1433,
             "cv2_db",
-            "user_schema",
+            List.of("user_schema"),
             "SA",
             "PasswordO1.",
             SQLObjectSchemaFetcher.DBType.SQLServer
@@ -47,7 +47,7 @@ public class TSqlIT {
             "localhost",
             1433,
             "cv2_db",
-            "user_schema",
+            List.of("user_schema"),
             "SA",
             "PasswordO1.",
             SQLObjectSchemaFetcher.DBType.SQLServer

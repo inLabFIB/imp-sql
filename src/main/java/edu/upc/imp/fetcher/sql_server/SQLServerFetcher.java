@@ -37,38 +37,42 @@ public class SQLServerFetcher implements DatabaseFetcher {
     }
 
     @Override
-    public void fetch(String dbName, String schemaName, SQLObjectSchema schema) {
-        SchemaReference schemaReference = new SchemaReference(dbName, schemaName);
-        getTables(schemaReference).forEach(schema::addTable);
+    public void fetch(String dbName, List<String> schemaNames, SQLObjectSchema schema) {
+        List<SchemaReference> schemaReferences = schemaNames.stream().map(s -> new SchemaReference(dbName, s)).toList();
+        getTables(schemaReferences).forEach(schema::addTable);
     }
 
-    private List<Table> getTables(SchemaReference schemaReference) {
-        TableSetBuilder tableSetBuilder = new TableSetBuilder();
+    private List<Table> getTables(List<SchemaReference> schemaReferences) {
+        Map<String, SchemaReference> schemasMap = new HashMap<>();
+        schemaReferences.forEach(s -> schemasMap.put(s.getSchemaName(), s));
 
+        TableSetBuilder tableSetBuilder = new TableSetBuilder();
         // Read attributes
-        readAttributes(schemaReference, tableSetBuilder);
+        readAttributes(schemasMap, tableSetBuilder);
         // Read PKs and Uniques
-        readPrimaryKeysAndUniques(schemaReference, tableSetBuilder);
+        readPrimaryKeysAndUniques(schemasMap, tableSetBuilder);
         // Read FKs
-        readForeignKeys(schemaReference, tableSetBuilder);
+        readForeignKeys(schemasMap, tableSetBuilder);
         // Read Checks
-        readChecks(schemaReference, tableSetBuilder);
+        readChecks(schemasMap, tableSetBuilder);
 
         return tableSetBuilder.build();
     }
 
-    public void readAttributes(SchemaReference schemaReference, TableSetBuilder tableSetBuilder) {
+    public void readAttributes(Map<String, SchemaReference> schemasMap, TableSetBuilder tableSetBuilder) {
         // Execute SQL statement to obtain information about attributes
+        String inConditionString = "('" + String.join("','", schemasMap.keySet()) + "')";
         String statement =
-            "select tab.name as table_name, col.name as column_name, col.column_id as column_position, ty.name as data_type, col.max_length as [length], col.[precision], col.[scale], col.is_nullable as nullable, def.definition as default_value " +
+            "select SCHEMA_NAME(tab.schema_id) as schema_name, tab.name as table_name, col.name as column_name, col.column_id as column_position, ty.name as data_type, col.max_length as [length], col.[precision], col.[scale], col.is_nullable as nullable, def.definition as default_value " +
             "from sys.tables tab join sys.columns col on (tab.object_id = col.object_id) " +
             "    join sys.types ty on (col.system_type_id = ty.system_type_id) " +
             "    left join sys.default_constraints def on (def.parent_object_id = tab.object_id and def.parent_column_id = col.column_id) " +
-            "where SCHEMA_NAME(tab.schema_id) = '" + schemaReference.getSchemaName() + "' " +
+            "where SCHEMA_NAME(tab.schema_id) in " + inConditionString + " " +
             "order by table_name, col.column_id;";
         SqlRowSet resultSet = jdbcTemplate.queryForRowSet(statement);
         // Populate table builders
         while (resultSet.next()) {
+            String schemaName = resultSet.getString("schema_name");
             String tableName = resultSet.getString("table_name");
             String attrName = resultSet.getString("column_name");
             String type = resultSet.getString("data_type");
@@ -80,7 +84,7 @@ public class SQLServerFetcher implements DatabaseFetcher {
 
             SQLDataType dataType = createDataTypeForName(type, length, precision, scale);
 
-            tableSetBuilder.addAttribute(schemaReference, tableName, attrName, dataType, nullable, valueExpression == null ? null : parseValueExpression(valueExpression, tableName));
+            tableSetBuilder.addAttribute(schemasMap.get(schemaName), tableName, attrName, dataType, nullable, valueExpression == null ? null : parseValueExpression(valueExpression, tableName));
         }
     }
 
@@ -98,10 +102,12 @@ public class SQLServerFetcher implements DatabaseFetcher {
         };
     }
 
-    public void readPrimaryKeysAndUniques(SchemaReference schemaReference, TableSetBuilder tableSetBuilder) {
+    public void readPrimaryKeysAndUniques(Map<String, SchemaReference> schemasMap, TableSetBuilder tableSetBuilder) {
         // Execute SQL statement to obtain information about attributes
+        String inConditionString = "('" + String.join("','", schemasMap.keySet()) + "')";
         String statement =
-            "select tab.[name] as table_name,\n" +
+            "select SCHEMA_NAME(tab.schema_id) as schema_name,\n" +
+            "    tab.[name] as table_name,\n" +
             "    idxctnsr.[name] as constraint_name,\n" +
             "    case when idxctnsr.is_primary_key = 1 then 'PK'\n" +
             "         when idxctnsr.is_unique_constraint = 1 then 'U'\n" +
@@ -117,27 +123,30 @@ public class SQLServerFetcher implements DatabaseFetcher {
             "    inner join sys.columns col\n" +
             "        on idxctnsr.object_id = col.object_id\n" +
             "        and col.column_id = ic.column_id\n" +
-            "where SCHEMA_NAME(tab.schema_id) = '" + schemaReference.getSchemaName() + "' and (idxctnsr.is_primary_key = 1 or idxctnsr.is_unique_constraint = 1)\n" +
+            "where SCHEMA_NAME(tab.schema_id) in " + inConditionString + " and (idxctnsr.is_primary_key = 1 or idxctnsr.is_unique_constraint = 1)\n" +
             "order by table_name, constraint_name, col.column_id;";
         SqlRowSet resultSet = jdbcTemplate.queryForRowSet(statement);
         // Populate table builders
         while (resultSet.next()) {
+            String schemaName = resultSet.getString("schema_name");
             String tableName = resultSet.getString("table_name");
             String constraintName = resultSet.getString("constraint_name");
             String type = resultSet.getString("type");
             String attrName = resultSet.getString("column_name");
 
             switch (Objects.requireNonNull(type)) {
-                case "PK" -> tableSetBuilder.addPrimaryKeyConstraint(schemaReference, tableName, constraintName, attrName);
-                case "U" -> tableSetBuilder.addUniqueConstraint(schemaReference, tableName, constraintName, attrName);
+                case "PK" -> tableSetBuilder.addPrimaryKeyConstraint(schemasMap.get(schemaName), tableName, constraintName, attrName);
+                case "U" -> tableSetBuilder.addUniqueConstraint(schemasMap.get(schemaName), tableName, constraintName, attrName);
             }
         }
     }
 
-    public void readForeignKeys(SchemaReference schemaReference, TableSetBuilder tableSetBuilder) {
+    public void readForeignKeys(Map<String, SchemaReference> schemasMap, TableSetBuilder tableSetBuilder) {
         // Execute SQL statement to obtain information about attributes
+        String inConditionString = "('" + String.join("','", schemasMap.keySet()) + "')";
         String statement =
-            "select  fk_tab.name as foreign_table,\n" +
+            "select  SCHEMA_NAME(fk_tab.schema_id) as foreign_schema,\n" +
+            "        fk_tab.name as foreign_table,\n" +
             "        fk.name as constraint_name,\n" +
             "        col_name(fk_cols.parent_object_id , fk_cols.parent_column_id) as foreign_column,\n" +
             "        SCHEMA_NAME(pk_tab.schema_id) as referenced_schema,\n" +
@@ -150,19 +159,20 @@ public class SQLServerFetcher implements DatabaseFetcher {
             "        on pk_tab.object_id = fk.referenced_object_id\n" +
             "    inner join sys.foreign_key_columns fk_cols\n" +
             "        on fk_cols.constraint_object_id = fk.object_id\n" +
-            "where SCHEMA_NAME(fk_tab.schema_id) = '" + schemaReference.getSchemaName() + "'\n" +
+            "where SCHEMA_NAME(fk_tab.schema_id) in " + inConditionString + "\n" +
             "order by foreign_table, constraint_name;";
         SqlRowSet resultSet = jdbcTemplate.queryForRowSet(statement);
         // Populate table builders
         while (resultSet.next()) {
+            String schemaName = resultSet.getString("foreign_schema");
             String tableName = resultSet.getString("foreign_table");
             String constraintName = resultSet.getString("constraint_name");
             String attrName = resultSet.getString("foreign_column");
             String referenced_schema = resultSet.getString("referenced_schema");
             String refTableName = resultSet.getString("referenced_table");
             String refAttrName = resultSet.getString("referenced_column");
-            tableSetBuilder.addForeignKeyConstraint(schemaReference, tableName, constraintName, attrName,
-                new SchemaReference(schemaReference.getDatabaseName(), referenced_schema), refTableName, refAttrName);
+            tableSetBuilder.addForeignKeyConstraint(schemasMap.get(schemaName), tableName, constraintName, attrName,
+                new SchemaReference(schemasMap.get(schemaName).getDatabaseName(), referenced_schema), refTableName, refAttrName);
         }
     }
 
@@ -171,22 +181,24 @@ public class SQLServerFetcher implements DatabaseFetcher {
         return visitor.getValueExpression();
     }
 
-    public void readChecks(SchemaReference schemaReference, TableSetBuilder tableSetBuilder) {
+    public void readChecks(Map<String, SchemaReference> schemasMap, TableSetBuilder tableSetBuilder) {
         // Execute SQL statement to obtain information about attributes
+        String inConditionString = "('" + String.join("','", schemasMap.keySet()) + "')";
         String statement =
-            "select tab.name as table_name, chck.name as constraint_name, definition as value\n" +
+            "select SCHEMA_NAME(chck.schema_id) as schema_name, tab.name as table_name, chck.name as constraint_name, definition as value\n" +
             "from sys.check_constraints chck\n" +
             "    join sys.tables tab on (chck.parent_object_id = tab.object_id)\n" +
-            "where SCHEMA_NAME(chck.schema_id) = '" + schemaReference.getSchemaName() + "'\n" +
+            "where SCHEMA_NAME(chck.schema_id) in " + inConditionString + "\n" +
             "order by table_name, constraint_name;";
         SqlRowSet resultSet = jdbcTemplate.queryForRowSet(statement);
         // Populate table builders
         while (resultSet.next()) {
+            String schemaName = resultSet.getString("schema_name");
             String tableName = resultSet.getString("table_name");
             String constraintName = resultSet.getString("constraint_name");
             String booleanExpression = resultSet.getString("value");
 
-            tableSetBuilder.addCheckConstraint(schemaReference, tableName, new Check(constraintName, parseBooleanExpression(booleanExpression, tableName)));
+            tableSetBuilder.addCheckConstraint(schemasMap.get(schemaName), tableName, new Check(constraintName, parseBooleanExpression(booleanExpression, tableName)));
         }
     }
 

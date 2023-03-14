@@ -126,7 +126,6 @@ public class TableBuilder {
         List<Attribute> attributes = new ArrayList<>();
         List<Unique> uniqueConstraints = new ArrayList<>();
         List<PrimaryKey> primaryKeyConstraints = new ArrayList<>();
-        List<ForeignKey> foreignKeyConstraints = new ArrayList<>();
 
         Map<String, Attribute> attributesMap = new HashMap<>();
         for (ProvisionalAttribute pa : attributesOrder.stream().map(provisionalAttributeMap::get).toList()) {
@@ -146,7 +145,7 @@ public class TableBuilder {
 
         return new MutableTable(
             this.tableName, this.schemaReference, attributes,
-            checks, uniqueConstraints, primaryKeyConstraints, foreignKeyConstraints
+            checks, uniqueConstraints, primaryKeyConstraints, new ArrayList<>()
         );
     }
 
