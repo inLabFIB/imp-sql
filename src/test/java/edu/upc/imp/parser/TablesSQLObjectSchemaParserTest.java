@@ -416,6 +416,53 @@ public class TablesSQLObjectSchemaParserTest {
             schema.getTables().get(1).equals(expectedTableB));
     }
 
+    @Test
+    public void parseAutoReferencingForeignKeyConstraint() {
+        String createTables = """
+            CREATE TABLE A (
+                colPk int,
+                colFk int,
+                CONSTRAINT fk1 FOREIGN KEY (colFk) REFERENCES A (colPk)
+            );
+            """;
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(createTables);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        List<ForeignKey> foreignKeys = schema.getTables().get(0).getForeignKeyConstraints();
+        assertThat("Foreign Key not parsed.", foreignKeys.size() == 1);
+        assertThat("Table loop not found.", schema.getTables().get(0).equals(foreignKeys.get(0).getPkReferenceTable()));
+    }
+
+    @Test
+    public void parseLoopingForeignKeyConstraints() {
+        String createTables = """
+            CREATE TABLE [schema1].A (
+                colPk int,
+                colFk int,
+                CONSTRAINT fk1 FOREIGN KEY (colFk) REFERENCES [schema2].B (colPk)
+            );
+            
+            CREATE TABLE [schema2].B (
+                colPk int,
+                colFk int,
+                CONSTRAINT fk1 FOREIGN KEY (colFk) REFERENCES [schema1].A (colPk)
+            );
+            """;
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(createTables);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        Table tableA = schema.getTables().get(0);
+        Table tableB = schema.getTables().get(1);
+
+        assertThat("Foreign Key of table A not parsed.", tableA.getForeignKeyConstraints().size() == 1);
+        assertThat("Foreign Key of table B not parsed.", tableB.getForeignKeyConstraints().size() == 1);
+
+        assertThat("Foreign Key loop not found.", tableA.equals(tableB.getForeignKeyConstraints().get(0).getPkReferenceTable()));
+        assertThat("Foreign Key loop not found.", tableB.equals(tableA.getForeignKeyConstraints().get(0).getPkReferenceTable()));
+    }
+
     /** CONSTRAINTS INTEGRATION **/
 
     //TODO: when adding more expressions add them to the test (OR, <, boolean types,...)

@@ -21,6 +21,7 @@ public class Table implements SQLObjectSchemaEntity {
     protected final List<Check> checkConstraints;
     protected final List<Unique> uniqueConstraints;
     protected final List<PrimaryKey> primaryKeyConstraints;
+
     protected final List<ForeignKey> foreignKeyConstraints;
 
     public Table(String tableName, SchemaReference schemaReference, List<Attribute> attributes,
@@ -62,6 +63,10 @@ public class Table implements SQLObjectSchemaEntity {
         constraints.addAll(primaryKeyConstraints);
         constraints.addAll(foreignKeyConstraints);
         return constraints;
+    }
+
+    public List<ForeignKey> getForeignKeyConstraints() {
+        return foreignKeyConstraints;
     }
 
     public Attribute getAttribute(String attributeName) {
