@@ -3,6 +3,7 @@ package edu.upc.imp.parser;
 import edu.upc.imp.parser.sql_server.TSqlLexer;
 import edu.upc.imp.parser.sql_server.TSqlParser;
 import edu.upc.imp.sqlobjectschema.SQLObjectSchema;
+import edu.upc.imp.sqlobjectschema.SchemaReference;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -24,6 +25,9 @@ public class SQLObjectSchemaParser {
     }
 
     public void parse(String sqlStatements) {
+        parse(sqlStatements, null);
+    }
+    public void parse(String sqlStatements, SchemaReference defaultSchemaReference) {
         if (sqlStatements == null) throw new IllegalArgumentException("Parser input can not be null.");
         CodePointCharStream input = CharStreams.fromString(sqlStatements);
         TSqlLexer lexer = new TSqlLexer(input);
@@ -31,7 +35,7 @@ public class SQLObjectSchemaParser {
         TSqlParser parser = new TSqlParser(tokens);
 
         TSqlParser.Tsql_fileContext tree = parser.tsql_file();
-        SQLObjectSchemaGrammarVisitorImpl visitor = new SQLObjectSchemaGrammarVisitorImpl(schema);
+        SQLObjectSchemaGrammarVisitorImpl visitor = new SQLObjectSchemaGrammarVisitorImpl(schema, defaultSchemaReference);
         visitor.visit(tree);
     }
 

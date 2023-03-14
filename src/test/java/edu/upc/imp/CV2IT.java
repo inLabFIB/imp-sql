@@ -39,7 +39,8 @@ public class CV2IT {
             !cv2FetchedSchema.getTables().isEmpty());
 
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser(cv2FetchedSchema);
-        parser.parse(TintinAssertionsProvider.getCV2Assertions());
+        parser.parse(TintinAssertionsProvider.getCV2Assertions(),
+            new SchemaReference("cv2_db","user_schema"));
         SQLObjectSchema cv2SchemaWithAssertions = parser.getSQLObjectSchema();
 
         assertThat("Assertions were not parsed correctly.",
@@ -52,7 +53,8 @@ public class CV2IT {
         SQLObjectSchema cv2FetchedSchema = cv2_fetcher.getSQLObjectSchema();
 
         SQLObjectSchemaParser parser1 = new SQLObjectSchemaParser(cv2FetchedSchema);
-        parser1.parse(TintinAssertionsProvider.getCV2Assertions());
+        parser1.parse(TintinAssertionsProvider.getCV2Assertions(),
+            new SchemaReference("cv2_db","user_schema"));
         SQLObjectSchema schema1 = parser1.getSQLObjectSchema();
 
         List<Assertion> expectedAssertions = schema1.getAssertions();
@@ -61,7 +63,8 @@ public class CV2IT {
         String printedAssertions = String.join("\n\n", schema1.getAssertions().stream().map(a->a.<String>visit(printer)).toList());
 
         SQLObjectSchemaParser parser2 = new SQLObjectSchemaParser(cv2FetchedSchema);
-        parser2.parse(printedAssertions);
+        parser2.parse(printedAssertions,
+            new SchemaReference("cv2_db","user_schema"));
         SQLObjectSchema schema2 = parser2.getSQLObjectSchema();
 
         assertThat("Parsed assertions do not equal printed-then-parsed assertions",

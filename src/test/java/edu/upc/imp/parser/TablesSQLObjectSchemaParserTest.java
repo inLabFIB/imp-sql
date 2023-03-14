@@ -315,14 +315,14 @@ public class TablesSQLObjectSchemaParserTest {
             schema.getTables().get(0).equals(expectedTable));
     }
 
-    //TODO: when adding OR, >, < and TRUE, FALSE change the constraint to {col1 > 18 OR col2 = FALSE}
+    //TODO: when adding OR, and TRUE, FALSE change the constraint to {col1 > 18 OR col2 = FALSE}
     @Test
     public void parseTableWithCheckTableConstraints() {
         String createTable = """
             CREATE TABLE name (
                 col1 int,
                 col2 bit,
-                CONSTRAINT c1 CHECK ( col1 = 18 AND col2 = 1 )
+                CONSTRAINT c1 CHECK ( col1 > 18 AND col2 = 1 )
             );
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
@@ -339,7 +339,7 @@ public class TablesSQLObjectSchemaParserTest {
                 new PredicateOperation(
                     PredicateOperation.PredicateOperator.AND,
                     new ComparisonPredicate(
-                        ComparisonPredicate.ComparisonOperator.EQ,
+                        ComparisonPredicate.ComparisonOperator.GT,
                         new ColumnReference("col1"),
                         new SQLPrimitiveInteger(18)),
                     new ComparisonPredicate(
@@ -464,7 +464,7 @@ public class TablesSQLObjectSchemaParserTest {
 
     /** CONSTRAINTS INTEGRATION **/
 
-    //TODO: when adding more expressions add them to the test (OR, <, boolean types,...)
+    //TODO: when adding more expressions add them to the test (OR, boolean types,...)
     @Test
     public void parseTableWithMultipleConstraints() {
         String createTables = """
@@ -481,7 +481,7 @@ public class TablesSQLObjectSchemaParserTest {
               B_a5 int,
               CONSTRAINT pk1 PRIMARY KEY (B_a1),
               CONSTRAINT fk1 FOREIGN KEY (B_a2) REFERENCES A (A_a1),
-              CONSTRAINT C1 CHECK (B_a5 = B_a4)
+              CONSTRAINT C1 CHECK (B_a5 < > B_a4)
             );
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
@@ -513,7 +513,7 @@ public class TablesSQLObjectSchemaParserTest {
                 new Attribute("B_a5", new SQLInt())
             ),
             List.of(new Check("C1", new ComparisonPredicate(
-                ComparisonPredicate.ComparisonOperator.EQ,
+                ComparisonPredicate.ComparisonOperator.NEQ,
                 new ColumnReference("B_a5"),
                 new ColumnReference("B_a4")))),
             List.of(new Unique("unique1", List.of(uniqueAttribute1))),

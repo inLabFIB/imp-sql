@@ -94,7 +94,7 @@ select_statement
 // DDL
 
 create_assertion
-    : CREATE ASSERTION simple_name assertion_check ';'?
+    : CREATE ASSERTION table_name assertion_check ';'?
     ;
 
 assertion_check

@@ -75,6 +75,9 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
     public String visit(ComparisonPredicate cp) {
         String operation = switch (cp.getOperator()) {
             case EQ -> " = ";
+            case NEQ -> " <> ";
+            case LT -> " < ";
+            case GT -> " > ";
             default -> " " + cp.getOperator().toString() + " ";
         };
         return cp.getLeftExpression().<String>visit(this) + operation + cp.getRightExpression().<String>visit(this);
@@ -101,7 +104,7 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
         // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
         //  e.g. replace whitespaces with underscores
 
-        String assertionName = (a.getSchemaReference() != null) ? a.getSchemaReference().visit(this) : "";
+        String assertionName = (a.getSchemaReference() != null) ? a.getSchemaReference().visit(this) + "." : "";
         assertionName += a.getAssertionName();
 
         return "CREATE ASSERTION " + assertionName + " CHECK ( " + a.getBooleanExpression().<String>visit(this) + " );";

@@ -19,14 +19,27 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     private final SQLObjectSchema schema;
 
+    /**
+     * When a parsed table is referenced without any SchemaReference, this default schema reference is used.
+     * TODO: created objects should contain this schema reference if no other is provided.
+     */
+    private final SchemaReference defaultSchemaReference;
+
+    /**
+     * Needed for creating table objects
+     */
     private TableSetBuilder builder;
     private boolean tablesInStandBy;
 
+    /**
+     * Needed for unnamed constraints.
+     */
     private final String unnamedConstraintName = "constraint";
     private int unnamedConstraintNumber = 1;
 
-    public SQLObjectSchemaGrammarVisitorImpl(SQLObjectSchema schema) {
+    public SQLObjectSchemaGrammarVisitorImpl(SQLObjectSchema schema, SchemaReference defaultSchemaReference) {
         this.schema = schema;
+        this.defaultSchemaReference = defaultSchemaReference;
         this.builder = new TableSetBuilder();
         this.tablesInStandBy = false;
     }
@@ -49,8 +62,8 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         if (tablesInStandBy) generateTableBatch();
 
         Assertion newAssertion = new Assertion(
-            visitId_(ctx.simple_name().name),
-            visitSimple_name(ctx.simple_name()),
+            visitId_(ctx.table_name().table),
+            visitTable_name(ctx.table_name()),
             visitAssertion_check(ctx.assertion_check()));
         schema.addAssertion(newAssertion);
         return newAssertion;
@@ -344,6 +357,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
                 || ctx.sybase_legacy_hints() != null) throw new RuntimeException("Grammar expression related to table_source_item not supported yet!");
 
             String tableName = visitId_(ctx.full_table_name().table);
+
             SchemaReference schemaReference = visitFull_table_name(ctx.full_table_name());
             return new TableReference(schema.getTable(tableName, schemaReference), alias);
         }
@@ -373,7 +387,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     public SchemaReference visitTable_name(TSqlParser.Table_nameContext ctx) {
         if (ctx.BLOCKING_HIERARCHY() != null) throw new RuntimeException("Grammar expression (`BLOCKING_HIERARCHY`) not supported yet!");
-        if (ctx.schema == null) return null;
+        if (ctx.schema == null) return defaultSchemaReference;
         else if (ctx.database == null) return new SchemaReference(ctx.schema.getText());
         else return new SchemaReference(ctx.database.getText(), ctx.schema.getText());
     }
@@ -469,7 +483,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     public SchemaReference visitFull_table_name(TSqlParser.Full_table_nameContext ctx) {
         if (ctx.linkedServer != null) throw new RuntimeException("Grammar expression related to linkedServer in full_table_name not supported yet!");
 
-        if (ctx.schema == null) return null;
+        if (ctx.schema == null) return defaultSchemaReference;
 
         return new SchemaReference(
             ctx.server != null ? visitId_(ctx.server) : null,
@@ -478,7 +492,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     }
 
     public SchemaReference visitSimple_name(TSqlParser.Simple_nameContext ctx) {
-        if (ctx.schema == null) return null;
+        if (ctx.schema == null) return defaultSchemaReference;
         return new SchemaReference(visitId_(ctx.schema));
     }
 
@@ -509,9 +523,12 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     public ComparisonPredicate.ComparisonOperator visitComparison_operator(TSqlParser.Comparison_operatorContext ctx) {
         String opString = ctx.getText();
-        if (Objects.equals(opString, "=")) return ComparisonPredicate.ComparisonOperator.EQ;
+        if (opString.equals("=")) return ComparisonPredicate.ComparisonOperator.EQ;
+        else if(opString.equals("<>")) return ComparisonPredicate.ComparisonOperator.NEQ;
+        else if(opString.equals("<")) return ComparisonPredicate.ComparisonOperator.LT;
+        else if(opString.equals(">")) return ComparisonPredicate.ComparisonOperator.GT;
         else {
-            //TODO: V2
+            //TODO: V3
             throw new RuntimeException("Grammar expression of different comparison predicates not supported yet!");
         }
     }
