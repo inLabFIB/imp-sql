@@ -38,7 +38,7 @@ public class TableBuilder {
                             List<PrimaryKey> primaryKeyConstraints, List<ForeignKey> foreignKeyConstraints) {
             super(tableName, schemaReference, attributes,
                 checkConstraints, uniqueConstraints, primaryKeyConstraints, foreignKeyConstraints);
-        };
+        }
 
         protected void addFkConstraint(ForeignKey fk) {
             this.foreignKeyConstraints.add(fk);
@@ -216,6 +216,7 @@ public class TableBuilder {
             provisionalPrimaryKeyMap.put(constraintName, new ProvisionalPrimaryKey(constraintName, attrName));
         }
         else pk.pkAttributes.add(attrName);
+        provisionalAttributeMap.get(attrName).isNullable = false;
     }
     protected void addPrimaryKeyConstraint(String constraintName, List<String> attrNames) {
         if (constraintName == null || attrNames == null || attrNames.isEmpty())
@@ -226,6 +227,7 @@ public class TableBuilder {
             provisionalPrimaryKeyMap.put(constraintName, new ProvisionalPrimaryKey(constraintName, attrNames));
         }
         else pk.pkAttributes.addAll(attrNames);
+        attrNames.forEach(a -> provisionalAttributeMap.get(a).isNullable = false);
     }
 
 }

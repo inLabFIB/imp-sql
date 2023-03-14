@@ -36,11 +36,11 @@ public class SQLServerFetcherIT {
         Table testedTable = schema.getTables().stream().filter(s -> s.getTableName().equals("test")).findFirst().orElseThrow();
         assertThat(testedTable.getAttributes(), containsInAnyOrder(List.of(
             new Attribute("btAttr", new SQLBit()),
-            new Attribute("chAttr", new SQLChar(8), false), // FIXME: SQLServer char are always not null?
+            new Attribute("chAttr", new SQLChar(8), false), // Not null since it is a PK
             new Attribute("dtAttr", new SQLDate(7)),
             new Attribute("dpAttr", new SQLFloat(53)), // SQLServer converts double precision to float(53)
             new Attribute("flAttr", new SQLReal()),  // SQLServer converts floats with precision to reals
-            new Attribute("itAttr", new SQLInt(), false, new SQLPrimitiveInteger(1)), // FIXME: Does SQLServer interpret "having a default value" as "cannot be null"?
+            new Attribute("itAttr", new SQLInt(), false, new SQLPrimitiveInteger(1)), // Not null since it is a PK
             new Attribute("rlAttr", new SQLReal(), false),
             new Attribute("siAttr", new SQLSmallint()),
             new Attribute("vcAttr", new SQLVarchar(64)),

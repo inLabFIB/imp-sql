@@ -153,7 +153,7 @@ public class TablesSQLObjectSchemaParserTest {
         parser.parse(createTable);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-        Attribute a1 = new Attribute("col1", new SQLInt());
+        Attribute a1 = new Attribute("col1", new SQLInt(), false); // It is a PK.
         Attribute a2 = new Attribute("col2", new SQLInt());
 
         Table expectedTable = new Table(
