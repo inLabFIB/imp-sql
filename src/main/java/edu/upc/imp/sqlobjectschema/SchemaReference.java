@@ -5,6 +5,10 @@ import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.Objects;
 
+/**
+ * String convention: all the names stored must not contain beginning and ending brackets or commas or any kind of
+ * limiting character. This will be added in the printer if called.
+ */
 public class SchemaReference implements SQLObjectSchemaEntity {
 
     private final String serverName;
@@ -46,9 +50,9 @@ public class SchemaReference implements SQLObjectSchemaEntity {
     @Override
     public boolean equals(Object o) {
         return o instanceof SchemaReference ftn
-            && Objects.equals(serverName, ftn.serverName)
-            && Objects.equals(databaseName, ftn.databaseName)
-            && schemaName.equals(ftn.schemaName);
+            && ((serverName == null && ftn.serverName == null) || (serverName != null && serverName.equalsIgnoreCase(ftn.serverName)))
+            && ((databaseName == null && ftn.databaseName == null) || (databaseName != null && databaseName.equalsIgnoreCase(ftn.databaseName)))
+            && schemaName.equalsIgnoreCase(ftn.schemaName);
     }
 
 }

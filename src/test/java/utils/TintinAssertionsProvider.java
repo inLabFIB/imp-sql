@@ -99,7 +99,7 @@ public class TintinAssertionsProvider {
     private static final String NATIONAL_INTERNATIONAL = """
         CREATE ASSERTION NATIONAL_INTERNATIONAL CHECK ( NOT EXISTS (
             SELECT *
-            FROM NATIONAL_COMPANY AS n INNER JOIN INTERNATIONAL_COMPANY AS i ON (n.c_fk = i.c_fk)
+            FROM [cv2_db].[user_schema].NATIONAL_COMPANY AS n INNER JOIN [cv2_db].[user_schema].INTERNATIONAL_COMPANY AS i ON (n.c_fk = i.c_fk)
         ));
                 
         """;
@@ -107,10 +107,10 @@ public class TintinAssertionsProvider {
     private static final String FAST_QUALITY_EXPENSIVE = """
         CREATE ASSERTION FAST_QUALITY_EXPENSIVE CHECK ( NOT EXISTS (
             SELECT *
-            FROM QUALITY AS q INNER JOIN FAST AS f ON (q.s_fk = f.s_fk)
+            FROM [cv2_db].[user_schema].QUALITY AS q INNER JOIN [cv2_db].[user_schema].FAST AS f ON (q.s_fk = f.s_fk)
             WHERE NOT EXISTS (
                 SELECT *
-                FROM EXPENSIVE AS e
+                FROM [cv2_db].[user_schema].EXPENSIVE AS e
                 WHERE e.s_fk = q.s_fk)
         ));
                 
@@ -119,10 +119,10 @@ public class TintinAssertionsProvider {
     private static final String AT_LEAST_ONE_SERVICE = """
         CREATE ASSERTION AT_LEAST_ONE_SERVICE CHECK ( NOT EXISTS (
             SELECT *
-            FROM COMPANY AS c
+            FROM [cv2_db].[user_schema].COMPANY AS c
             WHERE NOT EXISTS (
                 SELECT *
-                FROM SERVICE AS s
+                FROM [cv2_db].[user_schema].SERVICE AS s
                 WHERE c.c_pk = s.c_fk)
         ));
                 

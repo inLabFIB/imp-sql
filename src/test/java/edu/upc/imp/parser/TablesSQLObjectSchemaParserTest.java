@@ -4,9 +4,11 @@ import edu.upc.imp.sqlobjectschema.Attribute;
 import edu.upc.imp.sqlobjectschema.SQLObjectSchema;
 import edu.upc.imp.sqlobjectschema.Table;
 import edu.upc.imp.sqlobjectschema.boolean_expressions.ComparisonPredicate;
+import edu.upc.imp.sqlobjectschema.boolean_expressions.PredicateOperation;
 import edu.upc.imp.sqlobjectschema.constraints.*;
 import edu.upc.imp.sqlobjectschema.exceptions.MissingReferencedObjectException;
 import edu.upc.imp.sqlobjectschema.exceptions.SQLObjectAlreadyExistsException;
+import edu.upc.imp.sqlobjectschema.sql_data_types.SQLBit;
 import edu.upc.imp.sqlobjectschema.sql_data_types.SQLFloat;
 import edu.upc.imp.sqlobjectschema.sql_data_types.SQLInt;
 import edu.upc.imp.sqlobjectschema.sql_data_types.SQLVarchar;
@@ -283,8 +285,6 @@ public class TablesSQLObjectSchemaParserTest {
     /* TABLE CONSTRAINTS */
 
     /** Coupled to parser naming of unnamed constraints! **/
-//TODO: change how the builder stores things
-    @Disabled
     @Test
     public void parseTableWithPrimaryKeyAndUniqueTableConstraints() {
         String createTable = """
@@ -299,8 +299,8 @@ public class TablesSQLObjectSchemaParserTest {
         parser.parse(createTable);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-        Attribute a1 = new Attribute("col1", new SQLInt());
-        Attribute a2 = new Attribute("col2", new SQLInt());
+        Attribute a1 = new Attribute("col1", new SQLInt(), false);
+        Attribute a2 = new Attribute("col2", new SQLInt(), false);
 
         Table expectedTable = new Table(
             "name",
@@ -316,14 +316,14 @@ public class TablesSQLObjectSchemaParserTest {
             schema.getTables().get(0).equals(expectedTable));
     }
 
-//TODO: make a constraint with a little bit of sense
+    //TODO: when adding OR, >, < and TRUE, FALSE change the constraint to {col1 > 18 OR col2 = FALSE}
     @Test
     public void parseTableWithCheckTableConstraints() {
         String createTable = """
             CREATE TABLE name (
                 col1 int,
-                col2 int,
-                CONSTRAINT c1 CHECK ( col1 = col2 )
+                col2 bit,
+                CONSTRAINT c1 CHECK ( col1 = 18 AND col2 = 1 )
             );
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
@@ -335,46 +335,61 @@ public class TablesSQLObjectSchemaParserTest {
             null,
             List.of(
                 new Attribute("col1", new SQLInt()),
-                new Attribute("col2", new SQLInt())),
+                new Attribute("col2", new SQLBit())),
             List.of(new Check("c1",
-                new ComparisonPredicate(
-                    ComparisonPredicate.ComparisonOperator.EQ,
-                    new ColumnReference("col1"),
-                    new ColumnReference("col2")))),
+                new PredicateOperation(
+                    PredicateOperation.PredicateOperator.AND,
+                    new ComparisonPredicate(
+                        ComparisonPredicate.ComparisonOperator.EQ,
+                        new ColumnReference("col1"),
+                        new SQLPrimitiveInteger(18)),
+                    new ComparisonPredicate(
+                        ComparisonPredicate.ComparisonOperator.EQ,
+                        new ColumnReference("col2"),
+                        new SQLPrimitiveInteger(1))
+                    )
+                )),
             new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>()
         );
+
+        assertThat("Parsed table does not equal expected table.",
+            schema.getTables().get(0).equals(expectedTable));
     }
 
-//TODO: make a constraint with multiple attributes
     @Test
     public void parseTableWithForeignKeyTableConstraint() {
         String createTables = """
             CREATE TABLE tableA (
                 colPk int,
-                colAttr1 int
+                colAttr1 int,
+                colAttr2 int
             );
             
             CREATE TABLE tableB (
                 colPk int,
-                colFk int,
-                CONSTRAINT fk1 FOREIGN KEY (colFk) REFERENCES tableA (colAttr1)
+                colFk1 int,
+                colFk2 int,
+                CONSTRAINT fk1 FOREIGN KEY (colFk1, colFk2) REFERENCES tableA (colAttr1, colAttr2)
             );
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
         parser.parse(createTables);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-        Attribute referencedAttribute = new Attribute("colAttr1", new SQLInt());
-        Attribute linkedAttribute = new Attribute("colFk", new SQLInt());
+        Attribute referencedAttribute1 = new Attribute("colAttr1", new SQLInt());
+        Attribute referencedAttribute2 = new Attribute("colAttr2", new SQLInt());
+        Attribute linkedAttribute1 = new Attribute("colFk1", new SQLInt());
+        Attribute linkedAttribute2 = new Attribute("colFk2", new SQLInt());
 
         // Object built directly in java
         Table expectedTableA = new Table(
             "tableA",
             List.of(
                 new Attribute("colPk", new SQLInt()),
-                referencedAttribute
+                referencedAttribute1,
+                referencedAttribute2
             )
         );
 
@@ -383,12 +398,15 @@ public class TablesSQLObjectSchemaParserTest {
             null,
             List.of(
                 new Attribute("colPk", new SQLInt()),
-                linkedAttribute
+                linkedAttribute1,
+                linkedAttribute2
             ),
             new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>(),
-            List.of(new ForeignKey("fk1", List.of(linkedAttribute), expectedTableA, List.of(referencedAttribute)))
+            List.of(new ForeignKey("fk1",
+                List.of(linkedAttribute1, linkedAttribute2),
+                expectedTableA, List.of(referencedAttribute1, referencedAttribute2)))
         );
 
         assertThat("Parsed table 'tableA' does not equal expected table.",
@@ -400,9 +418,8 @@ public class TablesSQLObjectSchemaParserTest {
 
     /** CONSTRAINTS INTEGRATION **/
 
-//TODO: finish test
+    //TODO: when adding more expressions add them to the test (OR, <, boolean types,...)
     @Test
-    @Disabled
     public void parseTableWithMultipleConstraints() {
         String createTables = """
             CREATE TABLE A (
@@ -411,41 +428,51 @@ public class TablesSQLObjectSchemaParserTest {
             );
             
             CREATE TABLE B (
-              B_a1 int DEFAULT 0,
-              B_a2 int CONSTRAINT unique1 UNIQUE,
-              B_a3 int,
-              B_a4 int,
+              B_a1 int,
+              B_a2 int,
+              B_a3 int DEFAULT 0,
+              B_a4 int CONSTRAINT unique1 UNIQUE,
               B_a5 int,
-              CONSTRAINT fk1 FOREIGN KEY (B_a1) REFERENCES tableA (A_a1)
+              CONSTRAINT pk1 PRIMARY KEY (B_a1),
+              CONSTRAINT fk1 FOREIGN KEY (B_a2) REFERENCES A (A_a1),
+              CONSTRAINT C1 CHECK (B_a5 = B_a4)
             );
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
         parser.parse(createTables);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-        Attribute referencedAttribute = new Attribute("colAttr1", new SQLInt());
-        Attribute linkedAttribute = new Attribute("colFk", new SQLInt());
+        Attribute pkAttribute1 = new Attribute("B_a1", new SQLInt(), false);
+        Attribute uniqueAttribute1 = new Attribute("B_a4", new SQLInt());
+        Attribute referencedAttribute1 = new Attribute("A_a1", new SQLInt());
+        Attribute linkedAttribute1 = new Attribute("B_a2", new SQLInt());
 
         // Object built directly in java
         Table expectedTableA = new Table(
             "A",
             List.of(
-                new Attribute("colPk", new SQLInt()),
-                referencedAttribute
+                referencedAttribute1,
+                new Attribute("A_a2", new SQLInt())
             )
         );
 
         Table expectedTableB = new Table(
-            "tableB",
+            "B",
             null,
             List.of(
-                new Attribute("colPk", new SQLInt()),
-                linkedAttribute
+                pkAttribute1,
+                linkedAttribute1,
+                new Attribute("B_a3", new SQLInt(), new SQLPrimitiveInteger(0)),
+                uniqueAttribute1,
+                new Attribute("B_a5", new SQLInt())
             ),
-            new ArrayList<>(),
-            new ArrayList<>(),
-            new ArrayList<>(),
-            List.of(new ForeignKey("fk1", List.of(linkedAttribute), expectedTableA, List.of(referencedAttribute)))
+            List.of(new Check("C1", new ComparisonPredicate(
+                ComparisonPredicate.ComparisonOperator.EQ,
+                new ColumnReference("B_a5"),
+                new ColumnReference("B_a4")))),
+            List.of(new Unique("unique1", List.of(uniqueAttribute1))),
+            List.of(new PrimaryKey("pk1", List.of(pkAttribute1))),
+            List.of(new ForeignKey("fk1", List.of(linkedAttribute1), expectedTableA, List.of(referencedAttribute1)))
         );
 
         assertThat("Parsed table 'tableA' does not equal expected table.",

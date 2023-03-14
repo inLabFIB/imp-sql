@@ -12,11 +12,9 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class TSqlIT {
+public class TSqlCV2IT {
 
-    //FIXME: test doesn't work because the parser doesn't infer the schema and database name of the referenced tables
-    // in the assertions. Could be fixed adding this information in the statements or changing the parser behaviour.
-    @Test
+   @Test
     public void parsingCV2AssertionsWithFetchedTables() {
         SQLObjectSchemaFetcher cv2Fetcher = new SQLObjectSchemaFetcher(
             "localhost",

@@ -95,7 +95,7 @@ public class Table implements SQLObjectSchemaEntity {
     }
 
     public boolean hasSameIdentifier(String tableName, SchemaReference schemaReference) {
-        return this.tableName.equals(tableName)
+        return this.tableName.equalsIgnoreCase(tableName)
             && Objects.equals(this.schemaReference, schemaReference);
     }
 }

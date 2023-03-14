@@ -13,6 +13,7 @@ services:
     volumes:
       - db_data:/var/opt/mssql
       - ./sql/setup.sql:/usr/src/app/sql/setup.sql
+      - ./sql/cv2-setup.sql:/usr/src/app/sql/cv2-setup.sql
 
 volumes:
   db_data:

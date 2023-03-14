@@ -18,5 +18,6 @@ fi
 echo "======= MSSQL SERVER STARTED ========"
 
 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -d master -i /usr/src/app/sql/setup.sql
+/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -d master -i /usr/src/app/sql/cv2-setup.sql
 
 echo "======= MSSQL CONFIG COMPLETE ======="

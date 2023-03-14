@@ -517,6 +517,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     }
 
     public String visitId_(TSqlParser.Id_Context ctx) {
+        if (ctx.SQUARE_BRACKET_ID() != null) return ctx.getText().substring(1, ctx.getText().length()-1);
         return ctx.getText();
     }
 
