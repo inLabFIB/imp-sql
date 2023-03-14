@@ -1,16 +1,22 @@
 package edu.upc.imp.fetcher;
 
-import edu.upc.imp.printer.SQLServerPrinter;
+import edu.upc.imp.sqlobjectschema.Attribute;
 import edu.upc.imp.sqlobjectschema.SQLObjectSchema;
 import edu.upc.imp.sqlobjectschema.Table;
+import edu.upc.imp.sqlobjectschema.constraints.TableConstraint;
+import edu.upc.imp.sqlobjectschema.sql_data_types.*;
+import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
 public class SQLServerFetcherIT {
 
     @Test
-    public void fetchCV2Tables() {
+    public void fetchTestTables() {
         SQLObjectSchemaFetcher fetcher = new SQLObjectSchemaFetcher(
             "localhost",
             1433,
@@ -24,8 +30,26 @@ public class SQLServerFetcherIT {
         fetcher.fetch();
 
         SQLObjectSchema schema = fetcher.getSQLObjectSchema();
-        SQLServerPrinter printer = new SQLServerPrinter();
 
-        for (Table t : schema.getTables()) System.out.println(t.<String>visit(printer));
+        assertThat(schema.getTables(), hasSize(3));
+
+        Table testedTable = schema.getTables().stream().filter(s -> s.getTableName().equals("test")).findFirst().orElseThrow();
+        assertThat(testedTable.getAttributes(), containsInAnyOrder(List.of(
+            new Attribute("btAttr", new SQLBit()),
+            new Attribute("chAttr", new SQLChar(8), false), // FIXME: SQLServer char are always not null?
+            new Attribute("dtAttr", new SQLDate(7)),
+            new Attribute("dpAttr", new SQLFloat(53)), // SQLServer converts double precision to float(53)
+            new Attribute("flAttr", new SQLReal()),  // SQLServer converts floats with precision to reals
+            new Attribute("itAttr", new SQLInt(), false, new SQLPrimitiveInteger(1)), // FIXME: Does SQLServer interpret "having a default value" as "cannot be null"?
+            new Attribute("rlAttr", new SQLReal(), false),
+            new Attribute("siAttr", new SQLSmallint()),
+            new Attribute("vcAttr", new SQLVarchar(64)),
+            new Attribute("selfRl", new SQLReal())
+        ).toArray()));
+
+        assertThat(testedTable.getTableConstraints(), hasSize(7));
+        assertThat(testedTable.getTableConstraints().stream().map(TableConstraint::getName).toList(), hasItems(
+            "test_pk", "test_fk_1", "test_fk_2", "test_fk_self", "test_ck", "test_u" // There is a column-check with a random name
+        ));
     }
 }
