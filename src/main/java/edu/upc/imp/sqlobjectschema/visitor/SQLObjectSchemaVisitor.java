@@ -13,7 +13,6 @@ import edu.upc.imp.sqlobjectschema.relational_expressions.TableReference;
 import edu.upc.imp.sqlobjectschema.selection_expressions.AliasableSelectItem;
 import edu.upc.imp.sqlobjectschema.selection_expressions.Asterisk;
 import edu.upc.imp.sqlobjectschema.sql_data_types.*;
-import edu.upc.imp.sqlobjectschema.sql_data_types.SQLFloat;
 import edu.upc.imp.sqlobjectschema.value_expressions.ColumnReference;
 import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
 import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveInteger;

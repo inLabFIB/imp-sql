@@ -11,11 +11,10 @@ import java.util.Objects;
 public class View implements SQLObjectSchemaEntity {
 
     private final String viewName;
-
     private final SchemaReference schemaReference;
-
     private final List<String> columnNames;
     private final Query query;
+
     public View(String viewName, SchemaReference schemaReference, List<String> columnNames, Query query) {
         this.viewName = Objects.requireNonNull(viewName, "The parameter 'viewName' cannot be null.");
         this.schemaReference = schemaReference;
@@ -28,7 +27,6 @@ public class View implements SQLObjectSchemaEntity {
     }
 
 
-    //TODO: add other constructors to avoid not nulls if needed
     public String getViewName() {
         return viewName;
     }

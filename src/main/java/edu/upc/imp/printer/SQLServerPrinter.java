@@ -62,7 +62,7 @@ public class SQLServerPrinter implements SQLObjectSchemaVisitor {
 
     @Override
     public String visit(TableReference tr) {
-        String tableReference = "";
+        String tableReference;
         SchemaReference schemaReference = tr.getTable().getSchemaReference();
         if (schemaReference == null) tableReference = tr.getTable().getTableName();
         else tableReference = schemaReference.<String>visit(this) + "." + tr.getTable().getTableName();

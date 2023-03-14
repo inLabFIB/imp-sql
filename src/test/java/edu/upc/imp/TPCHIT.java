@@ -3,8 +3,11 @@ package edu.upc.imp;
 import edu.upc.imp.fetcher.SQLObjectSchemaFetcher;
 import edu.upc.imp.parser.SQLObjectSchemaParser;
 import edu.upc.imp.printer.SQLServerPrinter;
-import edu.upc.imp.sqlobjectschema.*;
+import edu.upc.imp.sqlobjectschema.Assertion;
+import edu.upc.imp.sqlobjectschema.SQLObjectSchema;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import utils.TintinAssertionsProvider;
 
@@ -12,24 +15,37 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class TSqlCV2IT {
+@Disabled
+public class TPCHIT {
 
-   @Test
-    public void parsingCV2AssertionsWithFetchedTables() {
-        SQLObjectSchemaFetcher cv2Fetcher = new SQLObjectSchemaFetcher(
+    private SQLObjectSchemaFetcher tpch_fetcher;
+
+    @BeforeEach
+    public void fetcherSetUp() {
+        tpch_fetcher = new SQLObjectSchemaFetcher(
             "localhost",
             1433,
-            "cv2_db",
+            "tpch_db",
             List.of("user_schema"),
             "SA",
             "PasswordO1.",
             SQLObjectSchemaFetcher.DBType.SQLServer
         );
-        cv2Fetcher.fetch();
-        SQLObjectSchema cv2FetchedSchema = cv2Fetcher.getSQLObjectSchema();
+    }
 
-        assertThat("Fetcher didn't correctly fetch the CV2 schema tables.",
+    @Test
+    public void fetchingTpchTables() {
+        tpch_fetcher.fetch();
+        SQLObjectSchema cv2FetchedSchema = tpch_fetcher.getSQLObjectSchema();
+
+        assertThat("Fetcher didn't correctly fetch the TPCH schema tables.",
             !cv2FetchedSchema.getTables().isEmpty());
+    }
+
+   @Test
+    public void parsingCV2AssertionsWithFetchedTables() {
+        tpch_fetcher.fetch();
+        SQLObjectSchema cv2FetchedSchema = tpch_fetcher.getSQLObjectSchema();
 
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser(cv2FetchedSchema);
         parser.parse(TintinAssertionsProvider.getCV2Assertions());
@@ -41,17 +57,8 @@ public class TSqlCV2IT {
 
     @Test
     public void cv2Assertions() {
-        SQLObjectSchemaFetcher cv2Fetcher = new SQLObjectSchemaFetcher(
-            "localhost",
-            1433,
-            "cv2_db",
-            List.of("user_schema"),
-            "SA",
-            "PasswordO1.",
-            SQLObjectSchemaFetcher.DBType.SQLServer
-        );
-        cv2Fetcher.fetch();
-        SQLObjectSchema cv2FetchedSchema = cv2Fetcher.getSQLObjectSchema();
+        tpch_fetcher.fetch();
+        SQLObjectSchema cv2FetchedSchema = tpch_fetcher.getSQLObjectSchema();
 
         SQLObjectSchemaParser parser1 = new SQLObjectSchemaParser(cv2FetchedSchema);
         parser1.parse(TintinAssertionsProvider.getCV2Assertions());

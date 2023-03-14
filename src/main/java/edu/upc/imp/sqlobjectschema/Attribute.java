@@ -1,7 +1,6 @@
 package edu.upc.imp.sqlobjectschema;
 
 import edu.upc.imp.sqlobjectschema.sql_data_types.SQLDataType;
-import edu.upc.imp.sqlobjectschema.sql_data_types.SQLVarchar;
 import edu.upc.imp.sqlobjectschema.value_expressions.ValueExpression;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaEntity;
 import edu.upc.imp.sqlobjectschema.visitor.SQLObjectSchemaVisitor;

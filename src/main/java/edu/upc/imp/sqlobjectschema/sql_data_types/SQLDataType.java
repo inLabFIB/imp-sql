@@ -11,6 +11,6 @@ public interface SQLDataType extends SQLObjectSchemaEntity {
         SMALLINT,
         FLOAT,
         REAL,
-        DATE;
+        DATE
     }
 }

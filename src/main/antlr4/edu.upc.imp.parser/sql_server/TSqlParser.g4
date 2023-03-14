@@ -93,7 +93,6 @@ select_statement
 
 // DDL
 
-//TODO: add [constraint_attributes]
 create_assertion
     : CREATE ASSERTION simple_name assertion_check ';'?
     ;
@@ -1523,6 +1522,8 @@ scalar_function_name
 
 //<character string type> [ CHARACTER SET <character set specification> ] -- for now ignored
 //<inerval ype> -- ignored for now
+
+//TODO: probably types names can be specified between square brackets []
 data_type
     : CHARACTER ('(' length=DECIMAL ')')?
     | CHAR ('(' length=DECIMAL ')')?

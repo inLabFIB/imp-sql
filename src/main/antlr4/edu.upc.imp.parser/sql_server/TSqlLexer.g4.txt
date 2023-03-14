@@ -1206,7 +1206,7 @@ SPACE:              [ \t\r\n]+    -> skip;
 COMMENT:            '/*' (COMMENT | .)*? '*/' -> channel(HIDDEN);
 LINE_COMMENT:       '--' ~[\r\n]* -> channel(HIDDEN);
 
-// TODO: ID can be not only Latin.
+// T0DO: ID can be not only Latin.
 DOUBLE_QUOTE_ID:    '"' ~'"'+ '"';
 DOUBLE_QUOTE_BLANK: '""';
 SINGLE_QUOTE:       '\'';

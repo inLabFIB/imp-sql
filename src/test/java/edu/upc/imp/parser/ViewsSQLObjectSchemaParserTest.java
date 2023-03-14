@@ -65,9 +65,6 @@ public class ViewsSQLObjectSchemaParserTest {
         assertThat("Parsed view does not equal expected view", schema.getViews().get(0).equals(expectedView));
     }
 
-    //TODO: remove tests, and change them with view tests
-
-
     @Test
     public void parseCreateViewStatementWithSimpleSelect() {
         // Object parsed from input string

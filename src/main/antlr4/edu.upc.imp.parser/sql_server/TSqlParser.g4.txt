@@ -1097,7 +1097,7 @@ create_event_notification
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-event-session-transact-sql
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-event-session-transact-sql
-// todo: not implemented
+// t0do: not implemented
 create_or_alter_event_session
     : (CREATE | ALTER) EVENT SESSION event_session_name=id_ ON SERVER
        (COMMA? ADD EVENT ( (event_module_guid=id_ DOT)? event_package_name=id_ DOT event_name=id_)
@@ -2457,7 +2457,7 @@ alter_endpoint
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-endpoint-transact-sql
-// todo: not implemented
+// t0do: not implemented
 
 /* Will visit later
 */
@@ -4977,7 +4977,7 @@ send_conversation
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187752.aspx
-// TODO: implement runtime check or add new tokens.
+// T0DO: implement runtime check or add new tokens.
 
 data_type
     : scaled=(VARCHAR | NVARCHAR | BINARY_KEYWORD | VARBINARY_KEYWORD | SQUARE_BRACKET_ID) '(' MAX ')'

@@ -15,7 +15,6 @@ import edu.upc.imp.sqlobjectschema.sql_data_types.SQLVarchar;
 import edu.upc.imp.sqlobjectschema.value_expressions.ColumnReference;
 import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
 import edu.upc.imp.sqlobjectschema.value_expressions.SQLPrimitiveString;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
