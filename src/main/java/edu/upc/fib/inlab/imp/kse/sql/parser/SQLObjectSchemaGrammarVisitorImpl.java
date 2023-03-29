@@ -10,8 +10,8 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Aster
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.SelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.*;
-import edu.upc.imp.sql.parser.sql_server.TSqlParser;
-import edu.upc.imp.sql.parser.sql_server.TSqlParserBaseVisitor;
+import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlParser;
+import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlParserBaseVisitor;
 
 import java.util.ArrayList;
 import java.util.List;

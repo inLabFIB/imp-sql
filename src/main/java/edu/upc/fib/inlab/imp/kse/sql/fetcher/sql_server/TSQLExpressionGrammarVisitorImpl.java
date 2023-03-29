@@ -3,9 +3,8 @@ package edu.upc.fib.inlab.imp.kse.sql.fetcher.sql_server;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaEntity;
-import edu.upc.imp.sql.parser.sql_server.TSqlExpressionParser;
-import edu.upc.imp.sql.parser.sql_server.TSqlExpressionParserBaseVisitor;
-
+import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlExpressionParser;
+import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlExpressionParserBaseVisitor;
 import java.util.Objects;
 
 public class TSQLExpressionGrammarVisitorImpl  extends TSqlExpressionParserBaseVisitor {
