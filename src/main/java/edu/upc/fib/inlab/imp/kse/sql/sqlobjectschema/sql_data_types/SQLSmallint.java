@@ -8,7 +8,6 @@ public class SQLSmallint implements SQLDataType {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
         return o instanceof SQLSmallint;

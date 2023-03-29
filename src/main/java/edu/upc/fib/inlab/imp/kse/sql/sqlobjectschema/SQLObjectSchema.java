@@ -81,12 +81,24 @@ public class SQLObjectSchema {
         return parser.getSQLObjectSchema();
     }
 
-    /** Syntactic equals implementation **/
+
     @Override
     public boolean equals(Object o) {
-        return o instanceof SQLObjectSchema os
-            && tables.equals(os.tables)
-            && views.equals(os.views)
-            && assertions.equals(os.assertions);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SQLObjectSchema that = (SQLObjectSchema) o;
+
+        if (!tables.equals(that.tables)) return false;
+        if (!views.equals(that.views)) return false;
+        return assertions.equals(that.assertions);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = tables.hashCode();
+        result = 31 * result + views.hashCode();
+        result = 31 * result + assertions.hashCode();
+        return result;
     }
 }

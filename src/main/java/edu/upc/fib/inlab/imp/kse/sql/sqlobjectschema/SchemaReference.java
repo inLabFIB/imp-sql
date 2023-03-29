@@ -46,13 +46,23 @@ public class SchemaReference implements SQLObjectSchemaEntity {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof SchemaReference ftn
-            && ((serverName == null && ftn.serverName == null) || (serverName != null && serverName.equalsIgnoreCase(ftn.serverName)))
-            && ((databaseName == null && ftn.databaseName == null) || (databaseName != null && databaseName.equalsIgnoreCase(ftn.databaseName)))
-            && schemaName.equalsIgnoreCase(ftn.schemaName);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SchemaReference that = (SchemaReference) o;
+
+        if (serverName != null ? !serverName.equals(that.serverName) : that.serverName != null) return false;
+        if (databaseName != null ? !databaseName.equals(that.databaseName) : that.databaseName != null) return false;
+        return schemaName.equals(that.schemaName);
     }
 
+    @Override
+    public int hashCode() {
+        int result = serverName != null ? serverName.hashCode() : 0;
+        result = 31 * result + (databaseName != null ? databaseName.hashCode() : 0);
+        result = 31 * result + schemaName.hashCode();
+        return result;
+    }
 }

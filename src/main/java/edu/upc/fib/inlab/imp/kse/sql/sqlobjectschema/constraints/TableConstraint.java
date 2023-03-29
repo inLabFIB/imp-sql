@@ -15,4 +15,5 @@ public abstract class TableConstraint implements Constraint {
     public String getName() {
         return name;
     }
+
 }

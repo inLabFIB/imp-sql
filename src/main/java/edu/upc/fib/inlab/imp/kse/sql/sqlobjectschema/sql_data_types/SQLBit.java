@@ -2,8 +2,6 @@ package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
-import java.util.Objects;
-
 public class SQLBit implements SQLDataType {
     private final Integer length;
 
@@ -20,10 +18,19 @@ public class SQLBit implements SQLDataType {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
+
     @Override
     public boolean equals(Object o) {
-        return o instanceof SQLBit b
-            && Objects.equals(length, b.length);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SQLBit sqlBit = (SQLBit) o;
+
+        return length != null ? length.equals(sqlBit.length) : sqlBit.length == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return length != null ? length.hashCode() : 0;
     }
 }

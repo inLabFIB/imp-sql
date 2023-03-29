@@ -25,11 +25,21 @@ public class PrimaryKey extends TableConstraint {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof PrimaryKey pk
-            && getName().equals(pk.getName())
-            && pkAttributes.equals(pk.pkAttributes);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PrimaryKey that = (PrimaryKey) o;
+
+        if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null) return false;
+        return pkAttributes.equals(that.pkAttributes);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getName() != null ? getName().hashCode() : 0;
+        result = 31 * result + pkAttributes.hashCode();
+        return result;
     }
 }

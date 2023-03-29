@@ -21,10 +21,18 @@ public class NotOperation implements BooleanExpression {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof NotOperation nop
-            && expression.equals(nop.expression);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        NotOperation that = (NotOperation) o;
+
+        return expression.equals(that.expression);
+    }
+
+    @Override
+    public int hashCode() {
+        return expression.hashCode();
     }
 }

@@ -48,13 +48,27 @@ public class View implements SQLObjectSchemaEntity {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
+
     @Override
     public boolean equals(Object o) {
-        return o instanceof View v
-            && viewName.equals(v.viewName)
-            && Objects.equals(schemaReference, v.schemaReference)
-            && Objects.equals(columnNames, v.columnNames)
-            && query.equals(v.query);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        View view = (View) o;
+
+        if (!viewName.equals(view.viewName)) return false;
+        if (schemaReference != null ? !schemaReference.equals(view.schemaReference) : view.schemaReference != null)
+            return false;
+        if (columnNames != null ? !columnNames.equals(view.columnNames) : view.columnNames != null) return false;
+        return query.equals(view.query);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = viewName.hashCode();
+        result = 31 * result + (schemaReference != null ? schemaReference.hashCode() : 0);
+        result = 31 * result + (columnNames != null ? columnNames.hashCode() : 0);
+        result = 31 * result + query.hashCode();
+        return result;
     }
 }

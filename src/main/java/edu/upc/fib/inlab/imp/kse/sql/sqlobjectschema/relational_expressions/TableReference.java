@@ -32,11 +32,22 @@ public class TableReference extends AliasableRelationalExpression {
         return new TableReference(table, newAlias);
     }
 
-    /** Syntactic equals implementation **/
+
     @Override
     public boolean equals(Object o) {
-        return o instanceof TableReference t
-            && Objects.equals(getAlias(), t.getAlias())
-            && table.equals(t.table);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TableReference that = (TableReference) o;
+
+        if (getAlias() != null ? !getAlias().equals(that.getAlias()) : that.getAlias() != null) return false;
+        return table.equals(that.table);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getAlias() != null ? getAlias().hashCode() : 0;
+        result = 31 * result + table.hashCode();
+        return result;
     }
 }

@@ -2,8 +2,6 @@ package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
-import java.util.Objects;
-
 public class SQLFloat implements SQLDataType {
     private final Integer precision;
 
@@ -24,10 +22,19 @@ public class SQLFloat implements SQLDataType {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
+
     @Override
     public boolean equals(Object o) {
-        return o instanceof SQLFloat f
-            && Objects.equals(precision, f.precision);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SQLFloat sqlFloat = (SQLFloat) o;
+
+        return precision != null ? precision.equals(sqlFloat.precision) : sqlFloat.precision == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return precision != null ? precision.hashCode() : 0;
     }
 }

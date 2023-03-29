@@ -81,18 +81,8 @@ public class Table implements SQLObjectSchemaEntity {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof Table t
-            && tableName.equals(t.tableName)
-            && Objects.equals(schemaReference,t.schemaReference)
-            && attributes.equals(t.attributes)
-            && checkConstraints.equals(t.checkConstraints)
-            && uniqueConstraints.equals(t.uniqueConstraints)
-            && primaryKeyConstraints.equals(t.primaryKeyConstraints)
-            && foreignKeyConstraints.equals(t.foreignKeyConstraints);
-    }
+
+
 
     public boolean hasSameIdentifier(Table t) {
         return tableName.equals(t.tableName)
@@ -102,5 +92,36 @@ public class Table implements SQLObjectSchemaEntity {
     public boolean hasSameIdentifier(String tableName, SchemaReference schemaReference) {
         return this.tableName.equalsIgnoreCase(tableName)
             && Objects.equals(this.schemaReference, schemaReference);
+    }
+
+    //FIXME: try to check equality of classes
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null /*|| getClass() != o.getClass()*/) return false;
+        //Needs to be modified because of the existence of MutableTables
+
+        Table table = (Table) o;
+
+        if (!tableName.equals(table.tableName)) return false;
+        if (schemaReference != null ? !schemaReference.equals(table.schemaReference) : table.schemaReference != null)
+            return false;
+        if (!attributes.equals(table.attributes)) return false;
+        if (!checkConstraints.equals(table.checkConstraints)) return false;
+        if (!uniqueConstraints.equals(table.uniqueConstraints)) return false;
+        if (!primaryKeyConstraints.equals(table.primaryKeyConstraints)) return false;
+        return foreignKeyConstraints.equals(table.foreignKeyConstraints);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = tableName.hashCode();
+        result = 31 * result + (schemaReference != null ? schemaReference.hashCode() : 0);
+        result = 31 * result + attributes.hashCode();
+        result = 31 * result + checkConstraints.hashCode();
+        result = 31 * result + uniqueConstraints.hashCode();
+        result = 31 * result + primaryKeyConstraints.hashCode();
+        result = 31 * result + foreignKeyConstraints.hashCode();
+        return result;
     }
 }

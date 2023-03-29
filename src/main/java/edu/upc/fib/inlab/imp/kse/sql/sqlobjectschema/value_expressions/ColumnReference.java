@@ -33,11 +33,21 @@ public class ColumnReference implements ValueExpression {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof ColumnReference c
-            && Objects.equals(tableName, c.tableName)
-            && columnName.equals(c.columnName);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ColumnReference that = (ColumnReference) o;
+
+        if (tableName != null ? !tableName.equals(that.tableName) : that.tableName != null) return false;
+        return columnName.equals(that.columnName);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = tableName != null ? tableName.hashCode() : 0;
+        result = 31 * result + columnName.hashCode();
+        return result;
     }
 }

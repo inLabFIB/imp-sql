@@ -22,10 +22,18 @@ public class ExistsPredicate extends Predicate {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof ExistsPredicate ep
-            && query.equals(ep.query);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ExistsPredicate that = (ExistsPredicate) o;
+
+        return query.equals(that.query);
+    }
+
+    @Override
+    public int hashCode() {
+        return query.hashCode();
     }
 }

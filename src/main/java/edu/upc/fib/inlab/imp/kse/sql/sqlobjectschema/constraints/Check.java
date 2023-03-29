@@ -23,11 +23,22 @@ public class Check extends TableConstraint {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof Check c
-            && getName().equals(c.getName())
-            && expression.equals(c.expression);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Check check = (Check) o;
+
+        if (getName() != null ? !getName().equals(check.getName()) : check.getName() != null) return false;
+        return expression.equals(check.expression);
     }
+
+    @Override
+    public int hashCode() {
+        int result = getName() != null ? getName().hashCode() : 0;
+        result = 31 * result + expression.hashCode();
+        return result;
+    }
+
 }

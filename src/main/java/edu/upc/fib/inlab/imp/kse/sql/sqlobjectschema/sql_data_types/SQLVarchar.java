@@ -18,10 +18,19 @@ public class SQLVarchar implements SQLDataType {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
+
     @Override
     public boolean equals(Object o) {
-        return o instanceof SQLVarchar v
-            && length == v.length;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SQLVarchar that = (SQLVarchar) o;
+
+        return length == that.length;
+    }
+
+    @Override
+    public int hashCode() {
+        return length;
     }
 }

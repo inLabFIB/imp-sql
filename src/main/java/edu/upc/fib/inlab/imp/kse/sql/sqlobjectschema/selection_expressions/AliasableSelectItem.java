@@ -36,11 +36,22 @@ public class AliasableSelectItem implements SelectItem {
         return columnAlias;
     }
 
-    /** Syntactic equals implementation **/
+
     @Override
     public boolean equals(Object o) {
-        return o instanceof AliasableSelectItem asi
-            && Objects.equals(columnAlias, asi.columnAlias)
-            && expression.equals(asi.expression);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AliasableSelectItem that = (AliasableSelectItem) o;
+
+        if (columnAlias != null ? !columnAlias.equals(that.columnAlias) : that.columnAlias != null) return false;
+        return expression.equals(that.expression);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = columnAlias != null ? columnAlias.hashCode() : 0;
+        result = 31 * result + expression.hashCode();
+        return result;
     }
 }

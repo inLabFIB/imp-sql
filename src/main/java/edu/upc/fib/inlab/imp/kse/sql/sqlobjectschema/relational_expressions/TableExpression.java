@@ -74,13 +74,27 @@ public class TableExpression extends Query {
         return new TableExpression(selectClause, fromClause, whereClause, newAlias);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof TableExpression te
-            && Objects.equals(getAlias(), te.getAlias())
-            && selectClause.equals(te.selectClause)
-            && Objects.equals(fromClause, te.fromClause)
-            && Objects.equals(whereClause, te.whereClause);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TableExpression that = (TableExpression) o;
+
+        if (getAlias() != null ? !getAlias().equals(that.getAlias()) : that.getAlias() != null) return false;
+        if (!selectClause.equals(that.selectClause)) return false;
+        if (fromClause != null ? !fromClause.equals(that.fromClause) : that.fromClause != null) return false;
+        if (whereClause != null ? !whereClause.equals(that.whereClause) : that.whereClause != null) return false;
+        return fromClauseTerminalExpressions != null ? fromClauseTerminalExpressions.equals(that.fromClauseTerminalExpressions) : that.fromClauseTerminalExpressions == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getAlias() != null ? getAlias().hashCode() : 0;
+        result = 31 * result + selectClause.hashCode();
+        result = 31 * result + (fromClause != null ? fromClause.hashCode() : 0);
+        result = 31 * result + (whereClause != null ? whereClause.hashCode() : 0);
+        result = 31 * result + (fromClauseTerminalExpressions != null ? fromClauseTerminalExpressions.hashCode() : 0);
+        return result;
     }
 }

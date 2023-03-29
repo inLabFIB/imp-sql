@@ -19,10 +19,19 @@ public class SQLPrimitiveInteger implements PrimitiveConstant {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
+
     @Override
     public boolean equals(Object o) {
-        return o instanceof SQLPrimitiveInteger i
-            && value == i.value;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SQLPrimitiveInteger that = (SQLPrimitiveInteger) o;
+
+        return value == that.value;
+    }
+
+    @Override
+    public int hashCode() {
+        return value;
     }
 }

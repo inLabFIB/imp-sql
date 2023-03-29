@@ -39,13 +39,25 @@ public class ForeignKey extends TableConstraint {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof ForeignKey fk
-            && getName().equals(fk.getName())
-            && fkAttributes.equals(fk.fkAttributes)
-            && pkReferenceTable.hasSameIdentifier(fk.pkReferenceTable)
-            && pkReference.equals(fk.pkReference);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ForeignKey that = (ForeignKey) o;
+
+        if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null) return false;
+        if (!fkAttributes.equals(that.fkAttributes)) return false;
+        if (!pkReferenceTable.equals(that.pkReferenceTable)) return false;
+        return pkReference.equals(that.pkReference);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getName() != null ? getName().hashCode() : 0;
+        result = 31 * result + fkAttributes.hashCode();
+        result = 31 * result + pkReferenceTable.hashCode();
+        result = 31 * result + pkReference.hashCode();
+        return result;
     }
 }

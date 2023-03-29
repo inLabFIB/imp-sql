@@ -6,14 +6,15 @@ import java.util.Objects;
 
 public class PredicateOperation implements BooleanExpression {
 
+
+
     public enum PredicateOperator {
         AND
     }
-
     private final PredicateOperator operator;
+
     private final BooleanExpression leftExpression;
     private final BooleanExpression rightExpression;
-
     public PredicateOperation(PredicateOperator operator, BooleanExpression leftExpression, BooleanExpression rightExpression) {
         this.operator = Objects.requireNonNull(operator, "The parameter 'operator' cannot be null.");
         this.leftExpression = Objects.requireNonNull(leftExpression, "The parameter 'leftExpression' cannot be null.");
@@ -37,12 +38,24 @@ public class PredicateOperation implements BooleanExpression {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof PredicateOperation pop
-            && operator.equals(pop.operator)
-            && leftExpression.equals(pop.leftExpression)
-            && rightExpression.equals(pop.rightExpression);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PredicateOperation that = (PredicateOperation) o;
+
+        if (operator != that.operator) return false;
+        if (!leftExpression.equals(that.leftExpression)) return false;
+        return rightExpression.equals(that.rightExpression);
     }
+
+    @Override
+    public int hashCode() {
+        int result = operator.hashCode();
+        result = 31 * result + leftExpression.hashCode();
+        result = 31 * result + rightExpression.hashCode();
+        return result;
+    }
+
 }

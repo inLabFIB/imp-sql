@@ -25,11 +25,22 @@ public class Unique extends TableConstraint {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
+
     @Override
     public boolean equals(Object o) {
-        return o instanceof Unique u
-            && getName().equals(u.getName())
-            && attributes.equals(u.attributes);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Unique unique = (Unique) o;
+
+        if (getName() != null ? !getName().equals(unique.getName()) : unique.getName() != null) return false;
+        return attributes.equals(unique.attributes);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getName() != null ? getName().hashCode() : 0;
+        result = 31 * result + attributes.hashCode();
+        return result;
     }
 }

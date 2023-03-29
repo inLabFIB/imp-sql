@@ -54,13 +54,26 @@ public class Attribute implements SQLObjectSchemaEntity {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof Attribute a
-            && attributeName.equals(a.attributeName)
-            && type.equals(a.type)
-            && nullable == a.nullable
-            && Objects.equals(defaultExpression, a.defaultExpression);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Attribute attribute = (Attribute) o;
+
+        if (nullable != attribute.nullable) return false;
+        if (!attributeName.equals(attribute.attributeName)) return false;
+        if (!type.equals(attribute.type)) return false;
+        return defaultExpression != null ? defaultExpression.equals(attribute.defaultExpression) : attribute.defaultExpression == null;
     }
+
+    @Override
+    public int hashCode() {
+        int result = attributeName.hashCode();
+        result = 31 * result + type.hashCode();
+        result = 31 * result + (nullable ? 1 : 0);
+        result = 31 * result + (defaultExpression != null ? defaultExpression.hashCode() : 0);
+        return result;
+    }
+
 }

@@ -39,12 +39,24 @@ public class Assertion implements Constraint {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof Assertion a
-            && assertionName.equals(a.assertionName)
-            && Objects.equals(schemaReference, a.schemaReference)
-            && booleanExpression.equals(a.booleanExpression);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Assertion assertion = (Assertion) o;
+
+        if (!assertionName.equals(assertion.assertionName)) return false;
+        if (schemaReference != null ? !schemaReference.equals(assertion.schemaReference) : assertion.schemaReference != null)
+            return false;
+        return booleanExpression.equals(assertion.booleanExpression);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = assertionName.hashCode();
+        result = 31 * result + (schemaReference != null ? schemaReference.hashCode() : 0);
+        result = 31 * result + booleanExpression.hashCode();
+        return result;
     }
 }

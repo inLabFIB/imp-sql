@@ -7,17 +7,18 @@ import java.util.Objects;
 
 public class ComparisonPredicate extends Predicate {
 
+
+
     public enum ComparisonOperator {
         EQ,
         NEQ,
         LT,
         GT
     }
-
     private final ComparisonOperator operator;
+
     private final ValueExpression leftExpression;
     private final ValueExpression rightExpression;
-
     public ComparisonPredicate(ComparisonOperator operator, ValueExpression leftExpression, ValueExpression rightExpression) {
         this.operator = Objects.requireNonNull(operator, "The parameter 'operator' cannot be null.");
         this.leftExpression = Objects.requireNonNull(leftExpression, "The parameter 'leftExpression' cannot be null.");
@@ -41,12 +42,24 @@ public class ComparisonPredicate extends Predicate {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof ComparisonPredicate cp
-            && operator.equals(cp.operator)
-            && leftExpression.equals(cp.leftExpression)
-            && rightExpression.equals(cp.rightExpression);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ComparisonPredicate that = (ComparisonPredicate) o;
+
+        if (operator != that.operator) return false;
+        if (!leftExpression.equals(that.leftExpression)) return false;
+        return rightExpression.equals(that.rightExpression);
     }
+
+    @Override
+    public int hashCode() {
+        int result = operator.hashCode();
+        result = 31 * result + leftExpression.hashCode();
+        result = 31 * result + rightExpression.hashCode();
+        return result;
+    }
+
 }

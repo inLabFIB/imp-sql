@@ -19,10 +19,18 @@ public class SQLPrimitiveFloat implements PrimitiveConstant {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
-        return o instanceof SQLPrimitiveFloat f
-            && value == f.value;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SQLPrimitiveFloat that = (SQLPrimitiveFloat) o;
+
+        return Float.compare(that.value, value) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return (value != 0.0f ? Float.floatToIntBits(value) : 0);
     }
 }

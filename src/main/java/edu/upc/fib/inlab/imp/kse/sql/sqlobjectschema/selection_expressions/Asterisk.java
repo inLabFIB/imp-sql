@@ -14,7 +14,6 @@ public class Asterisk implements SelectItem {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
     @Override
     public boolean equals(Object o) {
         return o instanceof Asterisk;

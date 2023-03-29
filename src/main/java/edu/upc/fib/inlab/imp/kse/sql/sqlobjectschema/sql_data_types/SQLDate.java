@@ -2,8 +2,6 @@ package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
-import java.util.Objects;
-
 public class SQLDate implements SQLDataType {
     private final Integer precision;
 
@@ -24,10 +22,19 @@ public class SQLDate implements SQLDataType {
         return visitor.visit(this);
     }
 
-    /** Syntactic equals implementation **/
+
     @Override
     public boolean equals(Object o) {
-        return o instanceof SQLDate d
-            && Objects.equals(precision, d.precision);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SQLDate sqlDate = (SQLDate) o;
+
+        return precision != null ? precision.equals(sqlDate.precision) : sqlDate.precision == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return precision != null ? precision.hashCode() : 0;
     }
 }
