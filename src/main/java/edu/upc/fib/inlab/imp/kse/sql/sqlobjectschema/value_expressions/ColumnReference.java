@@ -40,7 +40,7 @@ public class ColumnReference implements ValueExpression {
 
         ColumnReference that = (ColumnReference) o;
 
-        if (tableName != null ? !tableName.equals(that.tableName) : that.tableName != null) return false;
+        if (!Objects.equals(tableName, that.tableName)) return false;
         return columnName.equals(that.columnName);
     }
 

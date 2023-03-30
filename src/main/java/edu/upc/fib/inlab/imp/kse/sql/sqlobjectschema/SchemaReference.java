@@ -53,8 +53,8 @@ public class SchemaReference implements SQLObjectSchemaEntity {
 
         SchemaReference that = (SchemaReference) o;
 
-        if (serverName != null ? !serverName.equals(that.serverName) : that.serverName != null) return false;
-        if (databaseName != null ? !databaseName.equals(that.databaseName) : that.databaseName != null) return false;
+        if (!Objects.equals(serverName, that.serverName)) return false;
+        if (!Objects.equals(databaseName, that.databaseName)) return false;
         return schemaName.equals(that.schemaName);
     }
 

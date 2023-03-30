@@ -57,9 +57,9 @@ public class View implements SQLObjectSchemaEntity {
         View view = (View) o;
 
         if (!viewName.equals(view.viewName)) return false;
-        if (schemaReference != null ? !schemaReference.equals(view.schemaReference) : view.schemaReference != null)
+        if (!Objects.equals(schemaReference, view.schemaReference))
             return false;
-        if (columnNames != null ? !columnNames.equals(view.columnNames) : view.columnNames != null) return false;
+        if (!Objects.equals(columnNames, view.columnNames)) return false;
         return query.equals(view.query);
     }
 

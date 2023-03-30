@@ -83,9 +83,9 @@ public class TableExpression extends Query {
 
         if (getAlias() != null ? !getAlias().equals(that.getAlias()) : that.getAlias() != null) return false;
         if (!selectClause.equals(that.selectClause)) return false;
-        if (fromClause != null ? !fromClause.equals(that.fromClause) : that.fromClause != null) return false;
-        if (whereClause != null ? !whereClause.equals(that.whereClause) : that.whereClause != null) return false;
-        return fromClauseTerminalExpressions != null ? fromClauseTerminalExpressions.equals(that.fromClauseTerminalExpressions) : that.fromClauseTerminalExpressions == null;
+        if (!Objects.equals(fromClause, that.fromClause)) return false;
+        if (!Objects.equals(whereClause, that.whereClause)) return false;
+        return Objects.equals(fromClauseTerminalExpressions, that.fromClauseTerminalExpressions);
     }
 
     @Override

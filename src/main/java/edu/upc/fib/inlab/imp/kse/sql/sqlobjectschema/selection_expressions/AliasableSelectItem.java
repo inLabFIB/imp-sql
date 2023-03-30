@@ -44,7 +44,7 @@ public class AliasableSelectItem implements SelectItem {
 
         AliasableSelectItem that = (AliasableSelectItem) o;
 
-        if (columnAlias != null ? !columnAlias.equals(that.columnAlias) : that.columnAlias != null) return false;
+        if (!Objects.equals(columnAlias, that.columnAlias)) return false;
         return expression.equals(that.expression);
     }
 

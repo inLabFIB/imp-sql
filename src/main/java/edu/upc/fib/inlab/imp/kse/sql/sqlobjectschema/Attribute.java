@@ -64,7 +64,7 @@ public class Attribute implements SQLObjectSchemaEntity {
         if (nullable != attribute.nullable) return false;
         if (!attributeName.equals(attribute.attributeName)) return false;
         if (!type.equals(attribute.type)) return false;
-        return defaultExpression != null ? defaultExpression.equals(attribute.defaultExpression) : attribute.defaultExpression == null;
+        return Objects.equals(defaultExpression, attribute.defaultExpression);
     }
 
     @Override

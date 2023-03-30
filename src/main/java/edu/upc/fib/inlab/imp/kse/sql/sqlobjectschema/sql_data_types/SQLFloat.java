@@ -2,6 +2,8 @@ package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.Objects;
+
 public class SQLFloat implements SQLDataType {
     private final Integer precision;
 
@@ -30,7 +32,7 @@ public class SQLFloat implements SQLDataType {
 
         SQLFloat sqlFloat = (SQLFloat) o;
 
-        return precision != null ? precision.equals(sqlFloat.precision) : sqlFloat.precision == null;
+        return Objects.equals(precision, sqlFloat.precision);
     }
 
     @Override

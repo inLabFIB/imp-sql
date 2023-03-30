@@ -54,7 +54,7 @@ public class OnJoin extends JoinOperation {
         if (!getLeftExpression().equals(onJoin.getLeftExpression())) return false;
         if (!getRightExpression().equals(onJoin.getRightExpression())) return false;
         if (operator != onJoin.operator) return false;
-        return onClause != null ? onClause.equals(onJoin.onClause) : onJoin.onClause == null;
+        return Objects.equals(onClause, onJoin.onClause);
     }
 
     @Override

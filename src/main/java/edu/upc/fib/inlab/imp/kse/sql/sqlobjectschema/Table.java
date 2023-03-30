@@ -98,13 +98,11 @@ public class Table implements SQLObjectSchemaEntity {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null /*|| getClass() != o.getClass()*/) return false;
+        if (!(o instanceof Table table)/*|| getClass() != o.getClass()*/) return false;
         //Needs to be modified because of the existence of MutableTables
 
-        Table table = (Table) o;
-
         if (!tableName.equals(table.tableName)) return false;
-        if (schemaReference != null ? !schemaReference.equals(table.schemaReference) : table.schemaReference != null)
+        if (!Objects.equals(schemaReference, table.schemaReference))
             return false;
         if (!attributes.equals(table.attributes)) return false;
         if (!checkConstraints.equals(table.checkConstraints)) return false;

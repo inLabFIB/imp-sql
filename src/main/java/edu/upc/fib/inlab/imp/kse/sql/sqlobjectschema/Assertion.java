@@ -47,7 +47,7 @@ public class Assertion implements Constraint {
         Assertion assertion = (Assertion) o;
 
         if (!assertionName.equals(assertion.assertionName)) return false;
-        if (schemaReference != null ? !schemaReference.equals(assertion.schemaReference) : assertion.schemaReference != null)
+        if (!Objects.equals(schemaReference, assertion.schemaReference))
             return false;
         return booleanExpression.equals(assertion.booleanExpression);
     }

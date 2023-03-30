@@ -6,8 +6,6 @@ import java.util.Objects;
 
 public class PredicateOperation implements BooleanExpression {
 
-
-
     public enum PredicateOperator {
         AND
     }

@@ -2,6 +2,8 @@ package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.Objects;
+
 public class SQLChar implements SQLDataType {
 
     private final Integer length;
@@ -31,7 +33,7 @@ public class SQLChar implements SQLDataType {
 
         SQLChar sqlChar = (SQLChar) o;
 
-        return length != null ? length.equals(sqlChar.length) : sqlChar.length == null;
+        return Objects.equals(length, sqlChar.length);
     }
 
     @Override
