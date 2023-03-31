@@ -1,7 +1,7 @@
 package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema;
 
-import edu.upc.fib.inlab.imp.kse.sql.parser.SQLObjectSchemaParser;
-import edu.upc.fib.inlab.imp.kse.sql.printer.SQLServerPrinter;
+import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
+import edu.upc.fib.inlab.imp.kse.sql.services.printer.SQLServerPrinter;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.MissingReferencedObjectException;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.SQLObjectAlreadyExistsException;
 

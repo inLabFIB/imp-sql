@@ -1,6 +1,6 @@
-package edu.upc.fib.inlab.imp.kse.sql.fetcher;
+package edu.upc.fib.inlab.imp.kse.sql.services.fetcher;
 
-import edu.upc.fib.inlab.imp.kse.sql.fetcher.sql_server.SQLServerFetcher;
+import edu.upc.fib.inlab.imp.kse.sql.services.fetcher.sql_server.SQLServerFetcher;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
 
 import java.util.List;

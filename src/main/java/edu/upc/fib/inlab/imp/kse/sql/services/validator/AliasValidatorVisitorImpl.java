@@ -1,4 +1,4 @@
-package edu.upc.fib.inlab.imp.kse.sql.validator;
+package edu.upc.fib.inlab.imp.kse.sql.services.validator;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ComparisonPredicate;

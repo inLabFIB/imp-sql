@@ -1,4 +1,4 @@
-package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.builders;
+package edu.upc.fib.inlab.imp.kse.sql.services.builders;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Attribute;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SchemaReference;
