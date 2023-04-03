@@ -1,8 +1,10 @@
-package edu.upc.fib.inlab.imp.kse.sql.parser;
+package edu.upc.fib.inlab.imp.kse.sql.services.parser;
 
+import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlParser;
+import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlParserBaseVisitor;
+import edu.upc.fib.inlab.imp.kse.sql.services.builders.TableSetBuilder;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.*;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.builders.TableSetBuilder;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.Check;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.AliasableSelectItem;
@@ -10,8 +12,6 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Aster
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.SelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.*;
-import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlParser;
-import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlParserBaseVisitor;
 
 import java.util.ArrayList;
 import java.util.List;

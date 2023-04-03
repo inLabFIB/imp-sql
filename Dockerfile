@@ -17,7 +17,7 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 COPY scripts /usr/src/app/scripts
-COPY sql /usr/src/app/sql
+COPY sql_setups /usr/src/app/sql
 
 # Set LF endline in shell scripts
 RUN dos2unix /usr/src/app/scripts/*.sh

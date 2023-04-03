@@ -1,17 +1,17 @@
-package edu.upc.fib.inlab.imp.kse.sql.fetcher.sql_server;
+package edu.upc.fib.inlab.imp.kse.sql.services.fetcher.sql_server;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
-import edu.upc.fib.inlab.imp.kse.sql.fetcher.DatabaseFetcher;
+import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlExpressionParser;
+import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlLexer;
+import edu.upc.fib.inlab.imp.kse.sql.services.builders.TableSetBuilder;
+import edu.upc.fib.inlab.imp.kse.sql.services.fetcher.DatabaseFetcher;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SchemaReference;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Table;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.BooleanExpression;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.builders.TableSetBuilder;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.Check;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ValueExpression;
-import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlExpressionParser;
-import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlLexer;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;

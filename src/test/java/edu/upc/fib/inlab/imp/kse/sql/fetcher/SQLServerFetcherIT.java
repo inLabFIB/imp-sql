@@ -1,5 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.fetcher;
 
+import edu.upc.fib.inlab.imp.kse.sql.services.fetcher.SQLObjectSchemaFetcher;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Attribute;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Table;

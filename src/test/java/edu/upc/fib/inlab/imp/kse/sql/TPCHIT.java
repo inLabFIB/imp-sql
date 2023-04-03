@@ -1,8 +1,8 @@
 package edu.upc.fib.inlab.imp.kse.sql;
 
-import edu.upc.fib.inlab.imp.kse.sql.fetcher.SQLObjectSchemaFetcher;
-import edu.upc.fib.inlab.imp.kse.sql.parser.SQLObjectSchemaParser;
-import edu.upc.fib.inlab.imp.kse.sql.printer.SQLServerPrinter;
+import edu.upc.fib.inlab.imp.kse.sql.services.fetcher.SQLObjectSchemaFetcher;
+import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
+import edu.upc.fib.inlab.imp.kse.sql.services.printer.SQLServerPrinter;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Assertion;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
