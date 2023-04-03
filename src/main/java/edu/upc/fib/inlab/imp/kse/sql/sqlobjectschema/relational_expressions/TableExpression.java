@@ -54,6 +54,7 @@ public class TableExpression extends Query {
     public SelectItem getNthSelectionValue(int n) {
         return selectClause.get(n);
     }
+    @Override
     public List<SelectItem> getSelectClause() {
         return new ArrayList<>(selectClause);
     }
@@ -72,6 +73,10 @@ public class TableExpression extends Query {
     @Override
     public AliasableRelationalExpression getAliasedCopy(String newAlias) {
         return new TableExpression(selectClause, fromClause, whereClause, newAlias);
+    }
+
+    public List<AliasableRelationalExpression> getFromClauseTerminalExpressions() {
+        return new ArrayList<>(fromClauseTerminalExpressions);
     }
 
     @Override
@@ -94,5 +99,10 @@ public class TableExpression extends Query {
         result = 31 * result + (fromClause != null ? fromClause.hashCode() : 0);
         result = 31 * result + (whereClause != null ? whereClause.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String computeDefaultColumnAlias() {
+        return getAlias(); // TODO: Does this change when query is scalar?
     }
 }

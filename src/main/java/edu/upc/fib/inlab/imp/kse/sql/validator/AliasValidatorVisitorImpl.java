@@ -9,12 +9,10 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.Check;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.ForeignKey;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.PrimaryKey;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.Unique;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.CrossJoin;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.OnJoin;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.TableExpression;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.TableReference;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Asterisk;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.SelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnReference;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
@@ -22,8 +20,13 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimit
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveString;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
- * This visitor checks( returns FALSE for) the following cases:
+ * This visitor checks (returns FALSE for) the following cases:
  * - [1] Repeated table aliases in a FROM clause of a TableExpression
  * - [2] Repeated column aliases in a SELECT clause of a TableExpression
  * - [3] Incorrect column references:
@@ -44,106 +47,156 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisi
 public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
 
     @Override
-    public Boolean visit(TableExpression te) {
-        // TODO: Visit TableExpressions of sub-queries in the FROM context recursively.
-        //  (rec call, returns boolean, doesn't need passed down variables)
+    public Boolean visit(Assertion a) {
+        try {
+            List<ColumnReference> required = a.getBooleanExpression().visit(this);
+            return required.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
-        // TODO: Obtain aliases generated in FROM clause
+    @Override
+    public List<ColumnReference> visit(NotOperation no) {
+        return no.getExpression().visit(this);
+    }
 
-        // TODO: Check there are no collisions among those aliases
-        //  - [1] No two different terminal aliasable relational expressions have the same alias
-        //  - [2] No two column aliases are repeated within the same aliasable relational expression
+    @Override
+    public List<ColumnReference> visit(ExistsPredicate ep) {
+        return ep.getQuery().visit(this);
+    }
 
-        // TODO: Add new stack element (ColumnReference list)
+    @Override
+    public List<ColumnReference> visit(TableExpression te) {
+        List<ColumnReference> required = new ArrayList<>();
+        List<ColumnReference> offered = new ArrayList<>();
+        Set<String> cachedOfferedTableAliases = new HashSet<>();
 
-        // TODO: Visit SELECT items + WHERE clause and obtain used ColumnReferences
+        // Process FROM clause
+        for (AliasableRelationalExpression a : te.getFromClauseTerminalExpressions()) {
+            if (cachedOfferedTableAliases.contains(a.getAlias())) throw new RuntimeException("Repeated table alias.");
+            cachedOfferedTableAliases.add(a.getAlias());
+            // Obtain required aliases
+            required.addAll(a.visit(this));
+            // Obtain offered aliases
+            if (a instanceof Query q) {
+                for (SelectItem s : q.getSelectClause()) {
+                    // FIXME: V2 What happens with Asterisk!? (Scalar sub-query should work, it should be aliased)
+                    ColumnReference cr = new ColumnReference(a.getAlias(), s.getColumAlias());
+                    if (offered.contains(cr)) throw new RuntimeException("Repeated table.column alias.");
+                    offered.add(new ColumnReference(a.getAlias(), s.getColumAlias()));
+                }
+            }
+            if (a instanceof TableReference tr) {
+                offered.addAll(tr.getTableAliases());
+            }
+        }
 
-        // TODO: Check used are either in new FROM-aliases or in previous stack elements
-        //  - Note: ColumnReferences with null table name must search all possible aliases and check exactly one
-        //    is found with the same column name (if 0 are found it is incorrect, if >1 then ambiguous alias).
+        // Process SELECT clause
+        if (te.getSelectClause() != null) {
+            for (SelectItem s : te.getSelectClause()) {
+                for (ColumnReference cr : s.<List<ColumnReference>>visit(this)) {
+                    if (!isOffered(offered, cachedOfferedTableAliases, cr)) {
+                        required.add(cr);
+                    }
+                }
+            }
+        }
 
-        // TODO: Pop stack element
-        return null;
+        // Process WHERE clause
+        if (te.getWhereClause() != null) {
+            for (ColumnReference cr : te.getWhereClause().<List<ColumnReference>>visit(this)) {
+                if (!isOffered(offered, cachedOfferedTableAliases, cr)) {
+                    required.add(cr);
+                }
+            }
+        }
+
+        return required;
+    }
+
+    private boolean isOffered(List<ColumnReference> offered, Set<String> cachedOfferedTableAliases, ColumnReference target) {
+        if (target.getTableName() != null) {
+            if (!cachedOfferedTableAliases.contains(target.getTableName())) return false;
+            return offered.contains(target);
+        }
+        // No table name, look only one column name. If more than one throw error.
+        boolean found = false;
+        for (ColumnReference compared : offered) {
+            if (compared.getColumnName().equals(target.getColumnName())) {
+                if (found) throw new RuntimeException("Ambiguous column reference: multiple table aliases offer it.");
+                found = true;
+            }
+        }
+        return found;
     }
 
 
     @Override
-    public <T> T visit(CrossJoin j) {
-        return null;
+    public List<ColumnReference> visit(CrossJoin j) {
+        List<ColumnReference> left = j.getLeftExpression().visit(this);
+        List<ColumnReference> right = j.getRightExpression().visit(this);
+        left.addAll(right);
+        return left;
     }
 
     @Override
-    public <T> T visit(OnJoin j) {
-        return null;
+    public List<ColumnReference> visit(TableReference tr) {
+        return new ArrayList<>();
     }
 
     @Override
-    public <T> T visit(TableReference tr) {
-        // Table references are only found in FROM clause, they introduce more possible aliases
-
-        // TODO: Return a ColumnReference of tr tableName.ColumnName for each of the columns.
-        //  Unless tr is aliased, then return tableAlias.ColumnName for each of the columns.
-        return null;
+    public List<ColumnReference> visit(ComparisonPredicate cp) {
+        List<ColumnReference> left = cp.getLeftExpression().visit(this);
+        List<ColumnReference> right = cp.getRightExpression().visit(this);
+        left.addAll(right);
+        return left;
     }
 
     @Override
-    public <T> T visit(ComparisonPredicate cp) {
-        return null;
+    public List<ColumnReference> visit(PredicateOperation po) {
+        List<ColumnReference> left = po.getLeftExpression().visit(this);
+        List<ColumnReference> right = po.getRightExpression().visit(this);
+        left.addAll(right);
+        return left;
     }
 
     @Override
-    public <T> T visit(ColumnReference cr) {
-        return null;
+    public List<ColumnReference> visit(Asterisk a) {
+        return new ArrayList<>(); // It returns the available offered aliases. So no more should be necessary.
     }
 
     @Override
-    public <T> T visit(PredicateOperation po) {
-        return null;
+    public List<ColumnReference> visit(AliasableSelectItem asi) {
+        return asi.getExpression().visit(this);
     }
 
     @Override
-    public <T> T visit(NotOperation no) {
-        return null;
+    public List<ColumnReference> visit(ColumnReference cr) {
+        return List.of(cr);
     }
 
     @Override
-    public <T> T visit(ExistsPredicate ep) {
-        return null;
+    public List<ColumnReference> visit(SQLPrimitiveInteger d) {
+        return new ArrayList<>();
     }
 
     @Override
-    public <T> T visit(Asterisk a) {
-        return null;
+    public List<ColumnReference> visit(SQLPrimitiveFloat f) {
+        return new ArrayList<>();
     }
 
     @Override
-    public <T> T visit(AliasableSelectItem asi) {
-        return null;
+    public List<ColumnReference> visit(SQLPrimitiveString s) {
+        return new ArrayList<>();
     }
-
-    @Override
-    public <T> T visit(Table t) {
-        return null;
-    }
-
-    @Override
-    public <T> T visit(SchemaReference sr) {
-        return null;
-    }
-
-    @Override
-    public <T> T visit(Attribute a) {
-        return null;
-    }
-
 
     //TODO:V2
 
     @Override
-    public <T> T visit(Assertion a) {
-        return null;
+    public List<ColumnReference> visit(OnJoin j) {
+        return null; // V2: check ON clause is offered by the joined expressions, or else add it to 'required'.
     }
-
 
     @Override
     public <T> T visit(View v) {
@@ -170,22 +223,21 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         return null;
     }
 
-
     /* NON REACHABLE EXPRESSIONS */
 
     @Override
-    public <T> T visit(SQLPrimitiveInteger d) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+    public <T> T visit(SchemaReference sr) {
+        return null;
     }
 
     @Override
-    public <T> T visit(SQLPrimitiveFloat f) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+    public <T> T visit(Table t) {
+        return null;
     }
 
     @Override
-    public <T> T visit(SQLPrimitiveString s) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+    public <T> T visit(Attribute a) {
+        return null;
     }
 
     @Override

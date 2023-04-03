@@ -5,9 +5,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.MissingReference
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaEntity;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Table implements SQLObjectSchemaEntity {
 
@@ -34,6 +32,10 @@ public class Table implements SQLObjectSchemaEntity {
         this.uniqueConstraints = Objects.requireNonNull(uniqueConstraints, "The parameter 'uniqueConstraints' cannot be null.");
         this.primaryKeyConstraints = Objects.requireNonNull(primaryKeyConstraints, "The parameter 'primaryKeyConstraints' cannot be null.");
         this.foreignKeyConstraints = Objects.requireNonNull(foreignKeyConstraints, "The parameter 'foreignKeyConstraints' cannot be null.");
+
+        Set<String> seenAttributes = new HashSet<>();
+        this.attributes.forEach(a -> seenAttributes.add(a.getName()));
+        if (seenAttributes.size() < this.attributes.size()) throw new RuntimeException("Repeated attribute names in table definition");
     }
 
     public Table(String tableName, SchemaReference schemaReference, List<Attribute> attributes) {

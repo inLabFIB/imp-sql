@@ -14,8 +14,8 @@ public class AliasableSelectItem implements SelectItem {
     private final ValueExpression expression;
 
     public AliasableSelectItem(ValueExpression expression, String columnAlias) {
-        this.columnAlias = columnAlias;
         this.expression = Objects.requireNonNull(expression, "The parameter 'expression' cannot be null.");
+        this.columnAlias = columnAlias == null ? this.expression.computeDefaultColumnAlias() : null;
     }
 
     public AliasableSelectItem(ValueExpression expression) {

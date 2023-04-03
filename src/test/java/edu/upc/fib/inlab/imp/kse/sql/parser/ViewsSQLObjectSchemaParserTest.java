@@ -250,4 +250,38 @@ public class ViewsSQLObjectSchemaParserTest {
 
         assertThat("Parsed view does not equal expected view", schema.getViews().get(0).equals(expectedView));
     }
+
+    @Test
+    public void parseSelectStatementWithAliasedColumns() {
+        String selectStatement = "CREATE VIEW viewName AS SELECT sub.q as d FROM (SELECT myTable.a as q FROM myTable) as sub;";
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(SchemasProvider.getMyTableSchemaStatements());
+        parser.parse(selectStatement);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        List<Table> expectedSchemaTables = SchemasProvider.getMyTableSchemaTables();
+
+        // Object built directly in java
+        View expectedView = new View(
+            "viewName",
+            new TableExpression(
+                List.of(new AliasableSelectItem(
+                    new ColumnReference("sub", "q"),
+                    "d"
+                )),
+                new TableExpression(
+                    List.of(new AliasableSelectItem(
+                        new ColumnReference("myTable", "a"),
+                        "q"
+                    )),
+                    new TableReference(expectedSchemaTables.get(0)),
+                    null,
+                    "sub"
+                ),
+                null
+            )
+        );
+
+        assertThat("Parsed view does not equal expected view", schema.getViews().get(0).equals(expectedView));
+    }
 }

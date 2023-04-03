@@ -1,8 +1,12 @@
 package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions;
 
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Attribute;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Table;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnReference;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class TableReference extends AliasableRelationalExpression {
@@ -11,7 +15,7 @@ public class TableReference extends AliasableRelationalExpression {
 
     public TableReference(Table table, String alias) {
         super(alias);
-        this.table = Objects.requireNonNull(table, "A table reference must be linked with a Table object previouslly defined in the IMP-SQL instance.");
+        this.table = Objects.requireNonNull(table, "A table reference must be linked with a Table object previously defined in the IMP-SQL instance.");
     }
 
     public TableReference(Table table) {
@@ -20,6 +24,27 @@ public class TableReference extends AliasableRelationalExpression {
 
     public Table getTable() {
         return table;
+    }
+
+    public List<ColumnReference> getTableAliases() {
+        List<ColumnReference> result = new ArrayList<>();
+
+        String tableAlias = getAlias();
+        if (tableAlias == null) tableAlias = table.getTableName(); // Default alias
+
+        // Assuming column references' table aliases do not contain schema reference information
+        for (Attribute a : table.getAttributes()) {
+            result.add(new ColumnReference(tableAlias, a.getName()));
+        }
+
+        return result;
+    }
+
+    @Override
+    public String getAlias() {
+        String alias = super.getAlias();
+        if (alias == null) return table.getTableName();
+        return alias;
     }
 
     @Override

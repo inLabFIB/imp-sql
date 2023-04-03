@@ -35,4 +35,9 @@ public class SQLPrimitiveString implements PrimitiveConstant {
     public int hashCode() {
         return value.hashCode();
     }
+
+    @Override
+    public String computeDefaultColumnAlias() {
+        return null;
+    }
 }

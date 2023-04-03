@@ -34,4 +34,9 @@ public class SQLPrimitiveInteger implements PrimitiveConstant {
     public int hashCode() {
         return value;
     }
+
+    @Override
+    public String computeDefaultColumnAlias() {
+        return null;
+    }
 }
