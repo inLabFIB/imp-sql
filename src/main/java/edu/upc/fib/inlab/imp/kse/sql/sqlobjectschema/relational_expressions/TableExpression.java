@@ -2,6 +2,7 @@ package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Attribute;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.BooleanExpression;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Asterisk;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.SelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnReference;
@@ -48,15 +49,6 @@ public class TableExpression extends Query {
         this.fromClauseTerminalExpressions = tempFromClauseTerminalExpressions;
     }
 
-    public int getNumberOfSelectClauseItems() {
-        return selectClause.size();
-    }
-    public String getNthSelectionAlias(int n) {
-        return selectClause.get(n).getColumAlias();
-    }
-    public SelectItem getNthSelectionValue(int n) {
-        return selectClause.get(n);
-    }
     @Override
     public List<SelectItem> getSelectClause() {
         return new ArrayList<>(selectClause);
@@ -113,9 +105,9 @@ public class TableExpression extends Query {
             if (s instanceof Asterisk) {
                 fromClause.getOfferedReferences()
                     .forEach(r -> result.add(new ColumnReference(superAlias, r.getColumnName())));
-            } else {
-                String selectAlias = s.getColumAlias();
-                if (selectAlias == null) selectAlias = s.getDefaultAlias();
+            } else if (s instanceof AliasableSelectItem as){
+                String selectAlias = as.getColumAlias();
+                if (selectAlias == null) selectAlias = as.getDefaultAlias();
                 if (selectAlias == null) throw new RuntimeException("No column alias specified for '"+superAlias+"'");
                 result.add(new ColumnReference(superAlias, selectAlias));
             }

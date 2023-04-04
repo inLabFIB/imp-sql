@@ -31,12 +31,10 @@ public class AliasableSelectItem implements SelectItem {
         return visitor.visit(this);
     }
 
-    @Override
     public String getColumAlias() {
         return columnAlias;
     }
 
-    @Override
     public String getDefaultAlias() {
         return this.expression.computeDefaultColumnAlias();
     }
