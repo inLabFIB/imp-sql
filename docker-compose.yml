@@ -12,9 +12,9 @@ services:
       SA_PASSWORD: PasswordO1.
     volumes:
       - db_data:/var/opt/mssql
-      - ./sql/test_db-setup.sql:/usr/src/app/sql/test_db-setup.sql
-      - ./sql/cv2-setup.sql:/usr/src/app/sql/cv2-setup.sql
-      - ./sql/tpch-setup.sql:/usr/src/app/sql/tpch-setup.sql
+      - ./sql_setups/test_db-setup.sql:/usr/src/app/sql_setups/test_db-setup.sql
+      - ./sql_setups/cv2-setup.sql:/usr/src/app/sql_setups/cv2-setup.sql
+      - ./sql_setups/tpch-setup.sql:/usr/src/app/sql_setups/tpch-setup.sql
 
 volumes:
   db_data:

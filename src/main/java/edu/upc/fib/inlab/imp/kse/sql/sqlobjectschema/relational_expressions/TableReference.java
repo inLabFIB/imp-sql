@@ -41,13 +41,6 @@ public class TableReference extends AliasableRelationalExpression {
     }
 
     @Override
-    public String getAlias() {
-        String alias = super.getAlias();
-        if (alias == null) return table.getTableName();
-        return alias;
-    }
-
-    @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }

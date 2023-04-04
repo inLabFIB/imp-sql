@@ -10,6 +10,11 @@ public class Asterisk implements SelectItem {
     }
 
     @Override
+    public String getDefaultAlias() {
+        return null;
+    }
+
+    @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);
     }

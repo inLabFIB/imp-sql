@@ -5,4 +5,6 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaEnti
 public interface SelectItem extends SQLObjectSchemaEntity {
 
     String getColumAlias();
+
+    String getDefaultAlias();
 }

@@ -74,17 +74,25 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
 
         // Process FROM clause
         for (AliasableRelationalExpression a : te.getFromClauseTerminalExpressions()) {
-            if (cachedOfferedTableAliases.contains(a.getAlias())) throw new RuntimeException("Repeated table alias.");
-            cachedOfferedTableAliases.add(a.getAlias());
+            String relationalExpressionAlias = a.getAlias();
+            if (relationalExpressionAlias == null) {
+                if (a instanceof TableReference tr)
+                    relationalExpressionAlias = tr.getTable().getTableName();
+                if (a instanceof Query) throw new RuntimeException("Sub-queries in FROM clause must be aliased");
+            }
+            if (cachedOfferedTableAliases.contains(relationalExpressionAlias)) throw new RuntimeException("Repeated table alias.");
+            cachedOfferedTableAliases.add(relationalExpressionAlias);
             // Obtain required aliases
             required.addAll(a.visit(this));
             // Obtain offered aliases
             if (a instanceof Query q) {
                 for (SelectItem s : q.getSelectClause()) {
+                    String selectAlias = s.getColumAlias();
+                    if (selectAlias == null) selectAlias = s.getDefaultAlias();
                     // FIXME: V2 What happens with Asterisk!? (Scalar sub-query should work, it should be aliased)
-                    ColumnReference cr = new ColumnReference(a.getAlias(), s.getColumAlias());
+                    ColumnReference cr = new ColumnReference(relationalExpressionAlias, selectAlias);
                     if (offered.contains(cr)) throw new RuntimeException("Repeated table.column alias.");
-                    offered.add(new ColumnReference(a.getAlias(), s.getColumAlias()));
+                    offered.add(cr);
                 }
             }
             if (a instanceof TableReference tr) {
