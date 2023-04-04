@@ -1,7 +1,10 @@
 package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions;
 
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Attribute;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.BooleanExpression;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Asterisk;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.SelectItem;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnReference;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.ArrayList;
@@ -102,7 +105,27 @@ public class TableExpression extends Query {
     }
 
     @Override
+    public List<ColumnReference> getOfferedReferences() {
+        List<ColumnReference> result = new ArrayList<>();
+
+        String superAlias = getAlias();
+        for (SelectItem s : getSelectClause()) {
+            if (s instanceof Asterisk) {
+                fromClause.getOfferedReferences()
+                    .forEach(r -> result.add(new ColumnReference(superAlias, r.getColumnName())));
+            } else {
+                String selectAlias = s.getColumAlias();
+                if (selectAlias == null) selectAlias = s.getDefaultAlias();
+                if (selectAlias == null) throw new RuntimeException("No column alias specified for '"+superAlias+"'");
+                result.add(new ColumnReference(superAlias, selectAlias));
+            }
+        }
+
+        return result;
+    }
+
+    @Override
     public String computeDefaultColumnAlias() {
-        return getAlias(); // TODO: Does this change when query is scalar?
+        return getAlias();
     }
 }

@@ -85,19 +85,10 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
             // Obtain required aliases
             required.addAll(a.visit(this));
             // Obtain offered aliases
-            if (a instanceof Query q) {
-                for (SelectItem s : q.getSelectClause()) {
-                    String selectAlias = s.getColumAlias();
-                    if (selectAlias == null) selectAlias = s.getDefaultAlias();
-                    // FIXME: V2 What happens with Asterisk!? (Scalar sub-query should work, it should be aliased)
-                    ColumnReference cr = new ColumnReference(relationalExpressionAlias, selectAlias);
-                    if (offered.contains(cr)) throw new RuntimeException("Repeated table.column alias.");
-                    offered.add(cr);
-                }
-            }
-            if (a instanceof TableReference tr) {
-                offered.addAll(tr.getTableAliases());
-            }
+            List<ColumnReference> newOffered = a.getOfferedReferences();
+            if (newOffered.stream().anyMatch(o -> isOffered(offered, cachedOfferedTableAliases, o)))
+                throw new RuntimeException("Repeated table.column alias.");
+            offered.addAll(newOffered);
         }
 
         // Process SELECT clause
@@ -146,6 +137,18 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         List<ColumnReference> right = j.getRightExpression().visit(this);
         left.addAll(right);
         return left;
+    }
+
+    @Override
+    public List<ColumnReference> visit(OnJoin j) {
+        List<ColumnReference> offered = j.getOfferedReferences();
+        List<ColumnReference> onRequired = j.getOnClause().visit(this);
+
+        List<ColumnReference> required = new ArrayList<>();
+        required.addAll(onRequired.stream().filter(r -> !offered.contains(r)).toList());
+        required.addAll(j.getLeftExpression().visit(this));
+        required.addAll(j.getRightExpression().visit(this));
+        return required;
     }
 
     @Override
@@ -200,11 +203,6 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
     }
 
     //TODO:V2
-
-    @Override
-    public List<ColumnReference> visit(OnJoin j) {
-        return null; // V2: check ON clause is offered by the joined expressions, or else add it to 'required'.
-    }
 
     @Override
     public <T> T visit(View v) {

@@ -26,7 +26,8 @@ public class TableReference extends AliasableRelationalExpression {
         return table;
     }
 
-    public List<ColumnReference> getTableAliases() {
+    @Override
+    public List<ColumnReference> getOfferedReferences() {
         List<ColumnReference> result = new ArrayList<>();
 
         String tableAlias = getAlias();
