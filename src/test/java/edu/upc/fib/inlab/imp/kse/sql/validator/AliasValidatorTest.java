@@ -95,4 +95,32 @@ public class AliasValidatorTest {
         assertThat("Aliases were considered correct when they were not",
             !validator.validateAliases(schema.getAssertions().get(0)));
     }
+
+    @Test
+    public void validSimpleAssertionWithWhereClause() {
+        String createTableStatement = """
+            CREATE TABLE tableA (
+                col1 int,
+                col2 int,
+                col3 int,
+            );
+            """;
+
+        String createAssertionStatement = """
+            CREATE ASSERTION assertion1 CHECK ( NOT ( EXISTS (
+            	SELECT tableA.col1
+            	FROM tableA
+            	WHERE tableA.col1 = 1
+            )));
+            """;
+
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(createTableStatement);
+        parser.parse(createAssertionStatement);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        Validator validator = new Validator();
+
+        assertThat("Incorrect aliases", validator.validateAliases(schema.getAssertions().get(0)));
+    }
 }

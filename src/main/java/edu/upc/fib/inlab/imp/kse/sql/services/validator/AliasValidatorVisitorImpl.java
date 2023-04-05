@@ -133,10 +133,10 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
 
     @Override
     public List<ColumnReference> visit(CrossJoin j) {
-        List<ColumnReference> left = j.getLeftExpression().visit(this);
-        List<ColumnReference> right = j.getRightExpression().visit(this);
-        left.addAll(right);
-        return left;
+        List<ColumnReference> required = new ArrayList<>();
+        required.addAll(j.getLeftExpression().visit(this));
+        required.addAll(j.getRightExpression().visit(this));
+        return required;
     }
 
     @Override
@@ -158,18 +158,18 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
 
     @Override
     public List<ColumnReference> visit(ComparisonPredicate cp) {
-        List<ColumnReference> left = cp.getLeftExpression().visit(this);
-        List<ColumnReference> right = cp.getRightExpression().visit(this);
-        left.addAll(right);
-        return left;
+        List<ColumnReference> required = new ArrayList<>();
+        required.addAll(cp.getLeftExpression().visit(this));
+        required.addAll(cp.getRightExpression().visit(this));
+        return required;
     }
 
     @Override
     public List<ColumnReference> visit(PredicateOperation po) {
-        List<ColumnReference> left = po.getLeftExpression().visit(this);
-        List<ColumnReference> right = po.getRightExpression().visit(this);
-        left.addAll(right);
-        return left;
+        List<ColumnReference> required = new ArrayList<>();
+        required.addAll(po.getLeftExpression().visit(this));
+        required.addAll(po.getRightExpression().visit(this));
+        return required;
     }
 
     @Override
