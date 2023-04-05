@@ -1,7 +1,6 @@
-package edu.upc.fib.inlab.imp.kse.sql.validator;
+package edu.upc.fib.inlab.imp.kse.sql.services.validator;
 
 import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
-import edu.upc.fib.inlab.imp.kse.sql.services.validator.Validator;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
 import org.junit.jupiter.api.Test;
 
@@ -123,4 +122,5 @@ public class AliasValidatorTest {
 
         assertThat("Incorrect aliases", validator.validateAliases(schema.getAssertions().get(0)));
     }
+
 }

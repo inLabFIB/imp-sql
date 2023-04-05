@@ -1,6 +1,5 @@
-package edu.upc.fib.inlab.imp.kse.sql.parser;
+package edu.upc.fib.inlab.imp.kse.sql.services.parser;
 
-import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Attribute;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Table;

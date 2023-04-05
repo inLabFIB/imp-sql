@@ -1,10 +1,7 @@
-package edu.upc.fib.inlab.imp.kse.sql.parser;
+package edu.upc.fib.inlab.imp.kse.sql.services.parser;
 
-import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
-import edu.upc.fib.inlab.imp.kse.sql.services.validator.Validator;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Assertion;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Table;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ExistsPredicate;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.NotOperation;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.CrossJoin;
@@ -13,7 +10,6 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.Tabl
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnReference;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
-import edu.upc.fib.inlab.imp.kse.sql.utils.SchemasProvider;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

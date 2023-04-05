@@ -1,6 +1,5 @@
-package edu.upc.fib.inlab.imp.kse.sql.printer;
+package edu.upc.fib.inlab.imp.kse.sql.services.printer;
 
-import edu.upc.fib.inlab.imp.kse.sql.services.printer.SQLServerPrinter;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ComparisonPredicate;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ExistsPredicate;
