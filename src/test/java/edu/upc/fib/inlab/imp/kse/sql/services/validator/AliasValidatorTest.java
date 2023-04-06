@@ -1,7 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.services.validator;
 
 import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
-import edu.upc.fib.inlab.imp.kse.sql.services.validator.SQLObjectSchemaValidator;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
 import org.junit.jupiter.api.Test;
 

@@ -1,7 +1,5 @@
 package edu.upc.fib.inlab.imp.kse.sql.services.parser;
 
-import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
-import edu.upc.fib.inlab.imp.kse.sql.services.validator.SQLObjectSchemaValidator;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Assertion;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ExistsPredicate;
