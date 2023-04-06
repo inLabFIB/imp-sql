@@ -1,6 +1,7 @@
 package edu.upc.fib.inlab.imp.kse.sql.services.validator;
 
 import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
+import edu.upc.fib.inlab.imp.kse.sql.services.validator.SQLObjectSchemaValidator;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +25,7 @@ public class AliasValidatorTest {
 
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-        Validator validator = new Validator();
+        SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
         assertThat("Incorrect aliases", validator.validateAliases(schema.getAssertions().get(0)));
     }
@@ -45,7 +46,7 @@ public class AliasValidatorTest {
 
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-        Validator validator = new Validator();
+        SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
         assertThat("Aliases were considered correct when they were not",
             !validator.validateAliases(schema.getAssertions().get(0)));
@@ -67,7 +68,7 @@ public class AliasValidatorTest {
 
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-        Validator validator = new Validator();
+        SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
         assertThat("Aliases were considered correct when they were not",
             !validator.validateAliases(schema.getAssertions().get(0)));
@@ -89,7 +90,7 @@ public class AliasValidatorTest {
 
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-        Validator validator = new Validator();
+        SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
         assertThat("Aliases were considered correct when they were not",
             !validator.validateAliases(schema.getAssertions().get(0)));
@@ -118,9 +119,47 @@ public class AliasValidatorTest {
         parser.parse(createAssertionStatement);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-        Validator validator = new Validator();
+        SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
         assertThat("Incorrect aliases", validator.validateAliases(schema.getAssertions().get(0)));
     }
 
+    @Test
+    public void validViewAliases() {
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+
+        String tableA = "CREATE TABLE a (b int, c int)";
+        parser.parse(tableA);
+
+        // Object parsed from input string
+        String view = """
+        CREATE VIEW viewName AS SELECT a.b, d.e FROM a, (SELECT a.c as e FROM a) as d""";
+        parser.parse(view);
+
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
+
+        assertThat("Incorrect aliases", validator.validateAliases(schema.getViews().get(0)));
+    }
+
+    @Test
+    public void invalidViewAliasesMoreRequired() {
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+
+        String tableA = "CREATE TABLE a (b int, c int)";
+        parser.parse(tableA);
+
+        // Object parsed from input string
+        String view = """
+        CREATE VIEW viewName AS SELECT a.f, d.e FROM a, (SELECT a.c as e FROM a) as d""";
+        parser.parse(view);
+
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
+
+        assertThat("Aliases were considered correct when they were not",
+            !validator.validateAliases(schema.getViews().get(0)));
+    }
 }

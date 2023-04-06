@@ -57,6 +57,16 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
     }
 
     @Override
+    public Boolean visit(View v) {
+        try {
+            List<ColumnReference> required = v.getQuery().visit(this);
+            return required.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
     public List<ColumnReference> visit(NotOperation no) {
         return no.getExpression().visit(this);
     }
@@ -203,11 +213,6 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
     }
 
     //TODO:V2
-
-    @Override
-    public <T> T visit(View v) {
-        return null;
-    }
 
     @Override
     public <T> T visit(Check c) {

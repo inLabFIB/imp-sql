@@ -25,7 +25,7 @@ packages:
 - **Boolean Expressions**:
   - Not Operation
   - Is Operation (NOT IMPLEMENTED YET)
-  - Predicate Operation
+  - Predicate Operation (ONLY `AND` IMPLEMENTED)
   - **Predicate**
     - Comparison Predicate
     - Exist Predicate
@@ -34,7 +34,7 @@ packages:
   - Column Reference
   - Unary Operation (NOT IMPLEMENTED YET)
   - Arithmetic Operation (NOT IMPLEMENTED YET)
-  - _Query_
+  - _Query_ (should be scalar)
   - **Primitive Expressions**
     - Null (NOT IMPLEMENTED YET)
     - **Primitive Constants**
@@ -53,7 +53,7 @@ packages:
   - SQL Smallint
   - SQL Float
   - SQL Real
-  - SQL Data
+  - SQL Date
   - (...) (NOT IMPLEMENTED YET)
 - **Constraints**:
   - _Assertion_
@@ -80,10 +80,12 @@ All that can be deduced from the previous objects.
   - UNIONS
   - SET OPERATIONS
 - **Value Expressions**
-  - VALUE OPERATIONS (unary & binary)
+  - VALUE OPERATIONS (unary & arithmetic)
   - NULL
+  - MORE PRIMITIVE CONSTANTS
 - **Boolean Expressions**
   - IS OPERATION
+  - PREDICATE OPERATION (additional, e.g. `OR`)
   - MORE PREDICATES
 - **Other**
   - MORE DATA TYPES
@@ -92,8 +94,49 @@ All that can be deduced from the previous objects.
 
 ## Instantiating a SQL object schema
 
+There are two main ways the general user is expected to instantiate an SQLObjectSchema:
+- Using the `SQLObjectSchemaParser` to parse an SQL string into SQL object schema entities. It accepts the statements:
+  - `CREATE TABLE`
+  - `CREATE VIEW`
+  - `CREATE ASSERTION`
+- Using the `SQLObjectSchemaFetcher` to connect to a database and retrieve the tables of the specified schemas.
+  - Future work: Retrieve also the views.
+
+Both ways use, under the hood, the `TableSetBuilder` class, which helps create `Table` instances with the correct
+immutable attributes and constraints.
+
 [comment]: <> (TODO: FINISH THIS)
 
 ### How to use the TableBuilder and TableSetBuilder
 
-[comment]: <> (TODO: FINISH THIS)
+These classes were added because, since the schema entities are, by contract, immutable, cyclic foreign key
+dependencies could not be implemented.
+
+A user can initialize a set of `Table` instances via the `TableSetBuilder` by adding new tables, and adding new
+attributes and constraints into them calling the functions with name:
+- `addTable`
+- `addAttribute`
+  - `setAttributeNullable`
+  - `setAttributeType`
+  - `setAttributeDefaultExpression`
+- `addCheckConstraint`
+- `addUniqueConstraint`
+- `addPrimaryKeyConstraint`
+- `addForeignKeyConstraint`
+
+Internally, the class uses 'provisional' instances that hold the configuration of the tables to be built.
+A subsequent call to `build` traverses these provisional instances and returns the set of new `Table` instances.
+
+## Validating the correctness of an SQL object schema
+
+While building the SQL object schema via the parser, some 'easy' checks are done automatically, like
+ensuring that table references found in an Assertion's definition actually reference `Table` instances of
+the schema (that is why order matters, the necessary `CREATE TABLE` statements should be given before the 
+`CREATE ASSERTION` statement).
+
+A more difficult task is to validate that the aliases used in an Assertion's definition are all correct,
+meaning that they reference context-available relational expressions and that there are no collisions or
+ambiguities. An additional service is provided, which validates these scenarios: `SQLObjectSchemaValidator`.
+
+For now, it only validates aliases, although future validations can be included.
+
