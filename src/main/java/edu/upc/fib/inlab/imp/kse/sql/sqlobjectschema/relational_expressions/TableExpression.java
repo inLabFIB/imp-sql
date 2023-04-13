@@ -33,17 +33,22 @@ public class TableExpression extends Query {
         this.fromClause = fromClause;
         this.whereClause = whereClause;
 
+        if (this.selectClause.stream().anyMatch(s -> s instanceof Asterisk) && this.fromClause == null)
+            throw new RuntimeException("Cannot select * without a FROM clause");
+
         List<AliasableRelationalExpression> tempFromClauseTerminalExpressions = new ArrayList<>();
         // Traverse fromClause joins to find aliases and terminal expressions
-        Stack<RelationalExpression> toVisit = new Stack<>();
-        toVisit.push(fromClause);
-        while (!toVisit.empty()) {
-            RelationalExpression next = toVisit.pop();
-            if (next instanceof JoinOperation join) {
-                toVisit.push(join.getLeftExpression());
-                toVisit.push(join.getRightExpression());
-            } else if (next instanceof AliasableRelationalExpression terminal) {
-                tempFromClauseTerminalExpressions.add(terminal);
+        if (fromClause != null) {
+            Stack<RelationalExpression> toVisit = new Stack<>();
+            toVisit.push(fromClause);
+            while (!toVisit.empty()) {
+                RelationalExpression next = toVisit.pop();
+                if (next instanceof JoinOperation join) {
+                    toVisit.push(join.getLeftExpression());
+                    toVisit.push(join.getRightExpression());
+                } else if (next instanceof AliasableRelationalExpression terminal) {
+                    tempFromClauseTerminalExpressions.add(terminal);
+                }
             }
         }
         this.fromClauseTerminalExpressions = tempFromClauseTerminalExpressions;
@@ -102,7 +107,7 @@ public class TableExpression extends Query {
 
         String superAlias = getAlias();
         for (SelectItem s : getSelectClause()) {
-            if (s instanceof Asterisk) {
+            if (s instanceof Asterisk && fromClause != null) {
                 fromClause.getOfferedReferences()
                     .forEach(r -> result.add(new ColumnReference(superAlias, r.getColumnName())));
             } else if (s instanceof AliasableSelectItem as){
