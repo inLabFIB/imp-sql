@@ -7,8 +7,6 @@ import java.util.Objects;
 
 public class ComparisonPredicate extends Predicate {
 
-
-
     public enum ComparisonOperator {
         EQ,
         NEQ,

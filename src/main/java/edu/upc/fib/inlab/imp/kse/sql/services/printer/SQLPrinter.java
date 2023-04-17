@@ -1,0 +1,58 @@
+package edu.upc.fib.inlab.imp.kse.sql.services.printer;
+
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.*;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ComparisonPredicate;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ExistsPredicate;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.NotOperation;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.PredicateOperation;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.Check;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.ForeignKey;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.PrimaryKey;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.Unique;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.CrossJoin;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.OnJoin;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.TableExpression;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.TableReference;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.AliasableSelectItem;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Asterisk;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.*;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnReference;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveString;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
+
+public abstract class SQLPrinter implements SQLObjectSchemaVisitor {
+    public abstract String visit(TableExpression te);
+    public abstract String visit(CrossJoin j);
+    public abstract String visit(OnJoin j);
+    public abstract String visit(TableReference tr);
+    public abstract String visit(ComparisonPredicate cp);
+    public abstract String visit(ColumnReference cr);
+    public abstract String visit(PredicateOperation po);
+    public abstract String visit(Assertion a);
+    public abstract String visit(View v);
+    public abstract String visit(NotOperation no);
+    public abstract String visit(ExistsPredicate ep);
+    public abstract String visit(SQLPrimitiveInteger d);
+    public abstract String visit(SQLPrimitiveFloat f);
+    public abstract String visit(SQLPrimitiveString s);
+    public abstract String visit(Asterisk a);
+    public abstract String visit(AliasableSelectItem asi);
+    public abstract String visit(Table t);
+    public abstract String visit(SchemaReference sr);
+    public abstract String visit(Attribute a);
+    public abstract String visit(Check c);
+    public abstract String visit(Unique u);
+    public abstract String visit(PrimaryKey pk);
+    public abstract String visit(ForeignKey fk);
+    public abstract String visit(SQLChar c);
+    public abstract String visit(SQLVarchar v);
+    public abstract String visit(SQLBit b);
+    public abstract String visit(SQLInt i);
+    public abstract String visit(SQLSmallint s);
+    public abstract String visit(SQLFloat f);
+    public abstract String visit(SQLReal r);
+    public abstract String visit(SQLDate d);
+    public abstract String visit(SQLDoublePrecision dp);
+}

@@ -9,10 +9,11 @@ public class PredicateOperation implements BooleanExpression {
     public enum PredicateOperator {
         AND
     }
-    private final PredicateOperator operator;
 
+    private final PredicateOperator operator;
     private final BooleanExpression leftExpression;
     private final BooleanExpression rightExpression;
+
     public PredicateOperation(PredicateOperator operator, BooleanExpression leftExpression, BooleanExpression rightExpression) {
         this.operator = Objects.requireNonNull(operator, "The parameter 'operator' cannot be null.");
         this.leftExpression = Objects.requireNonNull(leftExpression, "The parameter 'leftExpression' cannot be null.");

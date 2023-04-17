@@ -1,6 +1,7 @@
 package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema;
 
 import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
+import edu.upc.fib.inlab.imp.kse.sql.services.printer.SQLPrinter;
 import edu.upc.fib.inlab.imp.kse.sql.services.printer.SQLServerPrinter;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.MissingReferencedObjectException;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.SQLObjectAlreadyExistsException;
@@ -65,6 +66,42 @@ public class SQLObjectSchema {
 
     public void addAssertion(Assertion assertion) {
         assertions.add(assertion);
+    }
+
+    /** PRINTER **/
+
+    /**
+     * @param printer SQL printer which sets a SQL language
+     * @return String containing printed TABLES, VIEWS and ASSERTIONS in this order
+     */
+    public String getPrintedSchemaObjects(SQLPrinter printer) {
+        StringBuilder builder = new StringBuilder("");
+
+        if (!getTables().isEmpty()) {
+            builder.append("<<TABLES>>\n");
+            for (Table t : getTables()) {
+                builder.append((String) t.visit(printer)).append("\n");
+            }
+            builder.append("\n");
+        }
+
+        if (!getViews().isEmpty()) {
+            builder.append("<<VIEWS>>\n");
+            for (View v : getViews()) {
+                builder.append((String) v.visit(printer)).append("\n");
+            }
+            builder.append("\n");
+        }
+
+        if (!getAssertions().isEmpty()) {
+            builder.append("<<ASSERTIONS>>\n");
+            for (Assertion a : getAssertions()) {
+                builder.append((String) a.visit(printer)).append("\n");
+            }
+            builder.append("\n");
+        }
+
+        return builder.toString();
     }
 
     /** OTHER **/

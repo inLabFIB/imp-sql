@@ -11,12 +11,11 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnRef
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveString;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.List;
 
 @SuppressWarnings("unchecked")
-public class SQLServerPrinter implements SQLObjectSchemaVisitor {
+public class SQLServerPrinter extends SQLPrinter {
 
     @Override
     public String visit(TableExpression te) {
