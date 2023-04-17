@@ -1,6 +1,5 @@
 package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions;
 
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Attribute;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.BooleanExpression;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Asterisk;
@@ -21,6 +20,10 @@ public class TableExpression extends Query {
 
     //CACHE for optimized translation, might delete in the future
     private final List<AliasableRelationalExpression> fromClauseTerminalExpressions;
+
+    public TableExpression(List<SelectItem> selectClause) {
+        this(selectClause, null, null, null);
+    }
 
     public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause) {
         this(selectClause, fromClause, whereClause, null);
