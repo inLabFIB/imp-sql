@@ -20,11 +20,9 @@ public class SQLServerFetcherIT {
         SQLObjectSchemaFetcher fetcher = new SQLObjectSchemaFetcher(
             "localhost",
             1433,
-            "test_db",
+                "SA", "PasswordO1.", "test_db",
             List.of("test_schema", "ref_test_schema"),
-            "SA",
-            "PasswordO1.",
-            SQLObjectSchemaFetcher.DBType.SQLServer
+                SQLObjectSchemaFetcher.DBType.SQLServer
         );
 
         fetcher.fetch();

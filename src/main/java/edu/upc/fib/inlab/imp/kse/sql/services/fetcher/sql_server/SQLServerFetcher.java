@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
+import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,10 @@ public class SQLServerFetcher implements DatabaseFetcher {
         dataSource.setUser(user);
         dataSource.setPassword(pwd);
         dataSource.setEncrypt(false);
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+
+    public SQLServerFetcher (DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 

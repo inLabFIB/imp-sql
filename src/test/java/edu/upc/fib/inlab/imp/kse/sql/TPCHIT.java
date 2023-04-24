@@ -25,11 +25,9 @@ public class TPCHIT {
         tpch_fetcher = new SQLObjectSchemaFetcher(
             "localhost",
             1433,
-            "tpch_db",
+                "SA", "PasswordO1.", "tpch_db",
             List.of("user_schema"),
-            "SA",
-            "PasswordO1.",
-            SQLObjectSchemaFetcher.DBType.SQLServer
+                SQLObjectSchemaFetcher.DBType.SQLServer
         );
     }
 
