@@ -105,7 +105,7 @@ public class SQLServerFetcher implements DatabaseFetcher {
             case "real" -> new SQLReal();
             case "smallint" -> new SQLSmallint();
             case "varchar" -> new SQLVarchar(length);
-            default -> throw new RuntimeException("Table contains an attribute of unsupported data-type.");
+            default -> throw new RuntimeException("Table contains an attribute of unsupported data-type (" + type + ").");
         };
     }
 
