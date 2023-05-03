@@ -49,6 +49,7 @@ REAL_:                                 'REAL';
 //DOUBLE
 //PRECISION
 DATE:                                  'DATE';
+DATETIME:                              'DATETIME';
 TIMESTAMP:                             'TIMESTAMP';
 //WITH
 //TIME

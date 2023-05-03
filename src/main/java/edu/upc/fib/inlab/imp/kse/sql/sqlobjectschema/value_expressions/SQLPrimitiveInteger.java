@@ -2,6 +2,8 @@ package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
+//TODO: add more precision for value. In SQLServer for example they accept values with precision up
+// to 38 (38 digits)
 public class SQLPrimitiveInteger implements PrimitiveConstant {
 
     private final int value;

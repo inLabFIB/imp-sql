@@ -5,17 +5,17 @@ import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
 import edu.upc.fib.inlab.imp.kse.sql.services.printer.SQLServerPrinter;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Assertion;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SchemaReference;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 import edu.upc.fib.inlab.imp.kse.sql.utils.TintinAssertionsProvider;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
-@Disabled
 public class TPCHIT {
 
     private SQLObjectSchemaFetcher tpch_fetcher;
@@ -41,37 +41,39 @@ public class TPCHIT {
     }
 
    @Test
-    public void parsingCV2AssertionsWithFetchedTables() {
+    public void parsingTPCHAssertionsWithFetchedTables() {
         tpch_fetcher.fetch();
-        SQLObjectSchema cv2FetchedSchema = tpch_fetcher.getSQLObjectSchema();
+        SQLObjectSchema tpchFetchedSchema = tpch_fetcher.getSQLObjectSchema();
 
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(cv2FetchedSchema);
-        parser.parse(TintinAssertionsProvider.getCV2Assertions());
-        SQLObjectSchema cv2SchemaWithAssertions = parser.getSQLObjectSchema();
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser(tpchFetchedSchema);
+        parser.parse(TintinAssertionsProvider.getTPCHAssertions(), new SchemaReference("tpch_db", "user_schema"));
+        SQLObjectSchema tpchSchemaWithAssertions = parser.getSQLObjectSchema();
 
         assertThat("Assertions were not parsed correctly.",
-            !cv2SchemaWithAssertions.getAssertions().isEmpty());
+            !tpchSchemaWithAssertions.getAssertions().isEmpty());
     }
 
     @Test
-    public void cv2Assertions() {
+    public void tpchAssertions() {
         tpch_fetcher.fetch();
-        SQLObjectSchema cv2FetchedSchema = tpch_fetcher.getSQLObjectSchema();
+        SQLObjectSchema tpchFetchedSchema = tpch_fetcher.getSQLObjectSchema();
 
-        SQLObjectSchemaParser parser1 = new SQLObjectSchemaParser(cv2FetchedSchema);
-        parser1.parse(TintinAssertionsProvider.getCV2Assertions());
+        SQLObjectSchemaParser parser1 = new SQLObjectSchemaParser(tpchFetchedSchema);
+        parser1.parse(TintinAssertionsProvider.getTPCHAssertions(), new SchemaReference("tpch_db", "user_schema"));
         SQLObjectSchema schema1 = parser1.getSQLObjectSchema();
 
         List<Assertion> expectedAssertions = schema1.getAssertions();
 
         SQLObjectSchemaVisitor printer = new SQLServerPrinter();
-        String printedAssertions = String.join("\n\n", schema1.getAssertions().stream().map(a->a.<String>visit(printer)).toList());
+        String printedAssertions = String.join("\n\n", expectedAssertions.stream().map(a->a.<String>visit(printer)).toList());
 
-        SQLObjectSchemaParser parser2 = new SQLObjectSchemaParser(cv2FetchedSchema);
+        SQLObjectSchemaParser parser2 = new SQLObjectSchemaParser(tpchFetchedSchema);
         parser2.parse(printedAssertions);
         SQLObjectSchema schema2 = parser2.getSQLObjectSchema();
 
+        List<Assertion> printedAndParsedAssertions = schema2.getAssertions();
+
         assertThat("Parsed assertions do not equal printed-then-parsed assertions",
-            expectedAssertions.equals(schema2.getAssertions()));
+            expectedAssertions, equalTo(printedAndParsedAssertions));
     }
 }

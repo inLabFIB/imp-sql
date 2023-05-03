@@ -35,7 +35,7 @@ public class SQLServerFetcherIT {
         assertThat(testedTable.getAttributes(), containsInAnyOrder(List.of(
             new Attribute("btAttr", new SQLBit()),
             new Attribute("chAttr", new SQLChar(8), false), // Not null since it is a PK
-            new Attribute("dtAttr", new SQLDate(7)),
+            new Attribute("dtAttr", new SQLDateTime(7)),
             new Attribute("dpAttr", new SQLFloat(53)), // SQLServer converts double precision to float(53)
             new Attribute("flAttr", new SQLReal()),  // SQLServer converts floats with precision to reals
             new Attribute("itAttr", new SQLInt(), false, new SQLPrimitiveInteger(1)), // Not null since it is a PK

@@ -54,4 +54,6 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(SQLReal r);
     <T> T visit(SQLDate d);
     <T> T visit(SQLDoublePrecision dp);
+    <T> T visit(SQLNumeric n);
+    <T> T visit(SQLDateTime dt);
 }

@@ -89,6 +89,7 @@ public class SQLServerFetcher implements DatabaseFetcher {
             boolean nullable = resultSet.getBoolean("nullable");
             String valueExpression = resultSet.getString("default_value");
 
+            assert type != null;
             SQLDataType dataType = createDataTypeForName(type, length, precision, scale);
 
             tableSetBuilder.addAttribute(schemasMap.get(schemaName), tableName, attrName, dataType, nullable, valueExpression == null ? null : parseValueExpression(valueExpression, tableName));
@@ -99,12 +100,22 @@ public class SQLServerFetcher implements DatabaseFetcher {
         return switch (type) {
             case "bit" -> new SQLBit();
             case "char" -> new SQLChar(length);
-            case "datetime2" -> new SQLDate(scale);
+
+            case "date" -> new SQLDate();
+            case "datetime" -> new SQLDateTime(scale);
+            case "datetime2" -> new SQLDateTime(scale); //FIXME: possible errors in precision or date ranges
+
             case "float" -> new SQLFloat(precision); // FIXME: Precision does not match SQLServer query...
+
+            case "decimal", "numeric" -> new SQLNumeric(precision, scale);
+            case "bigint" -> new SQLNumeric(precision, scale); // length should be 8 Bytes
             case "int" -> new SQLInt();
-            case "real" -> new SQLReal();
             case "smallint" -> new SQLSmallint();
+
+            case "real" -> new SQLReal();
+
             case "varchar" -> new SQLVarchar(length);
+
             default -> throw new RuntimeException("Table contains an attribute of unsupported data-type (" + type + ").");
         };
     }

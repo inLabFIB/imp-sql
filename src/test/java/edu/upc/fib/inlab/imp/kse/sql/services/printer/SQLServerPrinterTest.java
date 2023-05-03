@@ -39,7 +39,7 @@ class SQLServerPrinterTest {
             List.of(
                 new Attribute("btAttr", new SQLBit()),
                 new Attribute("chAttr", new SQLChar(8)),
-                new Attribute("dtAttr", new SQLDate(7)),
+                new Attribute("dtAttr", new SQLDateTime(7)),
                 new Attribute("dpAttr", new SQLDoublePrecision()),
                 new Attribute("flAttr", new SQLFloat(16)),
                 new Attribute("itAttr", new SQLInt(), new SQLPrimitiveInteger(1)),
@@ -49,7 +49,7 @@ class SQLServerPrinterTest {
             )
         );
 
-        String expectedTable = "CREATE TABLE schemaName.tableName ( btAttr BIT, chAttr CHAR(8), dtAttr DATETIME2(7), " +
+        String expectedTable = "CREATE TABLE schemaName.tableName ( btAttr BIT, chAttr CHAR(8), dtAttr DATETIME(7), " +
             "dpAttr DOUBLE PRECISION, flAttr FLOAT(16), itAttr INT DEFAULT 1, rlAttr REAL NOT NULL, siAttr SMALLINT, " +
             "vcAttr VARCHAR(64) );";
         assertThat(table.visit(new SQLServerPrinter()), is(expectedTable));

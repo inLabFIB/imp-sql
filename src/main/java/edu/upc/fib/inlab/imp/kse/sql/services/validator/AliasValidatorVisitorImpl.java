@@ -33,7 +33,6 @@ import java.util.Set;
  * ---- Non-existent table alias
  * ---- Non-existent column alias for table alias
  * ---- Column references with only column alias has only one possible reference
- *
  * Special cases to think about:
  * - Table Aliases:
  * ---- The original table name can't be referenced. Only the table alias.
@@ -293,6 +292,16 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
 
     @Override
     public <T> T visit(SQLDoublePrecision dp) {
+        throw new RuntimeException("Visitor shouldn't reach this expression.");
+    }
+
+    @Override
+    public <T> T visit(SQLNumeric n) {
+        throw new RuntimeException("Visitor shouldn't reach this expression.");
+    }
+
+    @Override
+    public <T> T visit(SQLDateTime dt) {
         throw new RuntimeException("Visitor shouldn't reach this expression.");
     }
 }

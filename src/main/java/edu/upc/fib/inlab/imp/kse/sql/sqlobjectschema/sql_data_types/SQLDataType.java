@@ -7,10 +7,12 @@ public interface SQLDataType extends SQLObjectSchemaEntity {
         CHAR,
         VARCHAR,
         BIT,
+        NUMERIC,
         INT,
         SMALLINT,
         FLOAT,
         REAL,
-        DATE
+        DATE,
+        DATETIME
     }
 }

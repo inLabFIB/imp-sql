@@ -311,7 +311,14 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
                 BooleanExpression onCondition = visitSearch_condition(join_part.join_on().search_condition());
                 if (join_part.join_on().inner != null)
                     root = new OnJoin(OnJoin.JoinOperator.INNER, root, rightExpression, onCondition);
-                else throw new RuntimeException("outer/left/right/full joins not supported yet!");
+                else if (join_part.join_on().LEFT() != null)
+                    root = new OnJoin(OnJoin.JoinOperator.LEFT, root, rightExpression, onCondition);
+                else if (join_part.join_on().RIGHT() != null)
+                    root = new OnJoin(OnJoin.JoinOperator.RIGHT, root, rightExpression, onCondition);
+                else if (join_part.join_on().FULL() != null)
+                    root = new OnJoin(OnJoin.JoinOperator.FULL, root, rightExpression, onCondition);
+                else //if non specified inner join is considered
+                    root = new OnJoin(OnJoin.JoinOperator.INNER, root, rightExpression, onCondition);
             }
             else if (join_part.cross_join() != null) {
                 root = new CrossJoin(root, rightExpression);
@@ -335,10 +342,6 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
      */
     public RelationalExpression visitJoin_on(TSqlParser.Join_onContext ctx) {
         if (ctx.join_hint != null) throw new RuntimeException("join_hint not supported yet!");
-
-        //TODO: V2
-        if (ctx.join_type != null || ctx.outer != null) throw new RuntimeException("outer/left/right/full joins not supported yet!");
-
         return visitTable_source(ctx.source);
     }
 
@@ -414,11 +417,24 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     public SQLDataType visitData_type(TSqlParser.Data_typeContext ctx) {
         if (ctx.VARCHAR() != null) return new SQLVarchar(Integer.parseInt(ctx.length.getText()));
         else if (ctx.BIT() != null) return ctx.length != null ? new SQLBit(Integer.parseInt(ctx.length.getText())) : new SQLBit();
+        else if (ctx.CHAR() != null || ctx.CHARACTER() != null) return ctx.length != null ? new SQLBit(Integer.parseInt(ctx.length.getText())) : new SQLBit();
+        else if (ctx.NUMERIC() != null || ctx.DECIMAL_() != null || ctx.DEC_() != null) {
+            if (ctx.prec != null) {
+                if (ctx.scale != null) {
+                    return new SQLNumeric(Integer.parseInt(ctx.prec.getText()), Integer.parseInt(ctx.scale.getText()));
+                }
+                else return new SQLNumeric(Integer.parseInt(ctx.prec.getText()));
+            }
+            else return new SQLNumeric();
+        }
         else if (ctx.INT() != null) return new SQLInt();
         else if (ctx.SMALLINT() != null) return new SQLSmallint();
         else if (ctx.FLOAT_() != null) return ctx.prec != null ? new SQLFloat(Integer.parseInt(ctx.prec.getText())) : new SQLFloat();
         else if (ctx.DATE() != null) return new SQLDate();
-        else throw new RuntimeException("Other SQL data types not supported yet!");
+        else if (ctx.DATETIME() != null) return ctx.prec != null ? new SQLDateTime(Integer.parseInt(ctx.prec.getText())) : new SQLDateTime();
+        else {
+            throw new RuntimeException("Other SQL data types not supported yet!");
+        }
     }
 
     public void visitColumn_Definition_Element(TSqlParser.Column_definition_elementContext ctx, SchemaReference schemaReference, String tableName, String attributeName) {

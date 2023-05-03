@@ -137,12 +137,12 @@ public class SQLServerPrinter extends SQLPrinter {
 
     @Override
     public String visit(SQLPrimitiveInteger i) {
-        return "" + i.getValue();
+        return String.valueOf(i.getValue());
     }
 
     @Override
     public String visit(SQLPrimitiveFloat f) {
-        return "" + f.getValue();
+        return String.valueOf(f.getValue());
     }
 
     @Override
@@ -275,12 +275,21 @@ public class SQLServerPrinter extends SQLPrinter {
 
     @Override
     public String visit(SQLDate d) {
-        if (d.getPrecision() != null) return "DATETIME2(" + d.getPrecision() + ")";
-        return "DATETIME2";
+        return "DATE";
     }
 
     @Override
     public String visit(SQLDoublePrecision dp) {
         return "DOUBLE PRECISION";
+    }
+
+    @Override
+    public String visit(SQLNumeric n) {
+        return "NUMERIC(" + n.getPrecision() + "," + n.getScale() + ")";
+    }
+
+    @Override
+    public String visit(SQLDateTime dt) {
+        return "DATETIME(" + dt.getFractionalSecondsPrecision() + ")";
     }
 }

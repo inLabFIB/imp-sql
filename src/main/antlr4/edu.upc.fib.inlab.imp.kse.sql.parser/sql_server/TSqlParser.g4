@@ -1552,9 +1552,11 @@ data_type
     | DOUBLE PRECISION
 
     | DATE
+    | DATETIME ( '(' time_prec=DECIMAL ')' )? ( WITH TIME ZONE )?
     | TIME ( '(' time_prec=DECIMAL ')' )? ( WITH TIME ZONE )?
     | TIMESTAMP ( '(' timestamp_prec=DECIMAL ')' )? ( WITH TIME ZONE )?
     ;
+//DATETIME added and doesn't follow strictlly SQL92' conventions
 
 // https://msdn.microsoft.com/en-us/library/ms179899.aspx
 constant
