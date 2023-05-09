@@ -16,4 +16,9 @@ public class SQLDate implements SQLDataType {
     public boolean equals(Object o) {
         return o instanceof SQLDate;
     }
+
+    @Override
+    public int hashCode() {
+        return 11;
+    }
 }

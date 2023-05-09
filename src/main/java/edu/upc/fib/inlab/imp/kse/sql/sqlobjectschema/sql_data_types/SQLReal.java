@@ -12,4 +12,9 @@ public class SQLReal implements SQLDataType {
     public boolean equals(Object o) {
         return o instanceof SQLReal;
     }
+
+    @Override
+    public int hashCode() {
+        return 3;
+    }
 }
