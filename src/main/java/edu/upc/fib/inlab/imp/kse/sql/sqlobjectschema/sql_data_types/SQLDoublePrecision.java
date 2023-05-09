@@ -12,4 +12,9 @@ public class SQLDoublePrecision implements SQLDataType {
     public boolean equals(Object o) {
         return o instanceof SQLDoublePrecision;
     }
+
+    @Override
+    public int hashCode() {
+        return 1;
+    }
 }

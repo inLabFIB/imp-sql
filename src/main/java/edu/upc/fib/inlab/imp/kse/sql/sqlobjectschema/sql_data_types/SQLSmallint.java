@@ -12,4 +12,9 @@ public class SQLSmallint implements SQLDataType {
     public boolean equals(Object o) {
         return o instanceof SQLSmallint;
     }
+
+    @Override
+    public int hashCode() {
+        return 1;
+    }
 }

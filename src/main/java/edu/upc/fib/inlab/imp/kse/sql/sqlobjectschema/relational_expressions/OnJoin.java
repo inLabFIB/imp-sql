@@ -7,11 +7,6 @@ import java.util.Objects;
 
 public class OnJoin extends JoinOperation {
 
-
-
-
-
-
     public enum JoinOperator {
         INNER,
         NATURAL,
