@@ -249,6 +249,7 @@ public class SQLServerPrinter extends SQLPrinter {
 
     @Override
     public String visit(SQLBit b) {
+        if (b.getLength() != null) return "BIT(" + b.getLength() + ")";
         return "BIT";
     }
 

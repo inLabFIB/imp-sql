@@ -15,6 +15,10 @@ public class SQLBit implements SQLDataType {
         this.length = length;
     }
 
+    public Integer getLength() {
+        return length;
+    }
+
     @Override
     public <T> T visit(SQLObjectSchemaVisitor visitor) {
         return visitor.visit(this);

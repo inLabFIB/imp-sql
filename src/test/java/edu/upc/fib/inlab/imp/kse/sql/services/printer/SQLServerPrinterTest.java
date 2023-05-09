@@ -282,4 +282,21 @@ class SQLServerPrinterTest {
         String expectedSelect = "( SELECT *, * FROM myTable WHERE 1 = 0 AND 'SQLCommonSense' = '' AND NOT ( NOT ( NOT ( 0 = 0 ) ) ) )";
         MatcherAssert.assertThat(select.visit(new SQLServerPrinter()), is(expectedSelect));
     }
+
+
+    @Test
+    public void attributeTypesArePrintedAsExpected() {
+        Table table = new Table("table", List.of(
+            new Attribute("col1", new SQLBit()),
+            new Attribute("col2", new SQLBit(2)),
+            new Attribute("col3", new SQLBit(4), false),
+            new Attribute("col4", new SQLChar()),
+            new Attribute("col5", new SQLChar(2)),
+            new Attribute("col6", new SQLFloat(4))
+        ));
+
+        String expectedSelect = "CREATE TABLE table ( col1 BIT, col2 BIT(2), col3 BIT(4) NOT NULL, col4 CHAR," +
+            " col5 CHAR(2), col6 FLOAT(4) );";
+        MatcherAssert.assertThat(table.visit(new SQLServerPrinter()), is(expectedSelect));
+    }
 }
