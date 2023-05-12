@@ -1,7 +1,9 @@
 package edu.upc.fib.inlab.imp.kse.sql.services.validator;
 
 import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
+import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.NonValidColumnReferenceException;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -28,6 +30,27 @@ public class AliasValidatorTest {
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
         assertDoesNotThrow(() -> validator.validateAliases(schema.getAssertions().get(0)));
+    }
+
+    @Test
+    public void invalidColumnReference() {
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+
+        String tableA = "CREATE TABLE a (col1 int)";
+        parser.parse(tableA);
+
+        // Object parsed from input string
+        String assertion = """
+        CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
+            SELECT a.col2;
+        ))""";
+        parser.parse(assertion);
+
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
+
+        assertThrows(NonValidColumnReferenceException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 
     @Test
@@ -157,6 +180,37 @@ public class AliasValidatorTest {
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
         assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+    }
 
+    //FIXME: validator doesn't check on clauses in on joins
+    @Disabled
+    @Test
+    public void TPCHSupplierNotCustomerWithWrongSchema() {
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+
+        //LINEITEM is missing L_SUPPKEY
+        String createTableStatement = """
+            CREATE TABLE LINEITEM (L_ORDERKEY int);
+            CREATE TABLE SUPPLIER (S_SUPPKEY int, S_NAME varchar(10));
+            CREATE TABLE ORDERS (O_ORDERKEY int, O_CUSTKEY int);
+            CREATE TABLE CUSTOMER (C_CUSTKEY int, C_NAME varchar(10));
+            """;
+        parser.parse(createTableStatement);
+
+        // Object parsed from input string
+        String createAssertionStatement = """
+            CREATE ASSERTION supplierNotCustomer CHECK ( NOT EXISTS (
+               SELECT *
+               FROM LINEITEM AS l JOIN SUPPLIER AS s ON (l.L_SUPPKEY = s.S_SUPPKEY)
+                                   JOIN ORDERS AS o ON (l.L_ORDERKEY = o.O_ORDERKEY)
+                                   JOIN CUSTOMER AS c ON (o.O_CUSTKEY = c.C_CUSTKEY)
+               WHERE s.S_NAME = c.C_NAME
+            ));
+            """;
+        parser.parse(createAssertionStatement);
+
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+        SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
+        assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 }
