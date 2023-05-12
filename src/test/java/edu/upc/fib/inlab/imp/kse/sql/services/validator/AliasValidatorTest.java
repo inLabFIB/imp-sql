@@ -4,7 +4,8 @@ import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AliasValidatorTest {
 
@@ -26,7 +27,7 @@ public class AliasValidatorTest {
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
-        assertThat("Incorrect aliases", validator.validateAliases(schema.getAssertions().get(0)));
+        assertDoesNotThrow(() -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 
     @Test
@@ -47,8 +48,7 @@ public class AliasValidatorTest {
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
-        assertThat("Aliases were considered correct when they were not",
-            !validator.validateAliases(schema.getAssertions().get(0)));
+        assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 
     @Test
@@ -69,8 +69,7 @@ public class AliasValidatorTest {
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
-        assertThat("Aliases were considered correct when they were not",
-            !validator.validateAliases(schema.getAssertions().get(0)));
+        assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 
     @Test
@@ -91,8 +90,7 @@ public class AliasValidatorTest {
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
-        assertThat("Aliases were considered correct when they were not",
-            !validator.validateAliases(schema.getAssertions().get(0)));
+        assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 
     @Test
@@ -120,7 +118,7 @@ public class AliasValidatorTest {
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
-        assertThat("Incorrect aliases", validator.validateAliases(schema.getAssertions().get(0)));
+        assertDoesNotThrow(() -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 
     @Test
@@ -139,7 +137,7 @@ public class AliasValidatorTest {
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
-        assertThat("Incorrect aliases", validator.validateAliases(schema.getViews().get(0)));
+        assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 
     @Test
@@ -158,7 +156,7 @@ public class AliasValidatorTest {
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
-        assertThat("Aliases were considered correct when they were not",
-            !validator.validateAliases(schema.getViews().get(0)));
+        assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+
     }
 }

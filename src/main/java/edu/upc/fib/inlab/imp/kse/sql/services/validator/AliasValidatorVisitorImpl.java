@@ -1,5 +1,10 @@
 package edu.upc.fib.inlab.imp.kse.sql.services.validator;
 
+import edu.upc.fib.inlab.imp.kse.sql.services.printer.SQLServerPrinter;
+import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.AmbiguousColumnReferenceException;
+import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.NonAliasedFromClauseSubQueryException;
+import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.NonValidColumnReferenceException;
+import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.RepeatedTableAliasException;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ComparisonPredicate;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ExistsPredicate;
@@ -47,22 +52,22 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
 
     @Override
     public Boolean visit(Assertion a) {
-        try {
-            List<ColumnReference> required = a.getBooleanExpression().visit(this);
-            return required.isEmpty();
-        } catch (Exception e) {
-            return false;
+        List<ColumnReference> required = a.getBooleanExpression().visit(this);
+        if (!required.isEmpty()) {
+            String cr = new SQLServerPrinter().visit(required.get(0));
+            throw new NonValidColumnReferenceException("The columnReference (" + cr + ") is not a valid reference.");
         }
+        return true;
     }
 
     @Override
     public Boolean visit(View v) {
-        try {
-            List<ColumnReference> required = v.getQuery().visit(this);
-            return required.isEmpty();
-        } catch (Exception e) {
-            return false;
+        List<ColumnReference> required = v.getQuery().visit(this);
+        if (!required.isEmpty()) {
+            String cr = new SQLServerPrinter().visit(required.get(0));
+            throw new NonValidColumnReferenceException("The columnReference (" + cr + ") is not a valid reference.");
         }
+        return true;
     }
 
     @Override
@@ -87,16 +92,16 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
             if (relationalExpressionAlias == null) {
                 if (a instanceof TableReference tr)
                     relationalExpressionAlias = tr.getTable().getTableName();
-                if (a instanceof Query) throw new RuntimeException("Sub-queries in FROM clause must be aliased");
+                if (a instanceof Query) throw new NonAliasedFromClauseSubQueryException("Sub-queries in FROM clause must be aliased");
             }
-            if (cachedOfferedTableAliases.contains(relationalExpressionAlias)) throw new RuntimeException("Repeated table alias.");
+            if (cachedOfferedTableAliases.contains(relationalExpressionAlias)) throw new RepeatedTableAliasException("Repeated table alias (" + relationalExpressionAlias + ").");
             cachedOfferedTableAliases.add(relationalExpressionAlias);
             // Obtain required aliases
             required.addAll(a.visit(this));
             // Obtain offered aliases
             List<ColumnReference> newOffered = a.getOfferedReferences();
             if (newOffered.stream().anyMatch(o -> isOffered(offered, cachedOfferedTableAliases, o)))
-                throw new RuntimeException("Repeated table.column alias.");
+                throw new AmbiguousColumnReferenceException("Repeated table.column alias.");
             offered.addAll(newOffered);
         }
 
@@ -132,7 +137,7 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         boolean found = false;
         for (ColumnReference compared : offered) {
             if (compared.getColumnName().equals(target.getColumnName())) {
-                if (found) throw new RuntimeException("Ambiguous column reference: multiple table aliases offer it.");
+                if (found) throw new AmbiguousColumnReferenceException("Ambiguous column reference: multiple table aliases offer it.");
                 found = true;
             }
         }
