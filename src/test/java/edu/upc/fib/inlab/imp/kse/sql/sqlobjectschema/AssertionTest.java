@@ -15,7 +15,7 @@ class AssertionTest {
             """;
 
         String assertionString = """
-            CREATE ASSERTION correctDates CHECK ( NOT EXISTS (
+            CREATE ASSERTION db.schema1.correctDates CHECK ( NOT EXISTS (
                 SELECT *
                 FROM LINEITEM AS l JOIN ORDERS AS o ON (l.L_ORDERKEY = o.O_ORDERKEY)
                 WHERE l.L_COMMITDATE < o.O_ORDERDATE
@@ -23,7 +23,7 @@ class AssertionTest {
             """;
 
         String viewString = """
-            CREATE VIEW correctDates AS SELECT *
+            CREATE VIEW schema1.correctDates AS SELECT *
                 FROM LINEITEM AS l JOIN ORDERS AS o ON (l.L_ORDERKEY = o.O_ORDERKEY)
                 WHERE l.L_COMMITDATE < o.O_ORDERDATE
             ;
