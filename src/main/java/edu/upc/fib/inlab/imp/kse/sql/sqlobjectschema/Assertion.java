@@ -39,7 +39,7 @@ public class Assertion implements Constraint {
     public View getEquivalentViolationDetectionView() {
         if (!(booleanExpression instanceof NotOperation nop && nop.getExpression() instanceof ExistsPredicate ep))
             throw new RuntimeException("Only assertions with predicate of type \"NOT EXISTS (<query>)\" have equivalent violation detection views.");
-        return new View(getAssertionName(), ep.getQuery());
+        return new View(getAssertionName(), getSchemaReference(), ep.getQuery());
     }
 
     @Override

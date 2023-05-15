@@ -22,6 +22,10 @@ public class View implements SQLObjectSchemaEntity {
         this.query = Objects.requireNonNull(query, "The parameter 'query' cannot be null.");
     }
 
+    public View(String viewName, SchemaReference schemaReference, Query query) {
+        this(viewName, schemaReference, null, query);
+    }
+
     public View(String viewName, Query query) {
         this(viewName, null, null, query);
     }
