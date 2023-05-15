@@ -115,7 +115,7 @@ public class SQLServerPrinter extends SQLPrinter {
         // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
         //  e.g. replace whitespaces with underscores
 
-        String viewName = (v.getSchemaReference() != null) ? v.getSchemaReference().visit(this) : "";
+        String viewName = (v.getSchemaReference() != null) ? v.getSchemaReference().visit(this) + "." : "";
         viewName += v.getViewName();
 
         String viewCreationStatement = "CREATE VIEW " + viewName;

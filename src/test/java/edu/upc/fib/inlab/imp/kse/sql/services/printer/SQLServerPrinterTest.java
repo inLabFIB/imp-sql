@@ -299,4 +299,18 @@ class SQLServerPrinterTest {
             " col5 CHAR(2), col6 FLOAT(4) );";
         MatcherAssert.assertThat(table.visit(new SQLServerPrinter()), is(expectedSelect));
     }
+
+    @Test
+    public void printViewWithSchema() {
+        View view = new View(
+            "viewName",
+            new SchemaReference("db","schema"),
+            new TableExpression(
+                List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                null, null
+            ));
+
+        String expectedView = "CREATE VIEW db.schema.viewName AS ( SELECT 1 );";
+        MatcherAssert.assertThat(view.visit(new SQLServerPrinter()), is(expectedView));
+    }
 }
