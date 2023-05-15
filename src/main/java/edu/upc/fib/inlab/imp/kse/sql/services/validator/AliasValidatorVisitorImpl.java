@@ -1,10 +1,7 @@
 package edu.upc.fib.inlab.imp.kse.sql.services.validator;
 
 import edu.upc.fib.inlab.imp.kse.sql.services.printer.SQLServerPrinter;
-import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.AmbiguousColumnReferenceException;
-import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.NonAliasedFromClauseSubQueryException;
-import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.NonValidColumnReferenceException;
-import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.RepeatedTableAliasException;
+import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ComparisonPredicate;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ExistsPredicate;
@@ -25,11 +22,11 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimit
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveString;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+
+//TODO: changes where made to be correct (on clauses needed to be checked) and the walk is now probably inefficient.
+// It surely can be optimized.
 /**
  * This visitor checks (returns FALSE for) the following cases:
  * - [1] Repeated table aliases in a FROM clause of a TableExpression
@@ -46,16 +43,31 @@ import java.util.Set;
  * ---- If they are referenced from a sub query inside a NOT EXISTS clause, for example, that grants visibility
  * ---- over multiple identical aliases, only one will be "referencable", with priority of the closest level to the one
  * ---- containing the column reference.
-
  */
 public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
+
+    private boolean isOffered(List<ColumnReference> offered, Set<String> cachedOfferedTableAliases, ColumnReference target) {
+        if (target.getTableName() != null) {
+            if (!cachedOfferedTableAliases.contains(target.getTableName())) return false;
+            return offered.contains(target);
+        }
+        // No table name, look only one column name. If more than one throw error.
+        boolean found = false;
+        for (ColumnReference compared : offered) {
+            if (compared.getColumnName().equals(target.getColumnName())) {
+                if (found) throw new AmbiguousColumnReferenceException("Ambiguous column reference: multiple table aliases offer it.");
+                found = true;
+            }
+        }
+        return found;
+    }
 
     @Override
     public Boolean visit(Assertion a) {
         List<ColumnReference> required = a.getBooleanExpression().visit(this);
         if (!required.isEmpty()) {
             String cr = new SQLServerPrinter().visit(required.get(0));
-            throw new NonValidColumnReferenceException("The columnReference (" + cr + ") is not a valid reference.");
+            throw new InvalidColumnReferenceException("The columnReference (" + cr + ") is not a valid reference.");
         }
         return true;
     }
@@ -65,7 +77,7 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         List<ColumnReference> required = v.getQuery().visit(this);
         if (!required.isEmpty()) {
             String cr = new SQLServerPrinter().visit(required.get(0));
-            throw new NonValidColumnReferenceException("The columnReference (" + cr + ") is not a valid reference.");
+            throw new InvalidColumnReferenceException("The columnReference (" + cr + ") is not a valid reference.");
         }
         return true;
     }
@@ -86,7 +98,12 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         List<ColumnReference> offered = new ArrayList<>();
         Set<String> cachedOfferedTableAliases = new HashSet<>();
 
-        // Process FROM clause
+        // Process FROM clause (needs to walk tree since ON clauses need to be checked)
+        if (te.getFromClause() != null) {
+            required.addAll(te.getFromClause().visit(this));
+        }
+
+        // Process FROM clause - OLD
         for (AliasableRelationalExpression a : te.getFromClauseTerminalExpressions()) {
             String relationalExpressionAlias = a.getAlias();
             if (relationalExpressionAlias == null) {
@@ -128,22 +145,6 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         return required;
     }
 
-    private boolean isOffered(List<ColumnReference> offered, Set<String> cachedOfferedTableAliases, ColumnReference target) {
-        if (target.getTableName() != null) {
-            if (!cachedOfferedTableAliases.contains(target.getTableName())) return false;
-            return offered.contains(target);
-        }
-        // No table name, look only one column name. If more than one throw error.
-        boolean found = false;
-        for (ColumnReference compared : offered) {
-            if (compared.getColumnName().equals(target.getColumnName())) {
-                if (found) throw new AmbiguousColumnReferenceException("Ambiguous column reference: multiple table aliases offer it.");
-                found = true;
-            }
-        }
-        return found;
-    }
-
 
     @Override
     public List<ColumnReference> visit(CrossJoin j) {
@@ -158,8 +159,12 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         List<ColumnReference> offered = j.getOfferedReferences();
         List<ColumnReference> onRequired = j.getOnClause().visit(this);
 
+        //ON CLAUSES shouldn't require upper ColumnReferences ?
+        Optional<ColumnReference> cr = onRequired.stream().filter(r -> !offered.contains(r)).findAny();
+        if (cr.isPresent()) throw new InvalidOnJoinColumReferenceException("The columnReference (" + new SQLServerPrinter().visit(cr.get()) + ") is not valid for the on clause.");
+
         List<ColumnReference> required = new ArrayList<>();
-        required.addAll(onRequired.stream().filter(r -> !offered.contains(r)).toList());
+//        required.addAll(onRequired.stream().filter(r -> !offered.contains(r)).toList());
         required.addAll(j.getLeftExpression().visit(this));
         required.addAll(j.getRightExpression().visit(this));
         return required;

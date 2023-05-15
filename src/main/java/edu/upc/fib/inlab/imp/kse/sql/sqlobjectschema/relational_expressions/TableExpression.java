@@ -39,6 +39,10 @@ public class TableExpression extends Query {
         if (this.selectClause.stream().anyMatch(s -> s instanceof Asterisk) && this.fromClause == null)
             throw new RuntimeException("Cannot select * without a FROM clause");
 
+        this.fromClauseTerminalExpressions = getFromClauseTerminalExpressions(fromClause);
+    }
+
+    private static List<AliasableRelationalExpression> getFromClauseTerminalExpressions(RelationalExpression fromClause) {
         List<AliasableRelationalExpression> tempFromClauseTerminalExpressions = new ArrayList<>();
         // Traverse fromClause joins to find aliases and terminal expressions
         if (fromClause != null) {
@@ -54,7 +58,7 @@ public class TableExpression extends Query {
                 }
             }
         }
-        this.fromClauseTerminalExpressions = tempFromClauseTerminalExpressions;
+        return tempFromClauseTerminalExpressions;
     }
 
     @Override

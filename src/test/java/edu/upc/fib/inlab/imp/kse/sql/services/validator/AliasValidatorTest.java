@@ -1,9 +1,9 @@
 package edu.upc.fib.inlab.imp.kse.sql.services.validator;
 
 import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
-import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.NonValidColumnReferenceException;
+import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.InvalidColumnReferenceException;
+import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.InvalidOnJoinColumReferenceException;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -50,7 +50,7 @@ public class AliasValidatorTest {
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
 
-        assertThrows(NonValidColumnReferenceException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+        assertThrows(InvalidColumnReferenceException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 
     @Test
@@ -182,8 +182,6 @@ public class AliasValidatorTest {
         assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 
-    //FIXME: validator doesn't check on clauses in on joins
-    @Disabled
     @Test
     public void TPCHSupplierNotCustomerWithWrongSchema() {
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
@@ -211,6 +209,6 @@ public class AliasValidatorTest {
 
         SQLObjectSchema schema = parser.getSQLObjectSchema();
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
-        assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+        assertThrows(InvalidOnJoinColumReferenceException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 }
