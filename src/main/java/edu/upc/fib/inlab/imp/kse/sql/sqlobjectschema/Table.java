@@ -18,6 +18,8 @@ public class Table implements SQLObjectSchemaEntity {
 
     protected final List<Check> checkConstraints;
     protected final List<Unique> uniqueConstraints;
+
+    //TODO: isn't 1 the max number of pk's a table can have???
     protected final List<PrimaryKey> primaryKeyConstraints;
 
     protected final List<ForeignKey> foreignKeyConstraints;
@@ -69,6 +71,12 @@ public class Table implements SQLObjectSchemaEntity {
 
     public List<ForeignKey> getForeignKeyConstraints() {
         return foreignKeyConstraints;
+    }
+
+    public List<Attribute> getPrimaryKeyAttributes() {
+        if (primaryKeyConstraints.size() > 1) throw new RuntimeException("Tables with more than 1 PK are not possible.");
+        if (primaryKeyConstraints.size() == 0) return new ArrayList<>();
+        return new ArrayList<>(primaryKeyConstraints.get(0).getPkAttributes());
     }
 
     public Attribute getAttribute(String attributeName) {

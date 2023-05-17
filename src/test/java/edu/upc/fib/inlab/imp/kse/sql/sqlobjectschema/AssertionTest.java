@@ -36,8 +36,9 @@ class AssertionTest {
 
         Assertion assertion = parser.getSQLObjectSchema().getAssertions().get(0);
         View expectedView = parser.getSQLObjectSchema().getViews().get(0);
+        View obtainedView = assertion.getEquivalentViolationDetectionView();
 
         assertThat("Obtained view is not equal to expected views.",
-            assertion.getEquivalentViolationDetectionView().equals(expectedView));
+            obtainedView.equals(expectedView));
     }
 }
