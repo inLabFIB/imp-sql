@@ -754,15 +754,19 @@ derived_table
     | '(' table_value_constructor ')'
     ;
 
+//function_call
+//    : ranking_windowed_function
+//    | aggregate_windowed_function
+//    | analytic_windowed_function
+//    | built_in_functions <--
+//    | scalar_function_name '(' expression_list? ')'
+//    | freetext_function
+//    | partition_function
+//    | hierarchyid_static_method
+//    ;
+
 function_call
-    : ranking_windowed_function                         #RANKING_WINDOWED_FUNC
-    | aggregate_windowed_function                       #AGGREGATE_WINDOWED_FUNC
-    | analytic_windowed_function                        #ANALYTIC_WINDOWED_FUNC
-    | built_in_functions                                #BUILT_IN_FUNC
-    | scalar_function_name '(' expression_list? ')'     #SCALAR_FUNCTION
-    | freetext_function                                 #FREE_TEXT
-    | partition_function                                #PARTITION_FUNC
-    | hierarchyid_static_method                         #HIERARCHYID_METHOD
+    : scalar_function_name '(' expression_list? ')'
     ;
 
 partition_function

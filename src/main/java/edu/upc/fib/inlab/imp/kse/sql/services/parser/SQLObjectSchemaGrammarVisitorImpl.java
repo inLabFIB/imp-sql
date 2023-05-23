@@ -177,6 +177,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
         if (ctx.primitive_expression() != null) return visitPrimitive_expression(ctx.primitive_expression());
         if(ctx.full_column_name() != null) return visitFull_column_name(ctx.full_column_name());
         if(ctx.bracket_expression() != null) return visitBracket_expression(ctx.bracket_expression());
+        if (ctx.function_call() != null) return visitFunction_call(ctx.function_call());
 
         //TODO: V2
         throw new RuntimeException("Grammar expression of other expressions not supported yet!");
@@ -185,6 +186,24 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
     public ValueExpression visitBracket_expression(TSqlParser.Bracket_expressionContext ctx) {
         if (ctx.expression() != null) return visitExpression(ctx.expression());
         else return visitSubquery(ctx.subquery());
+    }
+
+    public ValueExpression visitFunction_call(TSqlParser.Function_callContext ctx) {
+        if (ctx.scalar_function_name() == null) {
+            throw new RuntimeException("Grammar expression (`"+ctx.getText() +"`) not supported yet!");
+        }
+
+        TSqlParser.Expression_listContext expression_listContext = ctx.expression_list();
+        if (expression_listContext == null) {
+            return new SQLFunction(ctx.scalar_function_name().getText());
+        } else {
+            List<ValueExpression> arguments = visitExpression_list(expression_listContext);
+            return new SQLFunction(ctx.scalar_function_name().getText(), arguments);
+        }
+    }
+
+    public List<ValueExpression> visitExpression_list(TSqlParser.Expression_listContext ctx) {
+        return ctx.expression().stream().map(this::visitExpression).toList();
     }
 
     public ColumnReference visitFull_column_name(TSqlParser.Full_column_nameContext ctx) {

@@ -16,6 +16,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLFloat;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLInt;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLVarchar;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnReference;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLFunction;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveString;
 import org.junit.jupiter.api.Test;
@@ -121,7 +122,8 @@ public class TablesSQLObjectSchemaParserTest {
     public void parseTableWithDefaultColumnConstraints() {
         String createTable = """
             CREATE TABLE name (
-                col1 int DEFAULT 1
+                col1 int DEFAULT 1,
+                col2 int DEFAULT MYFUNCTION()
             );
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
@@ -129,11 +131,12 @@ public class TablesSQLObjectSchemaParserTest {
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
         Attribute a1 = new Attribute("col1", new SQLInt(), new SQLPrimitiveInteger(1));
+        Attribute a2 = new Attribute("col2", new SQLInt(), new SQLFunction("MYFUNCTION"));
 
         Table expectedTable = new Table(
             "name",
             null,
-            List.of(a1),
+            List.of(a1, a2),
             new ArrayList<>(),
             new ArrayList<>(),
             new ArrayList<>(),

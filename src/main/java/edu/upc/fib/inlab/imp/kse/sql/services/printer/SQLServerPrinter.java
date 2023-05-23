@@ -7,10 +7,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Asterisk;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.*;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnReference;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveString;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.*;
 
 import java.util.List;
 
@@ -292,5 +289,10 @@ public class SQLServerPrinter extends SQLPrinter {
     @Override
     public String visit(SQLDateTime dt) {
         return "DATETIME(" + dt.getFractionalSecondsPrecision() + ")";
+    }
+
+    @Override
+    public String visit(SQLFunction f) {
+        return f.getFunctionName() + "(" + String.join(", ", f.getArguments().stream().map(p -> p.<String>visit(this)).toList()) + ")";
     }
 }

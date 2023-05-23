@@ -13,10 +13,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Asterisk;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.*;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnReference;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveString;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.utils.SchemasProvider;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
@@ -38,7 +35,7 @@ class SQLServerPrinterTest {
             new SchemaReference("schemaName"),
             List.of(
                 new Attribute("btAttr", new SQLBit()),
-                new Attribute("chAttr", new SQLChar(8)),
+                new Attribute("chAttr", new SQLChar(8), new SQLFunction("myfunction")),
                 new Attribute("dtAttr", new SQLDateTime(7)),
                 new Attribute("dpAttr", new SQLDoublePrecision()),
                 new Attribute("flAttr", new SQLFloat(16)),
@@ -49,7 +46,7 @@ class SQLServerPrinterTest {
             )
         );
 
-        String expectedTable = "CREATE TABLE schemaName.tableName ( btAttr BIT, chAttr CHAR(8), dtAttr DATETIME(7), " +
+        String expectedTable = "CREATE TABLE schemaName.tableName ( btAttr BIT, chAttr CHAR(8) DEFAULT myfunction(), dtAttr DATETIME(7), " +
             "dpAttr DOUBLE PRECISION, flAttr FLOAT(16), itAttr INT DEFAULT 1, rlAttr REAL NOT NULL, siAttr SMALLINT, " +
             "vcAttr VARCHAR(64) );";
         assertThat(table.visit(new SQLServerPrinter()), is(expectedTable));

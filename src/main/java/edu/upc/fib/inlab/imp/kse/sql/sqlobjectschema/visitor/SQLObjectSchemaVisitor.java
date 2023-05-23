@@ -16,10 +16,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.Tabl
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Asterisk;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.*;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnReference;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveString;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.*;
 
 public interface SQLObjectSchemaVisitor {
     <T> T visit(TableExpression te);
@@ -56,4 +53,5 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(SQLDoublePrecision dp);
     <T> T visit(SQLNumeric n);
     <T> T visit(SQLDateTime dt);
+    <T> T visit(SQLFunction f);
 }

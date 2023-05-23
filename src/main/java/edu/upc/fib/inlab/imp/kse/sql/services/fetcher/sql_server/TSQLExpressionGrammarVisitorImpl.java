@@ -1,48 +1,33 @@
 package edu.upc.fib.inlab.imp.kse.sql.services.fetcher.sql_server;
 
-import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlExpressionParser;
-import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlExpressionParserBaseVisitor;
+import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlParser;
+import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlParserBaseVisitor;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.*;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaEntity;
 
+import java.util.List;
 import java.util.Objects;
 
-public class TSQLExpressionGrammarVisitorImpl  extends TSqlExpressionParserBaseVisitor {
+public class TSQLExpressionGrammarVisitorImpl extends TSqlParserBaseVisitor {
     private final String contextTableName;
-    private ValueExpression valueExpression;
-    private BooleanExpression booleanExpression;
 
     public TSQLExpressionGrammarVisitorImpl(String tableName) {
         this.contextTableName = tableName;
     }
 
-    public ValueExpression getValueExpression() {
-        return valueExpression;
-    }
-    public BooleanExpression getBooleanExpression() {
-        return booleanExpression;
-    }
-
-    public SQLObjectSchemaEntity visitExpression(TSqlExpressionParser.ExpressionContext ctx) {
-        if (ctx.default_expression() != null) {
-            this.valueExpression = visitDefault_expression(ctx.default_expression());
-            return this.valueExpression;
-        }
-        if (ctx.search_condition() != null) {
-            this.booleanExpression = visitSearch_condition(ctx.search_condition());
-            return this.booleanExpression;
-        }
-        throw new RuntimeException("Expression not supported by grammar.");
-    }
-
-    public ValueExpression visitDefault_expression(TSqlExpressionParser.Default_expressionContext ctx) {
+    @Override
+    public ValueExpression visitExpression(TSqlParser.ExpressionContext ctx) {
         if (ctx.primitive_expression() != null) return visitPrimitive_expression(ctx.primitive_expression());
-        if (ctx.default_expression() != null) return visitDefault_expression(ctx.default_expression());
+        if (ctx.full_column_name() != null)
+            return new ColumnReference(this.contextTableName, visitId_(ctx.full_column_name().column_name));
+        if (ctx.function_call() != null) return visitFunction_call(ctx.function_call());
+        if (ctx.bracket_expression() != null) return visitExpression(ctx.bracket_expression().expression());
+
         throw new RuntimeException("Expression not supported by grammar.");
     }
 
-    public ValueExpression visitPrimitive_expression(TSqlExpressionParser.Primitive_expressionContext ctx) {
+    @Override
+    public ValueExpression visitPrimitive_expression(TSqlParser.Primitive_expressionContext ctx) {
         if (ctx.NULL_() != null) {
             throw new RuntimeException("Grammar expression (`NULL`) not supported yet!");
             //return new Null...
@@ -51,23 +36,45 @@ public class TSQLExpressionGrammarVisitorImpl  extends TSqlExpressionParserBaseV
         throw new RuntimeException("Expression not supported by grammar.");
     }
 
-    public ValueExpression visitPrimitive_constant(TSqlExpressionParser.Primitive_constantContext ctx) {
+    @Override
+    public ValueExpression visitPrimitive_constant(TSqlParser.Primitive_constantContext ctx) {
         if (ctx.STRING() != null) {
             String str = ctx.STRING().getText();
-            return new SQLPrimitiveString(str.substring(1,str.length()-1));
+            return new SQLPrimitiveString(str.substring(1, str.length() - 1));
         }
         if (ctx.DECIMAL() != null) return new SQLPrimitiveInteger(Integer.parseInt(ctx.DECIMAL().getText()));
         if (ctx.FLOAT() != null) return new SQLPrimitiveFloat(Float.parseFloat(ctx.FLOAT().getText()));
         throw new RuntimeException("Expression not supported by grammar.");
     }
 
-    public BooleanExpression visitSearch_condition(TSqlExpressionParser.Search_conditionContext ctx) {
+    @Override
+    public ValueExpression visitFunction_call(TSqlParser.Function_callContext ctx) {
+        if (ctx.scalar_function_name() == null) {
+            throw new RuntimeException("Grammar expression (`"+ctx.getText() +"`) not supported yet!");
+        }
+
+        TSqlParser.Expression_listContext expression_listContext = ctx.expression_list();
+        if (expression_listContext == null) {
+            return new SQLFunction(ctx.scalar_function_name().getText());
+        } else {
+            List<ValueExpression> arguments = visitExpression_list(expression_listContext);
+            return new SQLFunction(ctx.scalar_function_name().getText(), arguments);
+        }
+    }
+
+    @Override
+    public List<ValueExpression> visitExpression_list(TSqlParser.Expression_listContext ctx) {
+        return ctx.expression().stream().map(this::visitExpression).toList();
+    }
+
+    @Override
+    public BooleanExpression visitSearch_condition(TSqlParser.Search_conditionContext ctx) {
         if (ctx.AND() != null)
             return new PredicateOperation(
                 PredicateOperation.PredicateOperator.AND,
                 visitSearch_condition(ctx.search_condition(0)),
                 visitSearch_condition(ctx.search_condition(1)));
-        if (ctx.OR() != null)  {
+        if (ctx.OR() != null) {
             throw new RuntimeException("Grammar expression (`OR`) not supported yet!");
             //TODO: V2
             /*return new PredicateOperation(
@@ -86,27 +93,23 @@ public class TSQLExpressionGrammarVisitorImpl  extends TSqlExpressionParserBaseV
         return expression;
     }
 
-    public Predicate visitPredicate(TSqlExpressionParser.PredicateContext ctx) {
+    @Override
+    public Predicate visitPredicate(TSqlParser.PredicateContext ctx) {
         return new ComparisonPredicate(
             visitComparison_operator(ctx.comparison_operator()),
-            visitCheck_value_expression(ctx.check_value_expression(0)),
-            visitCheck_value_expression(ctx.check_value_expression(1)));
+            visitExpression(ctx.expression(0)),
+            visitExpression(ctx.expression(1)));
     }
 
-    public ComparisonPredicate.ComparisonOperator visitComparison_operator(TSqlExpressionParser.Comparison_operatorContext ctx) {
+    @Override
+    public ComparisonPredicate.ComparisonOperator visitComparison_operator(TSqlParser.Comparison_operatorContext ctx) {
         if (Objects.equals(ctx.getText(), "=")) return ComparisonPredicate.ComparisonOperator.EQ;
         //TODO: V2
         throw new RuntimeException("Grammar expression of different comparison predicates not supported yet!");
     }
 
-    public ValueExpression visitCheck_value_expression(TSqlExpressionParser.Check_value_expressionContext ctx) {
-        if (ctx.primitive_expression() != null) return visitPrimitive_expression(ctx.primitive_expression());
-        if (ctx.column_name != null) return new ColumnReference(this.contextTableName, visitId_(ctx.column_name));
-        if (ctx.check_value_expression() != null) return visitCheck_value_expression(ctx.check_value_expression());
-        throw new RuntimeException("Expression not supported by grammar.");
-    }
-
-    public String visitId_(TSqlExpressionParser.Id_Context ctx) {
+    @Override
+    public String visitId_(TSqlParser.Id_Context ctx) {
         return ctx.getText();
     }
 }

@@ -16,7 +16,7 @@ CREATE SCHEMA ref_test_schema
 GO
 CREATE TABLE ref_test_schema.test_referenced_table (
   pk1 BIT,
-  pk2 CHAR(8),
+  pk2 CHAR(255),
   CONSTRAINT test_ref_pk PRIMARY KEY (pk1, pk2)
 );
 GO
@@ -31,7 +31,7 @@ CREATE TABLE test_schema.test_referenced_table (
 GO
 CREATE TABLE test_schema.test (
   btAttr BIT,
-  chAttr CHAR(8),
+  chAttr CHAR(255) DEFAULT NEWID(),
   dtAttr DATETIME2(7),
   dpAttr DOUBLE PRECISION,
   flAttr FLOAT(16),

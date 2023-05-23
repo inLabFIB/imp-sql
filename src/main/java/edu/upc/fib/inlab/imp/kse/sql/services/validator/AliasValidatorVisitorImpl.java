@@ -16,10 +16,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Alias
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Asterisk;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.SelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.*;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnReference;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveFloat;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveString;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.*;
@@ -312,6 +309,11 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
 
     @Override
     public <T> T visit(SQLDateTime dt) {
+        throw new RuntimeException("Visitor shouldn't reach this expression.");
+    }
+
+    @Override
+    public <T> T visit(SQLFunction f) {
         throw new RuntimeException("Visitor shouldn't reach this expression.");
     }
 }

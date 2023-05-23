@@ -1,8 +1,8 @@
 package edu.upc.fib.inlab.imp.kse.sql.services.fetcher.sql_server;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
-import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlExpressionParser;
 import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlLexer;
+import edu.upc.fib.inlab.imp.kse.sql.parser.sql_server.TSqlParser;
 import edu.upc.fib.inlab.imp.kse.sql.services.builders.TableSetBuilder;
 import edu.upc.fib.inlab.imp.kse.sql.services.fetcher.DatabaseFetcher;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
@@ -92,7 +92,8 @@ public class SQLServerFetcher implements DatabaseFetcher {
             assert type != null;
             SQLDataType dataType = createDataTypeForName(type, length, precision, scale);
 
-            tableSetBuilder.addAttribute(schemasMap.get(schemaName), tableName, attrName, dataType, nullable, valueExpression == null ? null : parseValueExpression(valueExpression, tableName));
+            ValueExpression defaultExpression = valueExpression == null ? null : parseValueExpression(valueExpression, tableName);
+            tableSetBuilder.addAttribute(schemasMap.get(schemaName), tableName, attrName, dataType, nullable, defaultExpression);
         }
     }
 
@@ -195,8 +196,7 @@ public class SQLServerFetcher implements DatabaseFetcher {
     }
 
     private ValueExpression parseValueExpression(String valueExpression, String tableName) {
-        TSQLExpressionGrammarVisitorImpl visitor = visitInputExpression(valueExpression, tableName);
-        return visitor.getValueExpression();
+        return visitInputExpression(valueExpression, tableName);
     }
 
     public void readChecks(Map<String, SchemaReference> schemasMap, TableSetBuilder tableSetBuilder) {
@@ -216,24 +216,35 @@ public class SQLServerFetcher implements DatabaseFetcher {
             String constraintName = resultSet.getString("constraint_name");
             String booleanExpression = resultSet.getString("value");
 
-            tableSetBuilder.addCheckConstraint(schemasMap.get(schemaName), tableName, new Check(constraintName, parseBooleanExpression(booleanExpression, tableName)));
+            BooleanExpression expression = parseBooleanExpression(booleanExpression, tableName);
+            tableSetBuilder.addCheckConstraint(schemasMap.get(schemaName), tableName, new Check(constraintName, expression));
         }
     }
 
     private BooleanExpression parseBooleanExpression(String booleanExpression, String tableName) {
-        TSQLExpressionGrammarVisitorImpl visitor = visitInputExpression(booleanExpression, tableName);
-        return visitor.getBooleanExpression();
+        return visitBooleanExpression(booleanExpression, tableName);
     }
 
-    private TSQLExpressionGrammarVisitorImpl visitInputExpression(String booleanExpression, String tableName) {
+    private ValueExpression visitInputExpression(String booleanExpression, String tableName) {
         CodePointCharStream input = CharStreams.fromString(booleanExpression);
         TSqlLexer lexer = new TSqlLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        TSqlExpressionParser parser = new TSqlExpressionParser(tokens);
+        TSqlParser parser = new TSqlParser(tokens);
 
-        TSqlExpressionParser.ExpressionContext tree = parser.expression();
+        TSqlParser.ExpressionContext tree = parser.expression();
         TSQLExpressionGrammarVisitorImpl visitor = new TSQLExpressionGrammarVisitorImpl(tableName);
-        visitor.visit(tree);
-        return visitor;
+        return visitor.visitExpression(tree);
     }
+
+    private BooleanExpression visitBooleanExpression(String booleanExpression, String tableName) {
+        CodePointCharStream input = CharStreams.fromString(booleanExpression);
+        TSqlLexer lexer = new TSqlLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        TSqlParser parser = new TSqlParser(tokens);
+
+        TSqlParser.Search_conditionContext tree = parser.search_condition();
+        TSQLExpressionGrammarVisitorImpl visitor = new TSQLExpressionGrammarVisitorImpl(tableName);
+        return visitor.visitSearch_condition(tree);
+    }
+
 }

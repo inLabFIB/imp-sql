@@ -1,4 +1,4 @@
-// Generated from C:/Users/marti.juanola/IdeaProjects/imp-sql/src/main/antlr4/edu.upc.fib.inlab.imp.kse.sql.parser/sql_server\TSqlLexer.g4 by ANTLR 4.12.0
+// Generated from C:/Users/jose.francisco.cres/Development/mdd/imp-sql/src/main/antlr4/edu.upc.fib.inlab.imp.kse.sql.parser/sql_server\TSqlLexer.g4 by ANTLR 4.12.0
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
