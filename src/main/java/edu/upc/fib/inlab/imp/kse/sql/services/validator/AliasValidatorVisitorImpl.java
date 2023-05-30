@@ -3,10 +3,7 @@ package edu.upc.fib.inlab.imp.kse.sql.services.validator;
 import edu.upc.fib.inlab.imp.kse.sql.services.printer.SQLServerPrinter;
 import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.*;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ComparisonPredicate;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ExistsPredicate;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.NotOperation;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.PredicateOperation;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.Check;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.ForeignKey;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.PrimaryKey;
@@ -177,6 +174,16 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         List<ColumnReference> required = new ArrayList<>();
         required.addAll(cp.getLeftExpression().visit(this));
         required.addAll(cp.getRightExpression().visit(this));
+        return required;
+    }
+
+    @Override
+    public List<ColumnReference> visit(ValueListInPredicate vlip) {
+        List<ColumnReference> required = new ArrayList<>();
+        required.addAll(vlip.getMainExpression().visit(this));
+        for (ValueExpression ve : vlip.getValueList()) {
+            required.addAll(ve.visit(this));
+        }
         return required;
     }
 

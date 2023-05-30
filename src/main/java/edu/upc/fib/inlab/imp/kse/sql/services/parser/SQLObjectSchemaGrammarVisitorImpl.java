@@ -160,6 +160,10 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
 
     public Predicate visitPredicate(TSqlParser.PredicateContext ctx) {
         if (ctx.EXISTS() != null) return new ExistsPredicate(visitSubquery(ctx.subquery()));
+        else if (ctx.IN() != null) {
+            //TODO: V2
+            throw new RuntimeException("Grammar expression of different predicates not supported yet!");
+        }
         else if (ctx.comparison_operator() != null && ctx.subquery() == null) {
             return new ComparisonPredicate(
                 visitComparison_operator(ctx.comparison_operator()),

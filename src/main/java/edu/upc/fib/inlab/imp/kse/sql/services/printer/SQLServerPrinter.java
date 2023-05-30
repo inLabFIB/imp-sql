@@ -10,6 +10,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
 public class SQLServerPrinter extends SQLPrinter {
@@ -77,6 +78,15 @@ public class SQLServerPrinter extends SQLPrinter {
             default -> " " + cp.getOperator().toString() + " ";
         };
         return cp.getLeftExpression().<String>visit(this) + operation + cp.getRightExpression().<String>visit(this);
+    }
+
+    @Override
+    public String visit(ValueListInPredicate vlip) {
+        List<ValueExpression> valueList = vlip.getValueList();
+        String valuesListString = valueList.stream()
+            .map(e -> e.<String>visit(this))
+            .collect(Collectors.joining(", "));
+        return vlip.getMainExpression().visit(this) + " IN ( " + valuesListString + " )";
     }
 
     @Override

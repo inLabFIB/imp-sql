@@ -43,10 +43,10 @@ public class ForeignKey extends TableConstraint {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
         ForeignKey that = (ForeignKey) o;
 
-        if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null) return false;
         if (!fkAttributes.equals(that.fkAttributes)) return false;
         if (!pkReferenceTable.equals(that.pkReferenceTable)) return false;
         return pkReference.equals(that.pkReference);
@@ -54,7 +54,7 @@ public class ForeignKey extends TableConstraint {
 
     @Override
     public int hashCode() {
-        int result = getName() != null ? getName().hashCode() : 0;
+        int result = super.hashCode();
         result = 31 * result + fkAttributes.hashCode();
         result = 31 * result + pkReferenceTable.hashCode();
         result = 31 * result + pkReference.hashCode();

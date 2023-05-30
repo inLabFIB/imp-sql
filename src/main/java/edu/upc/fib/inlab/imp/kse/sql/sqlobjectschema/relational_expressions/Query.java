@@ -12,4 +12,6 @@ public abstract class Query extends AliasableRelationalExpression implements Val
     }
 
     public abstract List<SelectItem> getSelectClause();
+
+
 }

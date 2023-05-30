@@ -1,10 +1,7 @@
 package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.*;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ComparisonPredicate;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ExistsPredicate;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.NotOperation;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.PredicateOperation;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.Check;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.ForeignKey;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.PrimaryKey;
@@ -54,4 +51,5 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(SQLNumeric n);
     <T> T visit(SQLDateTime dt);
     <T> T visit(SQLFunction f);
+    <T> T visit(ValueListInPredicate vlip);
 }

@@ -82,7 +82,7 @@ public class SQLServerFetcherIT {
     public static Stream<Arguments> attributesProvider() {
         return Stream.of(
             Arguments.of(named("SQLBit", new Attribute("btAttr", new SQLBit()))),
-                Arguments.of(named("SQLChar with default NEWID()", new Attribute("chAttr", new SQLChar(255), false, new SQLFunction("newid")))), // Not null since it is a PK
+            Arguments.of(named("SQLChar with default NEWID()", new Attribute("chAttr", new SQLChar(255), false, new SQLFunction("newid")))), // Not null since it is a PK
             Arguments.of(named("SQLDateTime", new Attribute("dtAttr", new SQLDateTime(7)))),
             Arguments.of(named("SQLFloat", new Attribute("dpAttr", new SQLFloat(53)))), // SQLServer converts double precision to float(53)
             Arguments.of(named("SQLReal", new Attribute("flAttr", new SQLReal()))),  // SQLServer converts floats with precision to reals

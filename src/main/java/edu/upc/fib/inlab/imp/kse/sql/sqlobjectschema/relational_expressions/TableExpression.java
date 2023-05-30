@@ -87,28 +87,6 @@ public class TableExpression extends Query {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        TableExpression that = (TableExpression) o;
-
-        if (getAlias() != null ? !getAlias().equals(that.getAlias()) : that.getAlias() != null) return false;
-        if (!selectClause.equals(that.selectClause)) return false;
-        if (!Objects.equals(fromClause, that.fromClause)) return false;
-        return Objects.equals(whereClause, that.whereClause);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = getAlias() != null ? getAlias().hashCode() : 0;
-        result = 31 * result + selectClause.hashCode();
-        result = 31 * result + (fromClause != null ? fromClause.hashCode() : 0);
-        result = 31 * result + (whereClause != null ? whereClause.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public List<ColumnReference> getOfferedReferences() {
         List<ColumnReference> result = new ArrayList<>();
 
@@ -131,5 +109,29 @@ public class TableExpression extends Query {
     @Override
     public String computeDefaultColumnAlias() {
         return getAlias();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        TableExpression that = (TableExpression) o;
+
+        if (!selectClause.equals(that.selectClause)) return false;
+        if (!Objects.equals(fromClause, that.fromClause)) return false;
+        if (!Objects.equals(whereClause, that.whereClause)) return false;
+        return Objects.equals(fromClauseTerminalExpressions, that.fromClauseTerminalExpressions);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + selectClause.hashCode();
+        result = 31 * result + (fromClause != null ? fromClause.hashCode() : 0);
+        result = 31 * result + (whereClause != null ? whereClause.hashCode() : 0);
+        result = 31 * result + (fromClauseTerminalExpressions != null ? fromClauseTerminalExpressions.hashCode() : 0);
+        return result;
     }
 }

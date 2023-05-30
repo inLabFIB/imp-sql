@@ -23,22 +23,22 @@ public class Check extends TableConstraint {
         return visitor.visit(this);
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
         Check check = (Check) o;
 
-        if (getName() != null ? !getName().equals(check.getName()) : check.getName() != null) return false;
-        return expression.equals(check.expression);
+        return Objects.equals(expression, check.expression);
     }
 
     @Override
     public int hashCode() {
-        int result = getName() != null ? getName().hashCode() : 0;
-        result = 31 * result + expression.hashCode();
+        int result = super.hashCode();
+        result = 31 * result + (expression != null ? expression.hashCode() : 0);
         return result;
     }
-
 }

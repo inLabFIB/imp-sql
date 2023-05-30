@@ -3,7 +3,8 @@ package edu.upc.fib.inlab.imp.kse.sql.services.validator;
 import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
 import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.InvalidColumnReferenceException;
 import edu.upc.fib.inlab.imp.kse.sql.services.validator.exceptions.InvalidOnJoinColumReferenceException;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.*;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -210,5 +211,10 @@ public class AliasValidatorTest {
         SQLObjectSchema schema = parser.getSQLObjectSchema();
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
         assertThrows(InvalidOnJoinColumReferenceException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+    }
+
+    @Disabled
+    @Test
+    public void InPredicateIsCorrectlyVerified() {
     }
 }

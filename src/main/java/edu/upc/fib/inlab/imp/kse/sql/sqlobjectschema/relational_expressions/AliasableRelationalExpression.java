@@ -1,5 +1,7 @@
 package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions;
 
+import java.util.Objects;
+
 public abstract class AliasableRelationalExpression implements RelationalExpression {
 
     private final String alias;
@@ -12,5 +14,21 @@ public abstract class AliasableRelationalExpression implements RelationalExpress
 
     public String getAlias() {
         return alias;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AliasableRelationalExpression that = (AliasableRelationalExpression) o;
+
+        return Objects.equals(alias, that.alias);
+    }
+
+    @Override
+    public int hashCode() {
+        return alias != null ? alias.hashCode() : 0;
     }
 }

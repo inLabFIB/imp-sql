@@ -30,16 +30,16 @@ public class Unique extends TableConstraint {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
         Unique unique = (Unique) o;
 
-        if (getName() != null ? !getName().equals(unique.getName()) : unique.getName() != null) return false;
         return attributes.equals(unique.attributes);
     }
 
     @Override
     public int hashCode() {
-        int result = getName() != null ? getName().hashCode() : 0;
+        int result = super.hashCode();
         result = 31 * result + attributes.hashCode();
         return result;
     }

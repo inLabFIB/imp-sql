@@ -284,4 +284,5 @@ public class ViewsSQLObjectSchemaParserTest {
 
         assertThat("Parsed view does not equal expected view", schema.getViews().get(0).equals(expectedView));
     }
+
 }

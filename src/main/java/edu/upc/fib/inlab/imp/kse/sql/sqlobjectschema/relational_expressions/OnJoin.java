@@ -43,19 +43,17 @@ public class OnJoin extends JoinOperation {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
         OnJoin onJoin = (OnJoin) o;
 
-        if (!getLeftExpression().equals(onJoin.getLeftExpression())) return false;
-        if (!getRightExpression().equals(onJoin.getRightExpression())) return false;
         if (operator != onJoin.operator) return false;
         return Objects.equals(onClause, onJoin.onClause);
     }
 
     @Override
     public int hashCode() {
-        int result = getLeftExpression().hashCode();
-        result = 31 * result + getRightExpression().hashCode();
+        int result = super.hashCode();
         result = 31 * result + operator.hashCode();
         result = 31 * result + (onClause != null ? onClause.hashCode() : 0);
         return result;

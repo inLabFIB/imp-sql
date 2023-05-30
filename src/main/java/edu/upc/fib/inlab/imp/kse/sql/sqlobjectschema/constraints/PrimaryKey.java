@@ -29,16 +29,16 @@ public class PrimaryKey extends TableConstraint {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
         PrimaryKey that = (PrimaryKey) o;
 
-        if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null) return false;
         return pkAttributes.equals(that.pkAttributes);
     }
 
     @Override
     public int hashCode() {
-        int result = getName() != null ? getName().hashCode() : 0;
+        int result = super.hashCode();
         result = 31 * result + pkAttributes.hashCode();
         return result;
     }

@@ -1,10 +1,7 @@
 package edu.upc.fib.inlab.imp.kse.sql.services.printer;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.*;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ComparisonPredicate;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ExistsPredicate;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.NotOperation;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.PredicateOperation;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.Check;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.ForeignKey;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.PrimaryKey;
@@ -308,6 +305,36 @@ class SQLServerPrinterTest {
             ));
 
         String expectedView = "CREATE VIEW db.schema.viewName AS ( SELECT 1 );";
+        MatcherAssert.assertThat(view.visit(new SQLServerPrinter()), is(expectedView));
+    }
+
+    @Test
+    public void printInPredicate() {
+        View view = new View(
+            "viewName",
+            new SchemaReference("db","schema"),
+            new TableExpression(
+                List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                new TableReference(new Table("t", List.of(new Attribute("at1", new SQLInt())))),
+                new ValueListInPredicate(new SQLPrimitiveInteger(1), List.of(new SQLPrimitiveInteger(1), new SQLPrimitiveInteger(2)))
+            ));
+
+        String expectedView = "CREATE VIEW db.schema.viewName AS ( SELECT 1 FROM t WHERE 1 IN ( 1, 2 ) );";
+        MatcherAssert.assertThat(view.visit(new SQLServerPrinter()), is(expectedView));
+    }
+
+    @Test
+    public void printInPredicate2() {
+        View view = new View(
+            "viewName",
+            new SchemaReference("db","schema"),
+            new TableExpression(
+                List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                new TableReference(new Table("t", List.of(new Attribute("at1", new SQLInt())))),
+                new ValueListInPredicate(new ColumnReference("t", "at1"), List.of(new SQLPrimitiveInteger(1), new SQLPrimitiveInteger(2)))
+            ));
+
+        String expectedView = "CREATE VIEW db.schema.viewName AS ( SELECT 1 FROM t WHERE t.at1 IN ( 1, 2 ) );";
         MatcherAssert.assertThat(view.visit(new SQLServerPrinter()), is(expectedView));
     }
 }

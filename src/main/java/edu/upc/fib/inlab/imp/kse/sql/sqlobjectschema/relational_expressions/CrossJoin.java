@@ -18,22 +18,4 @@ public class CrossJoin extends JoinOperation {
         return visitor.visit(this);
     }
 
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        CrossJoin crossJoin = (CrossJoin) o;
-
-        if (!getLeftExpression().equals(crossJoin.getLeftExpression())) return false;
-        return getRightExpression().equals(crossJoin.getRightExpression());
-    }
-
-    @Override
-    public int hashCode() {
-        int result = getLeftExpression().hashCode();
-        result = 31 * result + getRightExpression().hashCode();
-        return result;
-    }
 }
