@@ -567,7 +567,9 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
             case "=" -> ComparisonPredicate.ComparisonOperator.EQ;
             case "<>" -> ComparisonPredicate.ComparisonOperator.NEQ;
             case "<" -> ComparisonPredicate.ComparisonOperator.LT;
+            case "<=" -> ComparisonPredicate.ComparisonOperator.LEQ;
             case ">" -> ComparisonPredicate.ComparisonOperator.GT;
+            case ">=" -> ComparisonPredicate.ComparisonOperator.GEQ;
             default ->
                 //TODO: V3
                 throw new RuntimeException("Grammar expression of different comparison predicates not supported yet!");

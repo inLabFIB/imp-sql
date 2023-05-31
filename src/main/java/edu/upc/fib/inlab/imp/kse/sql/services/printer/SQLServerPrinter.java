@@ -74,7 +74,9 @@ public class SQLServerPrinter extends SQLPrinter {
             case EQ -> " = ";
             case NEQ -> " <> ";
             case LT -> " < ";
+            case LEQ -> " <= ";
             case GT -> " > ";
+            case GEQ -> " >= ";
             default -> " " + cp.getOperator().toString() + " ";
         };
         return cp.getLeftExpression().<String>visit(this) + operation + cp.getRightExpression().<String>visit(this);

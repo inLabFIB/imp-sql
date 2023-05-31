@@ -11,7 +11,9 @@ public class ComparisonPredicate extends Predicate {
         EQ,
         NEQ,
         LT,
-        GT
+        LEQ,
+        GT,
+        GEQ
     }
     private final ComparisonOperator operator;
 
