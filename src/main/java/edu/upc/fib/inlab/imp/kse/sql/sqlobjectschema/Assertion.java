@@ -68,4 +68,9 @@ public class Assertion implements Constraint {
         result = 31 * result + booleanExpression.hashCode();
         return result;
     }
+
+    public boolean hasSameIdentifier(Assertion a) {
+        return assertionName.equals(a.assertionName)
+            && Objects.equals(schemaReference, a.schemaReference);
+    }
 }

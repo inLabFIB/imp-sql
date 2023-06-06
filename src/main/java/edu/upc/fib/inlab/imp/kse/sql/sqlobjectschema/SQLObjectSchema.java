@@ -56,16 +56,22 @@ public class SQLObjectSchema {
         tables.add(table);
     }
 
-    public void addTables(List<Table> tables) {
-        for (Table t : tables) this.addTable(t);
-    }
-
     public void addView(View view) {
+        for (View existingView : views)
+            if (existingView.hasSameIdentifier(view))
+                throw new SQLObjectAlreadyExistsException("View already exists with same full name.");
         views.add(view);
     }
 
     public void addAssertion(Assertion assertion) {
+        for (Assertion existingAssertion : assertions)
+            if (existingAssertion.hasSameIdentifier(assertion))
+                throw new SQLObjectAlreadyExistsException("Assertion already exists with same full name.");
         assertions.add(assertion);
+    }
+
+    public void addTables(List<Table> tables) {
+        for (Table t : tables) this.addTable(t);
     }
 
     /** PRINTER **/

@@ -75,4 +75,9 @@ public class View implements SQLObjectSchemaEntity {
         result = 31 * result + query.hashCode();
         return result;
     }
+
+    public boolean hasSameIdentifier(View v) {
+        return viewName.equals(v.viewName)
+            && Objects.equals(schemaReference, v.schemaReference);
+    }
 }
