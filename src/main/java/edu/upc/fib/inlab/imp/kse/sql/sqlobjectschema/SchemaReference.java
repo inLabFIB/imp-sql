@@ -1,6 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema;
 
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaEntity;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaValueObject;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.Objects;
@@ -9,7 +9,7 @@ import java.util.Objects;
  * String convention: all the names stored must not contain beginning and ending brackets or commas or any kind of
  * limiting character. This will be added in the printer if called.
  */
-public class SchemaReference implements SQLObjectSchemaEntity {
+public class SchemaReference implements SQLObjectSchemaValueObject {
 
     private final String serverName;
     private final String databaseName;

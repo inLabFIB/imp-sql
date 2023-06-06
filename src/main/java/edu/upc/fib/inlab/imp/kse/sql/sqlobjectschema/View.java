@@ -1,14 +1,14 @@
 package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.Query;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaEntity;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaValueObject;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class View implements SQLObjectSchemaEntity {
+public class View implements SQLObjectSchemaValueObject {
 
     private final String viewName;
     private final SchemaReference schemaReference;

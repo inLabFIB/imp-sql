@@ -2,12 +2,12 @@ package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.MissingReferencedObjectException;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaEntity;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaValueObject;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.*;
 
-public class Table implements SQLObjectSchemaEntity {
+public class Table implements SQLObjectSchemaValueObject {
 
     private final String tableName;
     /**

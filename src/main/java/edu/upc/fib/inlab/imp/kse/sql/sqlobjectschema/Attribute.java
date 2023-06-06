@@ -2,12 +2,12 @@ package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLDataType;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ValueExpression;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaEntity;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaValueObject;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.Objects;
 
-public class Attribute implements SQLObjectSchemaEntity {
+public class Attribute implements SQLObjectSchemaValueObject {
 
     private final String attributeName;
     private final SQLDataType type;
