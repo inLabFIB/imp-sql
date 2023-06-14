@@ -17,6 +17,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimit
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveString;
 import edu.upc.fib.inlab.imp.kse.sql.utils.SchemasProvider;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -203,6 +204,44 @@ public class ViewsSQLObjectSchemaParserTest {
             ));
 
         assertThat("Parsed view does not equal expected view", schema.getViews().get(0).equals(expectedView));
+    }
+
+    @Test
+    public void parseSelectWithMultipleCrossJoins() {
+        // Object parsed from input string
+        String selectWithJoins = """
+            CREATE VIEW viewName AS
+                SELECT *
+                FROM A
+                CROSS JOIN B
+                CROSS JOIN C;
+            """;
+
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(SchemasProvider.getJoinsSchemaStatements());
+        parser.parse(selectWithJoins);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        List<Table> expectedSchemaTables = SchemasProvider.getJoinsSchemaTables();
+
+        // Object built directly in java
+        View expectedView = new View(
+            "viewName",
+            new TableExpression(
+                List.of(new Asterisk()),
+                new CrossJoin(
+                    new CrossJoin(
+                        new TableReference(expectedSchemaTables.get(0)),
+                        new TableReference(expectedSchemaTables.get(1))
+                    ),
+                    new TableReference(expectedSchemaTables.get(2))
+                ),
+                null
+            ));
+
+        AssertionsForClassTypes.assertThat(schema.getViews().get(0))
+            .usingRecursiveComparison()
+            .isEqualTo(expectedView);
     }
 
     //PREDICATES (not and,...)
