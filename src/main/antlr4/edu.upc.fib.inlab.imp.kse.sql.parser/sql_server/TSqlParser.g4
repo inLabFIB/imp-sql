@@ -470,8 +470,6 @@ predicate
     | expression IS null_notnull
     ;
 
-// Changed union rule to sql_union to avoid union construct with C++ target.  Issue reported by person who generates into C++.  This individual reports change causes generated code to work
-
 query_expression
     : query_specification select_order_by_clause? unions+=sql_union* //if using top, order by can be on the "top" side of union :/
     | '(' query_expression ')' (UNION ALL? query_expression)?

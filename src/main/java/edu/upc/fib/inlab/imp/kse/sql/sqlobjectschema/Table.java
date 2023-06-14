@@ -2,6 +2,7 @@ package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.MissingReferencedObjectException;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.RepeatedAttributeNamesInSameTable;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaValueObject;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 
@@ -37,7 +38,7 @@ public class Table implements SQLObjectSchemaValueObject {
 
         Set<String> seenAttributes = new HashSet<>();
         this.attributes.forEach(a -> seenAttributes.add(a.getName()));
-        if (seenAttributes.size() < this.attributes.size()) throw new RuntimeException("Repeated attribute names in table definition");
+        if (seenAttributes.size() < this.attributes.size()) throw new RepeatedAttributeNamesInSameTable();
     }
 
     public Table(String tableName, SchemaReference schemaReference, List<Attribute> attributes) {
