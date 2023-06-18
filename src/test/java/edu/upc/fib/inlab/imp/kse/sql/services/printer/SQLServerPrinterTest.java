@@ -337,4 +337,54 @@ class SQLServerPrinterTest {
         String expectedView = "CREATE VIEW db.schema.viewName AS ( SELECT 1 FROM t WHERE t.at1 IN ( 1, 2 ) );";
         MatcherAssert.assertThat(view.visit(new SQLServerPrinter()), is(expectedView));
     }
+
+    @Test
+    public void printAssertionWithOr() {
+        Assertion assertion = new Assertion(
+            "assertionName",
+            new PredicateOperation(
+                PredicateOperation.PredicateOperator.OR,
+                new ComparisonPredicate(
+                    ComparisonPredicate.ComparisonOperator.EQ,
+                    new SQLPrimitiveInteger(1),
+                    new SQLPrimitiveInteger(1)
+                ),
+                new ComparisonPredicate(
+                    ComparisonPredicate.ComparisonOperator.NEQ,
+                    new SQLPrimitiveInteger(1),
+                    new SQLPrimitiveInteger(1)
+                )
+            )
+        );
+
+        String expectedAssertion = "CREATE ASSERTION assertionName CHECK ( 1 = 1 OR 1 <> 1 );";
+        MatcherAssert.assertThat(assertion.visit(new SQLServerPrinter()), is(expectedAssertion));
+    }
+
+    @Test
+    public void printOrInWhere() {
+        View view = new View(
+            "viewName",
+            new SchemaReference("db","schema"),
+            new TableExpression(
+                List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                new TableReference(new Table("t", List.of(new Attribute("at1", new SQLInt())))),
+                new PredicateOperation(
+                    PredicateOperation.PredicateOperator.OR,
+                    new ComparisonPredicate(
+                        ComparisonPredicate.ComparisonOperator.EQ,
+                        new SQLPrimitiveInteger(1),
+                        new SQLPrimitiveInteger(1)
+                    ),
+                    new ComparisonPredicate(
+                        ComparisonPredicate.ComparisonOperator.EQ,
+                        new SQLPrimitiveInteger(1),
+                        new SQLPrimitiveInteger(1)
+                    )
+                )
+            ));
+
+        String expectedView = "CREATE VIEW db.schema.viewName AS ( SELECT 1 FROM t WHERE 1 = 1 OR 1 = 1 );";
+        MatcherAssert.assertThat(view.visit(new SQLServerPrinter()), is(expectedView));
+    }
 }

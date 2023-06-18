@@ -2,8 +2,10 @@ package edu.upc.fib.inlab.imp.kse.sql.services.parser;
 
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Assertion;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ComparisonPredicate;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.ExistsPredicate;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.NotOperation;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.PredicateOperation;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.CrossJoin;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.TableExpression;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.TableReference;
@@ -78,6 +80,36 @@ public class AssertionsSQLObjectSchemaParserTest {
                     null
                 )
             ))
+        );
+
+        assertThat("Parsed assertion does not equal expected assertion",
+            schema.getAssertions().get(0).equals(expectedAssertion));
+    }
+
+    @Test
+    public void parseCreateAssertionWithOrOperation() {
+        // Object parsed from input string
+        String basicAssertion = "CREATE ASSERTION assertionName CHECK ( 1=1 OR 1<>1 )";
+        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        parser.parse(basicAssertion);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        // Object built directly in java
+        Assertion expectedAssertion = new Assertion(
+            "assertionName",
+            new PredicateOperation(
+                PredicateOperation.PredicateOperator.OR,
+                new ComparisonPredicate(
+                    ComparisonPredicate.ComparisonOperator.EQ,
+                    new SQLPrimitiveInteger(1),
+                    new SQLPrimitiveInteger(1)
+                ),
+                new ComparisonPredicate(
+                    ComparisonPredicate.ComparisonOperator.NEQ,
+                    new SQLPrimitiveInteger(1),
+                    new SQLPrimitiveInteger(1)
+                )
+            )
         );
 
         assertThat("Parsed assertion does not equal expected assertion",

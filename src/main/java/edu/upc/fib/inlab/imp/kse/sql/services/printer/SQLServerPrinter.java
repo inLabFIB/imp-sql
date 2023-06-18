@@ -102,6 +102,7 @@ public class SQLServerPrinter extends SQLPrinter {
     public String visit(PredicateOperation po) {
         String operation = switch (po.getOperator()) {
             case AND -> " AND ";
+            case OR -> " OR ";
             default -> " " + po.getOperator().toString() + " ";
         };
         return po.getLeftExpression().<String>visit(this) + operation + po.getRightExpression().<String>visit(this);

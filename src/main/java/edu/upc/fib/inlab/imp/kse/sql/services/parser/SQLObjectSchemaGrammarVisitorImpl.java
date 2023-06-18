@@ -138,12 +138,10 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
                 visitSearch_condition(ctx.search_condition(1)));
         }
         else if (ctx.OR() != null)  {
-            throw new RuntimeException("Grammar expression (`OR`) not supported yet!");
-            //TODO: V2
-            /*return new PredicateOperation(
+            return new PredicateOperation(
                 PredicateOperation.PredicateOperator.OR,
                 visitSearch_condition(ctx.search_condition(0)),
-                visitSearch_condition(ctx.search_condition(1)));*/
+                visitSearch_condition(ctx.search_condition(1)));
         }
         else {
             BooleanExpression expression;
