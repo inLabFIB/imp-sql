@@ -12,6 +12,8 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.SetOperation.SetOperator.UNION;
+
 @SuppressWarnings("unchecked")
 public class SQLServerPrinter extends SQLPrinter {
 
@@ -55,6 +57,25 @@ public class SQLServerPrinter extends SQLPrinter {
         };
         return j.getLeftExpression().<String>visit(this) + operation + j.getRightExpression().<String>visit(this) +
             " ON ( " + j.getOnClause().<String>visit(this) + " )";
+    }
+
+    @Override
+    public String visit(SetOperation so) {
+        if (so.getOperator() != UNION && so.returnsDuplicates()) throw new RuntimeException("Can't translate a EXCEPT/INTERSECT clause with ALL modifier.");
+        if (so.getAlias() != null) throw new RuntimeException("Can't translate a set operation with alias.");
+
+        String operator = switch (so.getOperator()) {
+            case UNION -> " UNION ";
+            case EXCEPT -> " EXCEPT ";
+            case INTERSECT -> " INTERSECT ";
+            default -> " " + so.getOperator().toString() + " ";
+        };
+
+        if (so.returnsDuplicates()) operator += "ALL ";
+        String union = so.getLeftExpression().visit(this) + operator + so.getRightExpression().visit(this);
+
+        if (so.getAlias() != null) return "( " + union + " ) AS " + so.getAlias();
+        return "( " + union + " )";
     }
 
     @Override

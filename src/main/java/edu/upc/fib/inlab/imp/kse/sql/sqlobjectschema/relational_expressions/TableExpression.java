@@ -61,7 +61,6 @@ public class TableExpression extends Query {
         return tempFromClauseTerminalExpressions;
     }
 
-    @Override
     public List<SelectItem> getSelectClause() {
         return new ArrayList<>(selectClause);
     }

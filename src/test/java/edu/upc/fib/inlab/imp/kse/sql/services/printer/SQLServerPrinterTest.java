@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.SetOperation.SetOperator.UNION;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -386,5 +387,28 @@ class SQLServerPrinterTest {
 
         String expectedView = "CREATE VIEW db.schema.viewName AS ( SELECT 1 FROM t WHERE 1 = 1 OR 1 = 1 );";
         MatcherAssert.assertThat(view.visit(new SQLServerPrinter()), is(expectedView));
+    }
+
+    @Test
+    public void unionOfSelects() {
+        Assertion assertion = new Assertion(
+            "assertionName",
+            new NotOperation(new ExistsPredicate(
+                new SetOperation(
+                    UNION,
+                    true,
+                    new TableExpression(
+                        List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                        null, null
+                    ),
+                    new TableExpression(
+                        List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                        null, null
+                    ))
+            ))
+        );
+
+        String expectedAssertion = "CREATE ASSERTION assertionName CHECK ( NOT ( EXISTS ( ( SELECT 1 ) UNION ALL ( SELECT 1 ) ) ) );";
+        MatcherAssert.assertThat(assertion.visit(new SQLServerPrinter()), is(expectedAssertion));
     }
 }

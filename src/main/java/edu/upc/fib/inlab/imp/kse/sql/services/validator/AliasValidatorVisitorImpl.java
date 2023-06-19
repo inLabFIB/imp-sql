@@ -165,6 +165,12 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
     }
 
     @Override
+    public <T> T visit(SetOperation so) {
+        //TODO: implement this
+        throw new RuntimeException("Validator doesn't work yet with setOperations");
+    }
+
+    @Override
     public List<ColumnReference> visit(TableReference tr) {
         return new ArrayList<>();
     }

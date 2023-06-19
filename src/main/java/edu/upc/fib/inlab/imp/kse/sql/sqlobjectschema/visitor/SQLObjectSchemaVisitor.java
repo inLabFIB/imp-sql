@@ -6,10 +6,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.Check;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.ForeignKey;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.PrimaryKey;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.Unique;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.CrossJoin;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.OnJoin;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.TableExpression;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.TableReference;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.Asterisk;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.*;
@@ -52,4 +49,5 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(SQLDateTime dt);
     <T> T visit(SQLFunction f);
     <T> T visit(ValueListInPredicate vlip);
+    <T> T visit(SetOperation so);
 }
