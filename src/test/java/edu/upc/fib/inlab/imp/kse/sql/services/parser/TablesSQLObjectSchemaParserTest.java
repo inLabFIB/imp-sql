@@ -13,7 +13,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.MissingReference
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.SQLObjectAlreadyExistsException;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLBit;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLFloat;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLInt;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLInteger;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLVarchar;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.ColumnReference;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLFunction;
@@ -101,7 +101,7 @@ public class TablesSQLObjectSchemaParserTest {
             Table expectedTable = new Table(
                 "name",
                 List.of(
-                    new Attribute("col1", new SQLInt()),
+                    new Attribute("col1", new SQLInteger()),
                     new Attribute("col2", new SQLFloat()))
             );
 
@@ -138,8 +138,8 @@ public class TablesSQLObjectSchemaParserTest {
             parser.parse(createTable);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-            Attribute a1 = new Attribute("col1", new SQLInt(), new SQLPrimitiveInteger(1));
-            Attribute a2 = new Attribute("col2", new SQLInt(), new SQLFunction("MYFUNCTION"));
+            Attribute a1 = new Attribute("col1", new SQLInteger(), new SQLPrimitiveInteger(1));
+            Attribute a2 = new Attribute("col2", new SQLInteger(), new SQLFunction("MYFUNCTION"));
 
             Table expectedTable = new Table(
                 "name",
@@ -168,8 +168,8 @@ public class TablesSQLObjectSchemaParserTest {
             parser.parse(createTable);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-            Attribute a1 = new Attribute("col1", new SQLInt(), false); // It is a PK.
-            Attribute a2 = new Attribute("col2", new SQLInt());
+            Attribute a1 = new Attribute("col1", new SQLInteger(), false); // It is a PK.
+            Attribute a2 = new Attribute("col2", new SQLInteger());
 
             Table expectedTable = new Table(
                 "name",
@@ -231,14 +231,14 @@ public class TablesSQLObjectSchemaParserTest {
             parser.parse(createTables);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-            Attribute referencedAttribute = new Attribute("colAttr1", new SQLInt());
-            Attribute linkedAttribute = new Attribute("colFk", new SQLInt());
+            Attribute referencedAttribute = new Attribute("colAttr1", new SQLInteger());
+            Attribute linkedAttribute = new Attribute("colFk", new SQLInteger());
 
             // Object built directly in java
             Table expectedTableA = new Table(
                 "tableA",
                 List.of(
-                    new Attribute("colPk", new SQLInt()),
+                    new Attribute("colPk", new SQLInteger()),
                     referencedAttribute
                 )
             );
@@ -247,7 +247,7 @@ public class TablesSQLObjectSchemaParserTest {
                 "tableB",
                 null,
                 List.of(
-                    new Attribute("colPk", new SQLInt()),
+                    new Attribute("colPk", new SQLInteger()),
                     linkedAttribute
                 ),
                 new ArrayList<>(),
@@ -312,8 +312,8 @@ public class TablesSQLObjectSchemaParserTest {
             parser.parse(createTable);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-            Attribute a1 = new Attribute("col1", new SQLInt(), false);
-            Attribute a2 = new Attribute("col2", new SQLInt(), false);
+            Attribute a1 = new Attribute("col1", new SQLInteger(), false);
+            Attribute a2 = new Attribute("col2", new SQLInteger(), false);
 
             Table expectedTable = new Table(
                 "name",
@@ -347,7 +347,7 @@ public class TablesSQLObjectSchemaParserTest {
                 "name",
                 null,
                 List.of(
-                    new Attribute("col1", new SQLInt()),
+                    new Attribute("col1", new SQLInteger()),
                     new Attribute("col2", new SQLBit())),
                 List.of(new Check("c1",
                     new PredicateOperation(
@@ -391,16 +391,16 @@ public class TablesSQLObjectSchemaParserTest {
             parser.parse(createTables);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-            Attribute referencedAttribute1 = new Attribute("colAttr1", new SQLInt());
-            Attribute referencedAttribute2 = new Attribute("colAttr2", new SQLInt());
-            Attribute linkedAttribute1 = new Attribute("colFk1", new SQLInt());
-            Attribute linkedAttribute2 = new Attribute("colFk2", new SQLInt());
+            Attribute referencedAttribute1 = new Attribute("colAttr1", new SQLInteger());
+            Attribute referencedAttribute2 = new Attribute("colAttr2", new SQLInteger());
+            Attribute linkedAttribute1 = new Attribute("colFk1", new SQLInteger());
+            Attribute linkedAttribute2 = new Attribute("colFk2", new SQLInteger());
 
             // Object built directly in java
             Table expectedTableA = new Table(
                 "tableA",
                 List.of(
-                    new Attribute("colPk", new SQLInt()),
+                    new Attribute("colPk", new SQLInteger()),
                     referencedAttribute1,
                     referencedAttribute2
                 )
@@ -410,7 +410,7 @@ public class TablesSQLObjectSchemaParserTest {
                 "tableB",
                 null,
                 List.of(
-                    new Attribute("colPk", new SQLInt()),
+                    new Attribute("colPk", new SQLInteger()),
                     linkedAttribute1,
                     linkedAttribute2
                 ),
@@ -502,17 +502,17 @@ public class TablesSQLObjectSchemaParserTest {
             parser.parse(createTables);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
-            Attribute pkAttribute1 = new Attribute("B_a1", new SQLInt(), false);
-            Attribute uniqueAttribute1 = new Attribute("B_a4", new SQLInt());
-            Attribute referencedAttribute1 = new Attribute("A_a1", new SQLInt());
-            Attribute linkedAttribute1 = new Attribute("B_a2", new SQLInt());
+            Attribute pkAttribute1 = new Attribute("B_a1", new SQLInteger(), false);
+            Attribute uniqueAttribute1 = new Attribute("B_a4", new SQLInteger());
+            Attribute referencedAttribute1 = new Attribute("A_a1", new SQLInteger());
+            Attribute linkedAttribute1 = new Attribute("B_a2", new SQLInteger());
 
             // Object built directly in java
             Table expectedTableA = new Table(
                 "A",
                 List.of(
                     referencedAttribute1,
-                    new Attribute("A_a2", new SQLInt())
+                    new Attribute("A_a2", new SQLInteger())
                 )
             );
 
@@ -522,9 +522,9 @@ public class TablesSQLObjectSchemaParserTest {
                 List.of(
                     pkAttribute1,
                     linkedAttribute1,
-                    new Attribute("B_a3", new SQLInt(), new SQLPrimitiveInteger(0)),
+                    new Attribute("B_a3", new SQLInteger(), new SQLPrimitiveInteger(0)),
                     uniqueAttribute1,
-                    new Attribute("B_a5", new SQLInt())
+                    new Attribute("B_a5", new SQLInteger())
                 ),
                 List.of(new Check("C1", new ComparisonPredicate(
                     ComparisonPredicate.ComparisonOperator.NEQ,

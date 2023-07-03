@@ -271,7 +271,7 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
     }
 
     @Override
-    public <T> T visit(SQLChar c) {
+    public <T> T visit(SQLCharacter c) {
         throw new RuntimeException("Visitor shouldn't reach this expression.");
     }
 
@@ -286,7 +286,7 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
     }
 
     @Override
-    public <T> T visit(SQLInt i) {
+    public <T> T visit(SQLInteger i) {
         throw new RuntimeException("Visitor shouldn't reach this expression.");
     }
 

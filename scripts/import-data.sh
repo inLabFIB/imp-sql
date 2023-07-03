@@ -20,5 +20,6 @@ echo "======= MSSQL SERVER STARTED ========"
 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -d master -i /usr/src/app/sql_setups/test_db-setup.sql
 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -d master -i /usr/src/app/sql_setups/cv2-setup.sql
 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -d master -i /usr/src/app/sql_setups/tpch-setup.sql
+/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -d master -i /usr/src/app/sql_setups/tpcc-setup.sql
 
 echo "======= MSSQL CONFIG COMPLETE ======="

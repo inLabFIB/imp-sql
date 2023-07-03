@@ -268,7 +268,7 @@ public class SQLServerPrinter extends SQLPrinter {
     }
 
     @Override
-    public String visit(SQLChar c) {
+    public String visit(SQLCharacter c) {
         if (c.getLength() != null) return "CHAR(" + c.getLength() + ")";
         return "CHAR";
     }
@@ -285,7 +285,7 @@ public class SQLServerPrinter extends SQLPrinter {
     }
 
     @Override
-    public String visit(SQLInt i) {
+    public String visit(SQLInteger i) {
         return "INT";
     }
 

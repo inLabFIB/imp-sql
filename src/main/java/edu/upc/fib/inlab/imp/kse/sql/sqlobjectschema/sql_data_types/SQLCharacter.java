@@ -4,15 +4,15 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisi
 
 import java.util.Objects;
 
-public class SQLChar implements SQLDataType {
+public class SQLCharacter implements SQLDataType {
 
     private final Integer length;
 
-    public SQLChar() {
+    public SQLCharacter() {
         this(null);
     }
 
-    public SQLChar(Integer length) {
+    public SQLCharacter(Integer length) {
         this.length = length;
     }
 
@@ -31,7 +31,7 @@ public class SQLChar implements SQLDataType {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SQLChar sqlChar = (SQLChar) o;
+        SQLCharacter sqlChar = (SQLCharacter) o;
 
         return Objects.equals(length, sqlChar.length);
     }

@@ -4,7 +4,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.boolean_expressions.Compari
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.SQLObjectAlreadyExistsException;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.relational_expressions.TableExpression;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.selection_expressions.AliasableSelectItem;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLInt;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLInteger;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
 import org.junit.jupiter.api.Test;
 
@@ -22,14 +22,14 @@ class SQLObjectSchemaTest {
         SchemaReference sr1 = new SchemaReference("server1", "d1", "s1");
         SchemaReference sr2 = new SchemaReference("server2", "d2", "s2");
 
-        Table table1 = new Table("t1", sr1, List.of(new Attribute("atr1", new SQLInt())));
+        Table table1 = new Table("t1", sr1, List.of(new Attribute("atr1", new SQLInteger())));
         View view1 = new View("v1", sr1, new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1)))));
         Assertion assertion1 = new Assertion("a1", sr1, new ComparisonPredicate(
             ComparisonPredicate.ComparisonOperator.EQ,
             new SQLPrimitiveInteger(1),
             new SQLPrimitiveInteger(2)));
 
-        Table table2 = new Table("t1", sr2, List.of(new Attribute("atr1", new SQLInt())));
+        Table table2 = new Table("t1", sr2, List.of(new Attribute("atr1", new SQLInteger())));
         View view2 = new View("v1", sr2, new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1)))));
         Assertion assertion2 = new Assertion("a1", sr2, new ComparisonPredicate(
             ComparisonPredicate.ComparisonOperator.EQ,

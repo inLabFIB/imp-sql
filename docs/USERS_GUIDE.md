@@ -20,12 +20,12 @@ packages:
   - **Aliasable Relational Expression**
     - Table Reference
     - **Query**
-      - Set Operation (NOT IMPLEMENTED YET)
+      - Set Operation
       - Table Expression
 - **Boolean Expressions**:
   - Not Operation
   - Is Operation (NOT IMPLEMENTED YET)
-  - Predicate Operation (ONLY `AND` IMPLEMENTED)
+  - Predicate Operation
   - **Predicate**
     - Comparison Predicate
     - Exist Predicate
@@ -34,6 +34,7 @@ packages:
   - Column Reference
   - Unary Operation (NOT IMPLEMENTED YET)
   - Arithmetic Operation (NOT IMPLEMENTED YET)
+  - SQLFunction
   - _Query_ (should be scalar)
   - **Primitive Expressions**
     - Null (NOT IMPLEMENTED YET)
@@ -46,15 +47,28 @@ packages:
   - Asterisk
   - Aliasable Select Item
 - **SQL Data Types**:
+
+  - SQL Bit
+  - SQL Varbit (NOT IMPLEMENTED YET)
+
   - SQL Char
   - SQL Varchar
-  - SQL Bit
-  - SQL Int
-  - SQL Smallint
-  - SQL Float
-  - SQL Real
+
   - SQL Date
-  - (...) (NOT IMPLEMENTED YET)
+  - SQL Time (NOT IMPLEMENTED YET)
+  - SQL DateTime*
+  - SQL Timestamp (NOT IMPLEMENTED YET)
+
+  - SQL Decimal (NOT IMPLEMENTED YET)
+  - SQL DoublePrecision
+  - SQL Float
+  - SQL Integer
+  - SQL Smallint
+  - SQL Numeric
+  - SQL Real
+
+  - SQL Interval (NOT IMPLEMENTED YET)
+
 - **Constraints**:
   - _Assertion_
   - **Table Constraint**
@@ -72,23 +86,46 @@ By contract, almost all IMP SQL entities are immutable.
 
 All that can be deduced from the previous objects.
 
+### Supported SQL expressions
+All SLQ92 supported data types are considered and defined below:
+- SQL Bit: 
+- SQL Varbit
+
+- SQL Char
+- SQL Varchar
+
+- SQL Date
+- SQL Time
+- SQL DateTime*
+- SQL Timestamp
+
+- SQL Decimal
+- SQL DoublePrecision
+- SQL Float
+- SQL Integer
+- SQL Smallint
+- SQL Numeric
+- SQL Real
+
+- SQL Interval (NOT IMPLEMENTED YET)
+
+*DateTime is not from the SQL92 standard but is also added!
+
 [comment]: <> (TODO: FINISH THIS)
 
-## Work in progress
+## Work in progress / Future work
 
-- **Relational Expressions**
-  - UNIONS
-  - SET OPERATIONS
 - **Value Expressions**
   - VALUE OPERATIONS (unary & arithmetic)
   - NULL
   - MORE PRIMITIVE CONSTANTS
 - **Boolean Expressions**
   - IS OPERATION
-  - PREDICATE OPERATION (additional, e.g. `OR`)
   - MORE PREDICATES
 - **Other**
   - MORE DATA TYPES
+
+  
 
 [comment]: <> (TODO: FINISH THIS)
 

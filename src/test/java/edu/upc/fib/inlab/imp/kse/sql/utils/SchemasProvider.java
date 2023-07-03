@@ -4,7 +4,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Attribute;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SchemaReference;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.Table;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLFloat;
-import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLInt;
+import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLInteger;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.SQLVarchar;
 
 import java.util.List;
@@ -18,15 +18,15 @@ public class SchemasProvider {
             new Table(
                 "myTable",
                 List.of(
-                    new Attribute("a", new SQLInt()),
-                    new Attribute("b", new SQLInt())
+                    new Attribute("a", new SQLInteger()),
+                    new Attribute("b", new SQLInteger())
                 )
             ),
             new Table(
                 "otherTable",
                 List.of(
-                    new Attribute("c", new SQLInt()),
-                    new Attribute("d", new SQLInt())
+                    new Attribute("c", new SQLInteger()),
+                    new Attribute("d", new SQLInteger())
                 )
             )
         );
@@ -41,14 +41,14 @@ public class SchemasProvider {
                 new SchemaReference("sameSchema"),
                 List.of(
                     new Attribute("attr1", new SQLVarchar(100)),
-                    new Attribute("fk", new SQLInt())
+                    new Attribute("fk", new SQLInteger())
                 )
             ),
             new Table(
                 "B",
                 new SchemaReference("sameSchema"),
                 List.of(
-                    new Attribute("pk", new SQLInt()),
+                    new Attribute("pk", new SQLInteger()),
                     new Attribute("attr2", new SQLVarchar(100)),
                     new Attribute("attr3", new SQLFloat())
                 )
@@ -64,20 +64,20 @@ public class SchemasProvider {
     public static List<Table> getJoinsSchemaTables() {
         return List.of(
             new Table("A", List.of(
-                new Attribute("A_pk", new SQLInt()),
-                new Attribute("A_a1", new SQLInt()), new Attribute("A_a2", new SQLInt()))),
+                new Attribute("A_pk", new SQLInteger()),
+                new Attribute("A_a1", new SQLInteger()), new Attribute("A_a2", new SQLInteger()))),
             new Table("B", List.of(
-                    new Attribute("B_pk", new SQLInt()),
-                    new Attribute("B_a1", new SQLInt()), new Attribute("B_a2", new SQLInt()))),
+                    new Attribute("B_pk", new SQLInteger()),
+                    new Attribute("B_a1", new SQLInteger()), new Attribute("B_a2", new SQLInteger()))),
             new Table("C", List.of(
-                    new Attribute("C_pk", new SQLInt()),
-                    new Attribute("C_a1", new SQLInt()), new Attribute("C_a2", new SQLInt()))),
+                    new Attribute("C_pk", new SQLInteger()),
+                    new Attribute("C_a1", new SQLInteger()), new Attribute("C_a2", new SQLInteger()))),
             new Table("D", List.of(
-                    new Attribute("D_pk", new SQLInt()),
-                    new Attribute("D_a1", new SQLInt()), new Attribute("D_a2", new SQLInt()))),
+                    new Attribute("D_pk", new SQLInteger()),
+                    new Attribute("D_a1", new SQLInteger()), new Attribute("D_a2", new SQLInteger()))),
             new Table("E", List.of(
-                    new Attribute("E_pk", new SQLInt()),
-                    new Attribute("E_a1", new SQLInt()), new Attribute("E_a2", new SQLInt())))
+                    new Attribute("E_pk", new SQLInteger()),
+                    new Attribute("E_a1", new SQLInteger()), new Attribute("E_a2", new SQLInteger())))
         );
     }
 

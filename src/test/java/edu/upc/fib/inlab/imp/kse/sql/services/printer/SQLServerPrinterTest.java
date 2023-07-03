@@ -33,11 +33,11 @@ class SQLServerPrinterTest {
             new SchemaReference("schemaName"),
             List.of(
                 new Attribute("btAttr", new SQLBit()),
-                new Attribute("chAttr", new SQLChar(8), new SQLFunction("myfunction")),
+                new Attribute("chAttr", new SQLCharacter(8), new SQLFunction("myfunction")),
                 new Attribute("dtAttr", new SQLDateTime(7)),
                 new Attribute("dpAttr", new SQLDoublePrecision()),
                 new Attribute("flAttr", new SQLFloat(16)),
-                new Attribute("itAttr", new SQLInt(), new SQLPrimitiveInteger(1)),
+                new Attribute("itAttr", new SQLInteger(), new SQLPrimitiveInteger(1)),
                 new Attribute("rlAttr", new SQLReal(), false),
                 new Attribute("siAttr", new SQLSmallint()),
                 new Attribute("vcAttr", new SQLVarchar(64))
@@ -52,7 +52,7 @@ class SQLServerPrinterTest {
 
     @Test
     public void printTableWithConstraints() {
-        Attribute attrA = new Attribute("attrA", new SQLInt());
+        Attribute attrA = new Attribute("attrA", new SQLInteger());
         Attribute attrB = new Attribute("attrB", new SQLVarchar(64));
 
         Attribute refPk = new Attribute("pk", new SQLVarchar(64));
@@ -285,8 +285,8 @@ class SQLServerPrinterTest {
             new Attribute("col1", new SQLBit()),
             new Attribute("col2", new SQLBit(2)),
             new Attribute("col3", new SQLBit(4), false),
-            new Attribute("col4", new SQLChar()),
-            new Attribute("col5", new SQLChar(2)),
+            new Attribute("col4", new SQLCharacter()),
+            new Attribute("col5", new SQLCharacter(2)),
             new Attribute("col6", new SQLFloat(4))
         ));
 
@@ -316,7 +316,7 @@ class SQLServerPrinterTest {
             new SchemaReference("db","schema"),
             new TableExpression(
                 List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
-                new TableReference(new Table("t", List.of(new Attribute("at1", new SQLInt())))),
+                new TableReference(new Table("t", List.of(new Attribute("at1", new SQLInteger())))),
                 new ValueListInPredicate(new SQLPrimitiveInteger(1), List.of(new SQLPrimitiveInteger(1), new SQLPrimitiveInteger(2)))
             ));
 
@@ -331,7 +331,7 @@ class SQLServerPrinterTest {
             new SchemaReference("db","schema"),
             new TableExpression(
                 List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
-                new TableReference(new Table("t", List.of(new Attribute("at1", new SQLInt())))),
+                new TableReference(new Table("t", List.of(new Attribute("at1", new SQLInteger())))),
                 new ValueListInPredicate(new ColumnReference("t", "at1"), List.of(new SQLPrimitiveInteger(1), new SQLPrimitiveInteger(2)))
             ));
 
@@ -369,7 +369,7 @@ class SQLServerPrinterTest {
             new SchemaReference("db","schema"),
             new TableExpression(
                 List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
-                new TableReference(new Table("t", List.of(new Attribute("at1", new SQLInt())))),
+                new TableReference(new Table("t", List.of(new Attribute("at1", new SQLInteger())))),
                 new PredicateOperation(
                     PredicateOperation.PredicateOperator.OR,
                     new ComparisonPredicate(

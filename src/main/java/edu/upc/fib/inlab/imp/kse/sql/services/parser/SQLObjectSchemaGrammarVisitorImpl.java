@@ -448,7 +448,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends TSqlParserBaseVisitor {
             }
             else return new SQLNumeric();
         }
-        else if (ctx.INT() != null) return new SQLInt();
+        else if (ctx.INT() != null) return new SQLInteger();
         else if (ctx.SMALLINT() != null) return new SQLSmallint();
         else if (ctx.FLOAT_() != null) return ctx.prec != null ? new SQLFloat(Integer.parseInt(ctx.prec.getText())) : new SQLFloat();
         else if (ctx.DATE() != null) return new SQLDate();

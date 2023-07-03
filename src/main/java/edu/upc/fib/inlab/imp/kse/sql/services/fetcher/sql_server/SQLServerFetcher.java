@@ -100,7 +100,7 @@ public class SQLServerFetcher implements DatabaseFetcher {
     private SQLDataType createDataTypeForName(String type, int length, int precision, int scale) {
         return switch (type) {
             case "bit" -> new SQLBit();
-            case "char" -> new SQLChar(length);
+            case "char" -> new SQLCharacter(length);
 
             case "date" -> new SQLDate();
             case "datetime" -> new SQLDateTime(scale);
@@ -110,7 +110,7 @@ public class SQLServerFetcher implements DatabaseFetcher {
 
             case "decimal", "numeric" -> new SQLNumeric(precision, scale);
             case "bigint" -> new SQLNumeric(precision, scale); // length should be 8 Bytes
-            case "int" -> new SQLInt();
+            case "int" -> new SQLInteger();
             case "smallint" -> new SQLSmallint();
 
             case "real" -> new SQLReal();

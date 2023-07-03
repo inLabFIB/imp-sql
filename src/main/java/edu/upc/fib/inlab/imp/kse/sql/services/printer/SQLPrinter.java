@@ -46,10 +46,10 @@ public abstract class SQLPrinter implements SQLObjectSchemaVisitor {
     public abstract String visit(Unique u);
     public abstract String visit(PrimaryKey pk);
     public abstract String visit(ForeignKey fk);
-    public abstract String visit(SQLChar c);
+    public abstract String visit(SQLCharacter c);
     public abstract String visit(SQLVarchar v);
     public abstract String visit(SQLBit b);
-    public abstract String visit(SQLInt i);
+    public abstract String visit(SQLInteger i);
     public abstract String visit(SQLSmallint s);
     public abstract String visit(SQLFloat f);
     public abstract String visit(SQLReal r);

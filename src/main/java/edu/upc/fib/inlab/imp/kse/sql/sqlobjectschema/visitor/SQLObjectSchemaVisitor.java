@@ -36,10 +36,10 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(Unique u);
     <T> T visit(PrimaryKey pk);
     <T> T visit(ForeignKey fk);
-    <T> T visit(SQLChar c);
+    <T> T visit(SQLCharacter c);
     <T> T visit(SQLVarchar v);
     <T> T visit(SQLBit b);
-    <T> T visit(SQLInt i);
+    <T> T visit(SQLInteger i);
     <T> T visit(SQLSmallint s);
     <T> T visit(SQLFloat f);
     <T> T visit(SQLReal r);

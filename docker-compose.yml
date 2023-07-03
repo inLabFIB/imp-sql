@@ -15,6 +15,7 @@ services:
       - ./sql_setups/test_db-setup.sql:/usr/src/app/sql_setups/test_db-setup.sql
       - ./sql_setups/cv2-setup.sql:/usr/src/app/sql_setups/cv2-setup.sql
       - ./sql_setups/tpch-setup.sql:/usr/src/app/sql_setups/tpch-setup.sql
+      - ./sql_setups/tpcc-setup.sql:/usr/src/app/sql_setups/tpcc-setup.sql
 
 volumes:
   db_data:
