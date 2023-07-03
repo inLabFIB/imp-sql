@@ -29,14 +29,17 @@ public class SQLObjectSchemaParser {
         if (sqlStatements == null) throw new IllegalArgumentException("Parser input can not be null.");
 
         CodePointCharStream input = CharStreams.fromString(sqlStatements);
+
         TSqlLexer lexer = new TSqlLexer(input);
         lexer.removeErrorListeners();
         lexer.addErrorListener(new CustomErrorListener());
         CommonTokenStream tokens = new CommonTokenStream(lexer);
+
         TSqlParser parser = new TSqlParser(tokens);
         parser.removeErrorListeners();
         parser.addErrorListener(new CustomErrorListener());
         TSqlParser.Tsql_fileContext tree = parser.tsql_file();
+
         SQLObjectSchemaGrammarVisitorImpl visitor = new SQLObjectSchemaGrammarVisitorImpl(schema, defaultSchemaReference);
         visitor.visit(tree);
     }
