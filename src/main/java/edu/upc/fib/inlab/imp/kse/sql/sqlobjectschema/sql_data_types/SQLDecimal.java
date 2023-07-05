@@ -8,18 +8,18 @@ import java.util.Objects;
  * Has precision (The maximum total number of decimal digits to be stored) and
  * scale (The number of decimal digits that are stored to the right of the decimal point) values.
  */
-public class SQLNumeric implements SQLDataType {
+public class SQLDecimal implements SQLDataType {
     private final Integer precision;
     private final Integer scale;
-    public SQLNumeric() {
+    public SQLDecimal() {
         this(18, 0);
     }
 
-    public SQLNumeric(Integer precision) {
+    public SQLDecimal(Integer precision) {
         this(precision, 0);
     }
 
-    public SQLNumeric(Integer precision, Integer scale) {
+    public SQLDecimal(Integer precision, Integer scale) {
         this.precision = Objects.requireNonNull(precision, "A precision value must be set for SQLNumeric dataType");
         this.scale = Objects.requireNonNull(scale, "A scale value must be set for SQLNumeric dataType");
     }
@@ -38,12 +38,13 @@ public class SQLNumeric implements SQLDataType {
         return scale;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SQLNumeric that = (SQLNumeric) o;
+        SQLDecimal that = (SQLDecimal) o;
 
         if (!precision.equals(that.precision)) return false;
         return scale.equals(that.scale);

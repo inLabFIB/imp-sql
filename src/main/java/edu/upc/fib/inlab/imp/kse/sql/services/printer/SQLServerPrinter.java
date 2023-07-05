@@ -280,8 +280,8 @@ public class SQLServerPrinter extends SQLPrinter {
 
     @Override
     public String visit(SQLBit b) {
-        if (b.getLength() != null) return "BIT(" + b.getLength() + ")";
-        return "BIT";
+        if (b.getLength() != null) return "BINARY(" + b.getLength() + ")";
+        return "BINARY";
     }
 
     @Override
@@ -311,6 +311,16 @@ public class SQLServerPrinter extends SQLPrinter {
     }
 
     @Override
+    public String visit(SQLTime t) {
+        return "TIME(" + t.getFractionalSecondsPrecision() + ")";
+    }
+
+    @Override
+    public String visit(SQLTimestamp ts) {
+        return "TIMESTAMP";
+    }
+
+    @Override
     public String visit(SQLDoublePrecision dp) {
         return "DOUBLE PRECISION";
     }
@@ -321,6 +331,11 @@ public class SQLServerPrinter extends SQLPrinter {
     }
 
     @Override
+    public String visit(SQLDecimal d) {
+        return "DECIMAL(" + d.getPrecision() + "," + d.getScale() + ")";
+    }
+
+    @Override
     public String visit(SQLDateTime dt) {
         return "DATETIME(" + dt.getFractionalSecondsPrecision() + ")";
     }
@@ -328,5 +343,11 @@ public class SQLServerPrinter extends SQLPrinter {
     @Override
     public String visit(SQLFunction f) {
         return f.getFunctionName() + "(" + String.join(", ", f.getArguments().stream().map(p -> p.<String>visit(this)).toList()) + ")";
+    }
+
+    @Override
+    public String visit(SQLVarbit vb) {
+        if (vb.getLength() != null) return "VARBINARY(" + vb.getLength() + ")";
+        return "VARBINARY";
     }
 }

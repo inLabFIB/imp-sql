@@ -44,7 +44,7 @@ class SQLServerPrinterTest {
             )
         );
 
-        String expectedTable = "CREATE TABLE schemaName.tableName ( btAttr BIT, chAttr CHAR(8) DEFAULT myfunction(), dtAttr DATETIME(7), " +
+        String expectedTable = "CREATE TABLE schemaName.tableName ( btAttr BINARY, chAttr CHAR(8) DEFAULT myfunction(), dtAttr DATETIME(7), " +
             "dpAttr DOUBLE PRECISION, flAttr FLOAT(16), itAttr INT DEFAULT 1, rlAttr REAL NOT NULL, siAttr SMALLINT, " +
             "vcAttr VARCHAR(64) );";
         assertThat(table.visit(new SQLServerPrinter()), is(expectedTable));
@@ -290,7 +290,7 @@ class SQLServerPrinterTest {
             new Attribute("col6", new SQLFloat(4))
         ));
 
-        String expectedSelect = "CREATE TABLE table ( col1 BIT, col2 BIT(2), col3 BIT(4) NOT NULL, col4 CHAR," +
+        String expectedSelect = "CREATE TABLE table ( col1 BINARY, col2 BINARY(2), col3 BINARY(4) NOT NULL, col4 CHAR," +
             " col5 CHAR(2), col6 FLOAT(4) );";
         MatcherAssert.assertThat(table.visit(new SQLServerPrinter()), is(expectedSelect));
     }

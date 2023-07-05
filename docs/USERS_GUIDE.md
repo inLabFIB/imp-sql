@@ -47,19 +47,18 @@ packages:
   - Asterisk
   - Aliasable Select Item
 - **SQL Data Types**:
-
   - SQL Bit
-  - SQL Varbit (NOT IMPLEMENTED YET)
+  - SQL Varbit
 
   - SQL Char
   - SQL Varchar
 
   - SQL Date
-  - SQL Time (NOT IMPLEMENTED YET)
+  - SQL Time
   - SQL DateTime*
-  - SQL Timestamp (NOT IMPLEMENTED YET)
+  - SQL Timestamp
 
-  - SQL Decimal (NOT IMPLEMENTED YET)
+  - SQL Decimal
   - SQL DoublePrecision
   - SQL Float
   - SQL Integer
@@ -127,14 +126,14 @@ All SLQ92 supported data types are considered and defined below. Some variables 
 
 #### Datetimes & Intervals
 - SQL Date(): Contains the fields YEAR, MONTH and DAY.
-- SQL Time(`tfsp`): Contains the fields HOUR, MINUTE and SECOND. (NOT IMPLEMENTED YET)
+- SQL Time(`tfsp`): Contains the fields HOUR, MINUTE and SECOND.
 - SQL DateTime(`tfsp`)*: Datatype which is the addition of SQLDate and SQLTime with their restrictions and ranges.
-- SQL Timestamp(`tfsp`): YEAR, MONTH, DAY, HOUR, MINUTE and SECOND. Synonym for rowversion which is a guaranteed unique value and with higher range limitations in respect to SQLDateTime (NOT IMPLEMENTED YET)
+- SQL Timestamp(`tfsp`): YEAR, MONTH, DAY, HOUR, MINUTE and SECOND. Synonym for rowversion which is a guaranteed unique value and with higher range limitations in respect to SQLDateTime
 - SQL Interval(): Can be of 2 types: (NOT IMPLEMENTED YET)
   - YEAR-MONTH():  Information of YEAR-MONTH.
   - DAY-TIME(`tfsp`): Information of DAY-HOUR-MINUTE-SECOND.
 
-*DateTime is not from the SQL92 standard but is also added!
+*DateTime is ANSI standard but not from the SQL92 revision!
 
 [comment]: <> (TODO: FINISH THIS)
 
@@ -148,7 +147,7 @@ All SLQ92 supported data types are considered and defined below. Some variables 
   - IS OPERATION
   - MORE PREDICATES
 - **Other**
-  - MORE DATA TYPES
+  - MORE DATA TYPES (Interval, other from other revisions)
 
   
 

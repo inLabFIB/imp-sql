@@ -51,4 +51,7 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(ValueListInPredicate vlip);
     <T> T visit(SetOperation so);
     <T> T visit(SQLVarbit vb);
+    <T> T visit(SQLDecimal d);
+    <T> T visit(SQLTime t);
+    <T> T visit(SQLTimestamp ts);
 }

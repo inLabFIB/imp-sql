@@ -231,8 +231,8 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         return new ArrayList<>();
     }
 
-    //TODO:V2
 
+    //TODO:V2
     @Override
     public <T> T visit(Check c) {
         return null;
@@ -253,8 +253,8 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         return null;
     }
 
-    /* NON REACHABLE EXPRESSIONS */
 
+    /* NON REACHABLE EXPRESSIONS */
     @Override
     public <T> T visit(SchemaReference sr) {
         return null;
@@ -327,6 +327,26 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
 
     @Override
     public <T> T visit(SQLFunction f) {
+        throw new RuntimeException("Visitor shouldn't reach this expression.");
+    }
+
+    @Override
+    public <T> T visit(SQLVarbit vb) {
+        throw new RuntimeException("Visitor shouldn't reach this expression.");
+    }
+
+    @Override
+    public <T> T visit(SQLDecimal d) {
+        throw new RuntimeException("Visitor shouldn't reach this expression.");
+    }
+
+    @Override
+    public <T> T visit(SQLTime t) {
+        throw new RuntimeException("Visitor shouldn't reach this expression.");
+    }
+
+    @Override
+    public <T> T visit(SQLTimestamp ts) {
         throw new RuntimeException("Visitor shouldn't reach this expression.");
     }
 }
