@@ -32,7 +32,7 @@ public class TPCHIT {
     }
 
     @Test
-    public void fetchingTpchTables() {
+    public void fetchingTPCHSchema() {
         tpch_fetcher.fetch();
         SQLObjectSchema cv2FetchedSchema = tpch_fetcher.getSQLObjectSchema();
 
@@ -54,7 +54,7 @@ public class TPCHIT {
     }
 
     @Test
-    public void tpchAssertions() {
+    public void TPCHAssertions() {
         tpch_fetcher.fetch();
         SQLObjectSchema tpchFetchedSchema = tpch_fetcher.getSQLObjectSchema();
 

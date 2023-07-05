@@ -100,22 +100,31 @@ public class SQLServerFetcher implements DatabaseFetcher {
     private SQLDataType createDataTypeForName(String type, int length, int precision, int scale) {
         return switch (type) {
             case "bit" -> new SQLBit();
+            //varbit
+
             case "char" -> new SQLCharacter(length);
+            case "varchar" -> new SQLVarchar(length);
 
-            case "date" -> new SQLDate();
-            case "datetime" -> new SQLDateTime(scale);
-            case "datetime2" -> new SQLDateTime(scale); //FIXME: possible errors in precision or date ranges
-
-            case "float" -> new SQLFloat(precision); // FIXME: Precision does not match SQLServer query...
-
-            case "decimal", "numeric" -> new SQLNumeric(precision, scale);
-            case "bigint" -> new SQLNumeric(precision, scale); // length should be 8 Bytes
+            case "numeric", "decimal" -> new SQLNumeric(precision, scale);
             case "int" -> new SQLInteger();
             case "smallint" -> new SQLSmallint();
+                case "bigint" -> new SQLNumeric(precision, scale); // length should be 8 Bytes
 
+            case "float" -> new SQLFloat(precision); // FIXME: Precision does not match SQLServer query...
             case "real" -> new SQLReal();
+            //double precision
 
-            case "varchar" -> new SQLVarchar(length);
+            case "date" -> new SQLDate();
+            //time
+            case "datetime" -> new SQLDateTime(scale);
+                case "datetime2" -> new SQLDateTime(scale); //FIXME: possible errors in precision or date ranges
+            //timestamp
+            //interval
+
+            //Other!
+            case "money" -> new SQLNumeric(19,4);
+            case "smallmoney" -> new SQLNumeric(9,4);
+            case "uniqueidentifier" -> new SQLCharacter(255);
 
             default -> throw new RuntimeException("Table contains an attribute of unsupported data-type (" + type + ").");
         };

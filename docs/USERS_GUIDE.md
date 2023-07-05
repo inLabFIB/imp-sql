@@ -87,27 +87,52 @@ By contract, almost all IMP SQL entities are immutable.
 All that can be deduced from the previous objects.
 
 ### Supported SQL expressions
-All SLQ92 supported data types are considered and defined below:
-- SQL Bit: 
-- SQL Varbit
+All SLQ92 supported data types are considered and defined below. Some variables are also used which are also defined below:
 
-- SQL Char
-- SQL Varchar
+- length `l` - number of elements of a string
+- precision `p` - number of significant digits of an exact number or the length of the mantissa of an approximate number.
+- scale `s` - number of decimal digits of an exact number
+- time fractional seconds precision `tfsp` - 
+- Datetime related:
+  - YEAR - Integer
+  - MONTH - (0-11)
+  - DAY - Integer
+  - HOUR - (0-23)
+  - MINUTE - (0-59)
+  - SECOND - (0-59.999...)
 
-- SQL Date
-- SQL Time
-- SQL DateTime*
-- SQL Timestamp
+#### Character Strings
+- SQL Bit(`l`): String of bits of a fix size `l`.
+- SQL Varbit(`l`): String of bits of a variable size, with a maximum of `l`.
+#### Bit Strings
+- SQL Char(`l`): String of characters of a fix size `l`.
+- SQL Varchar(`l`): String of characters of a variable size, with a maximum of `l`.
+#### Numbers
+- SQL Numeric(`p`,`s`): Exact numeric type.
+- SQL Decimal(`p`,`s`): Exact numeric type with the implementation-defined
+  decimal precision equal to or greater than the value of the
+  specified `p`. (NOT IMPLEMENTED YET)
+- SQL Integer(): Exact numeric type with binary or
+  decimal precision and scale of 0.
+- SQL Smallint(): Exact numeric type with binary or
+  decimal precision and scale of 0. The precision of SMALLINT shall be less than or
+  equal to the precision of INTEGER.
 
-- SQL Decimal
-- SQL DoublePrecision
-- SQL Float
-- SQL Integer
-- SQL Smallint
-- SQL Numeric
-- SQL Real
+- SQL Float(`p`): Approximate numeric type
+- SQL Real(): Approximate numeric type with implementation-
+  defined precision.
+- SQL DoublePrecision(): Approximate numeric type with implementation-defined precision that is greater than the
+  implementation-defined precision of REAL.
 
-- SQL Interval (NOT IMPLEMENTED YET)
+
+#### Datetimes & Intervals
+- SQL Date(): Contains the fields YEAR, MONTH and DAY.
+- SQL Time(`tfsp`): Contains the fields HOUR, MINUTE and SECOND. (NOT IMPLEMENTED YET)
+- SQL DateTime(`tfsp`)*: Datatype which is the addition of SQLDate and SQLTime with their restrictions and ranges.
+- SQL Timestamp(`tfsp`): YEAR, MONTH, DAY, HOUR, MINUTE and SECOND. Synonym for rowversion which is a guaranteed unique value and with higher range limitations in respect to SQLDateTime (NOT IMPLEMENTED YET)
+- SQL Interval(): Can be of 2 types: (NOT IMPLEMENTED YET)
+  - YEAR-MONTH():  Information of YEAR-MONTH.
+  - DAY-TIME(`tfsp`): Information of DAY-HOUR-MINUTE-SECOND.
 
 *DateTime is not from the SQL92 standard but is also added!
 

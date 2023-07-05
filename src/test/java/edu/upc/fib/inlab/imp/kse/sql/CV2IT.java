@@ -30,6 +30,15 @@ public class CV2IT {
         );
     }
 
+    @Test
+    public void fetchingCV2Schema() {
+        cv2_fetcher.fetch();
+        SQLObjectSchema cv2FetchedSchema = cv2_fetcher.getSQLObjectSchema();
+
+        assertThat("Fetcher didn't correctly fetch the CV2 schema tables.",
+            !cv2FetchedSchema.getTables().isEmpty());
+    }
+
    @Test
     public void parsingCV2AssertionsWithFetchedTables() {
         cv2_fetcher.fetch();

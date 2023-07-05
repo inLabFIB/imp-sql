@@ -50,4 +50,5 @@ public interface SQLObjectSchemaVisitor {
     <T> T visit(SQLFunction f);
     <T> T visit(ValueListInPredicate vlip);
     <T> T visit(SetOperation so);
+    <T> T visit(SQLVarbit vb);
 }

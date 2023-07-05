@@ -44,7 +44,7 @@ public class SQLObjectSchema {
         for (Table t : tables) {
             if (t.hasSameIdentifier(tableName, schemaReference)) return t;
         }
-        throw new MissingReferencedObjectException("Table with specified info not found.");
+        throw new MissingReferencedObjectException("Table with specified info not found (" + tableName + ").");
     }
 
     /** MODIFIERS **/

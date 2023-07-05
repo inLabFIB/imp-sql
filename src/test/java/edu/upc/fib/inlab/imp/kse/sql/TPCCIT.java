@@ -16,7 +16,6 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@Disabled
 public class TPCCIT {
 
     private SQLObjectSchemaFetcher tpcc_fetcher;
@@ -32,8 +31,17 @@ public class TPCCIT {
         );
     }
 
+    @Test
+    public void fetchingTPCCSchema() {
+        tpcc_fetcher.fetch();
+        SQLObjectSchema cv2FetchedSchema = tpcc_fetcher.getSQLObjectSchema();
+
+        assertThat("Fetcher didn't correctly fetch the CV2 schema tables.",
+            !cv2FetchedSchema.getTables().isEmpty());
+    }
+
    @Test
-    public void parsingCV2AssertionsWithFetchedTables() {
+    public void parsingTPCCAssertionsWithFetchedTables() {
         tpcc_fetcher.fetch();
         SQLObjectSchema cv2FetchedSchema = tpcc_fetcher.getSQLObjectSchema();
 
@@ -42,7 +50,7 @@ public class TPCCIT {
 
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser(cv2FetchedSchema);
         parser.parse(TintinAssertionsProvider.getTPCCAssertions(),
-            new SchemaReference("tpcc","user_schema"));
+            new SchemaReference("tpcc_db","user_schema"));
         SQLObjectSchema cv2SchemaWithAssertions = parser.getSQLObjectSchema();
 
         assertThat("Assertions were not parsed correctly.",
@@ -50,13 +58,13 @@ public class TPCCIT {
     }
 
     @Test
-    public void cv2Assertions() {
+    public void TPCCAssertions() {
         tpcc_fetcher.fetch();
         SQLObjectSchema cv2FetchedSchema = tpcc_fetcher.getSQLObjectSchema();
 
         SQLObjectSchemaParser parser1 = new SQLObjectSchemaParser(cv2FetchedSchema);
         parser1.parse(TintinAssertionsProvider.getTPCCAssertions(),
-            new SchemaReference("tpcc","user_schema"));
+            new SchemaReference("tpcc_db","user_schema"));
         SQLObjectSchema schema1 = parser1.getSQLObjectSchema();
 
         List<Assertion> expectedAssertions = schema1.getAssertions();
@@ -66,7 +74,7 @@ public class TPCCIT {
 
         SQLObjectSchemaParser parser2 = new SQLObjectSchemaParser(cv2FetchedSchema);
         parser2.parse(printedAssertions,
-            new SchemaReference("tpcc","user_schema"));
+            new SchemaReference("tpcc_db","user_schema"));
         SQLObjectSchema schema2 = parser2.getSQLObjectSchema();
 
         assertThat("Parsed assertions do not equal printed-then-parsed assertions",
