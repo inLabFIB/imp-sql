@@ -3,6 +3,7 @@ package edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema;
 import edu.upc.fib.inlab.imp.kse.sql.services.parser.SQLObjectSchemaParser;
 import edu.upc.fib.inlab.imp.kse.sql.services.printer.SQLPrinter;
 import edu.upc.fib.inlab.imp.kse.sql.services.printer.SQLServerPrinter;
+import edu.upc.fib.inlab.imp.kse.sql.services.printer.StandardSQLPrinter;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.MissingReferencedObjectException;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.exceptions.SQLObjectAlreadyExistsException;
 
@@ -115,9 +116,9 @@ public class SQLObjectSchema {
     //TODO: improve this. Avoid calling printer + parser.
     public SQLObjectSchema getCopy() {
         String schemaString = "";
-        schemaString += String.join("\n\n", tables.stream().map(s -> s.<String>visit(new SQLServerPrinter())).toList());
-        schemaString += String.join("\n\n", views.stream().map(s -> s.<String>visit(new SQLServerPrinter())).toList());
-        schemaString += String.join("\n\n", assertions.stream().map(s -> s.<String>visit(new SQLServerPrinter())).toList());
+        schemaString += String.join("\n\n", tables.stream().map(s -> s.<String>visit(new StandardSQLPrinter())).toList());
+        schemaString += String.join("\n\n", views.stream().map(s -> s.<String>visit(new StandardSQLPrinter())).toList());
+        schemaString += String.join("\n\n", assertions.stream().map(s -> s.<String>visit(new StandardSQLPrinter())).toList());
 
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
         parser.parse(schemaString);
