@@ -10,26 +10,18 @@ variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
 
 stages:
+  - environment
   - test
   - build
   - deploy
 
-test:unit:
-  stage: test
-  script:
-    - mvn clean test -U $MAVEN_CLI_OPTS
-  artifacts:
-    reports:
-      junit:
-        - target/surefire-reports/TEST-*.xml
-
-test:integration-db:
-  stage: test
+environment:test-db:
+  stage: environment
   only:
     changes:
-        - Dockerfile
-        - scripts/*
-        - sql_setups/*
+      - Dockerfile
+      - scripts/*
+      - sql_setups/*
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
@@ -43,6 +35,15 @@ test:integration-db:
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${IMAGE_TAG}"
+
+test:unit:
+  stage: test
+  script:
+    - mvn clean test -U $MAVEN_CLI_OPTS
+  artifacts:
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
 
 test:integration:
   stage: test
