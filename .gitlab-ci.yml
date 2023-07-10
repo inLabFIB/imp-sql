@@ -56,11 +56,11 @@ test:integration:
       alias: db
   script:
     - sleep 20
-    - mvn -pl backend -am verify -U $MAVEN_CLI_OPTS
+    - mvn -am verify -U $MAVEN_CLI_OPTS
   artifacts:
     reports:
       junit:
-        - backend/target/failsafe-reports/TEST-*.xml
+        - target/failsafe-reports/TEST-*.xml
 
 deploy:release:
   stage: deploy
