@@ -2,11 +2,11 @@ image: maven:3-openjdk-17-slim
 cache:
   paths:
     - ./.m2/repository
-    - backend/target
+    - target/
   key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
 
 variables:
-  MAVEN_CLI_OPTS: "--batch-mode"
+  MAVEN_CLI_OPTS: "-s ci_settings.xml --batch-mode"
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
 
 stages:
@@ -17,22 +17,58 @@ stages:
 test:unit:
   stage: test
   script:
-    - mvn clean test -U
+    - mvn clean test -U $MAVEN_CLI_OPTS
   artifacts:
     reports:
       junit:
         - target/surefire-reports/TEST-*.xml
 
-build:release:
-  stage: build
+test:integration-db:
+  stage: test
+  only:
+    changes:
+        - Dockerfile
+        - scripts/*
+        - sql_setups/*
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  variables:
+    IMAGE_TAG: $NEXUS_REGISTRY/imp-sql/db:latest
   script:
-    - mvn package -DskipTests -U
+    - mkdir -p /kaniko/.docker
+    - cat "$DOCKER_AUTH_CONFIG" > /kaniko/.docker/config.json
+    - >-
+      /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${IMAGE_TAG}"
+
+test:integration:
+  stage: test
+  variables:
+    TINTIN_DB_HOST: 'db'
+    ACCEPT_EULA: Y
+    SA_PASSWORD: PasswordO1.
+  services:
+    - name: $NEXUS_REGISTRY/imp-sql/db:latest
+      alias: db
+  script:
+    - sleep 20
+    - mvn -pl backend -am verify -U $MAVEN_CLI_OPTS
   artifacts:
-    paths:
-      - target/imp-sql-*.jar
+    reports:
+      junit:
+        - backend/target/failsafe-reports/TEST-*.xml
 
 deploy:release:
   stage: deploy
+  only:
+    - master
+    - develop
   script:
-    - mvn deploy -DskipTests -s ci_settings.xml
-
+    - mvn deploy -DskipTests -U $MAVEN_CLI_OPTS
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 week
