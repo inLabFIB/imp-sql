@@ -7,6 +7,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.constraints.TableConstraint
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.sql_data_types.*;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLFunction;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.value_expressions.SQLPrimitiveInteger;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -15,15 +16,23 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static java.util.Objects.isNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Named.named;
 
 public class SQLServerFetcherIT {
 
+    private static String serverName;
+
+    @BeforeAll
+    static void beforeAll() {
+        serverName = isNull(System.getenv("SQL_DB_HOST"))? "localhost": System.getenv("SQL_DB_HOST");
+    }
+
     @Test
     public void fetchTestTables() {
         SQLObjectSchemaFetcher fetcher = new SQLObjectSchemaFetcher(
-            "localhost",
+            serverName,
             1433,
             "SA", "PasswordO1.", "test_db",
             List.of("test_schema", "ref_test_schema"),
@@ -40,7 +49,7 @@ public class SQLServerFetcherIT {
     @Test
     public void fetchTestTableConstraints() {
         SQLObjectSchemaFetcher fetcher = new SQLObjectSchemaFetcher(
-            "localhost",
+            serverName,
             1433,
             "SA", "PasswordO1.", "test_db",
             List.of("test_schema", "ref_test_schema"),
@@ -64,7 +73,7 @@ public class SQLServerFetcherIT {
     @MethodSource("attributesProvider")
     public void fetchTestTableAttribute(Attribute attribute) {
         SQLObjectSchemaFetcher fetcher = new SQLObjectSchemaFetcher(
-            "localhost",
+            serverName,
             1433,
             "SA", "PasswordO1.", "test_db",
             List.of("test_schema", "ref_test_schema"),

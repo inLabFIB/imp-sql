@@ -8,22 +8,30 @@ import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SQLObjectSchema;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.SchemaReference;
 import edu.upc.fib.inlab.imp.kse.sql.sqlobjectschema.visitor.SQLObjectSchemaVisitor;
 import edu.upc.fib.inlab.imp.kse.sql.utils.TintinAssertionsProvider;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static java.util.Objects.isNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 public class TPCHIT {
 
+    private static String serverName;
     private SQLObjectSchemaFetcher tpch_fetcher;
+
+    @BeforeAll
+    static void beforeAll() {
+        serverName = isNull(System.getenv("SQL_DB_HOST"))? "localhost": System.getenv("SQL_DB_HOST");
+    }
 
     @BeforeEach
     public void fetcherSetUp() {
         tpch_fetcher = new SQLObjectSchemaFetcher(
-            "localhost",
+            serverName,
             1433,
                 "SA", "PasswordO1.", "tpch_db",
             List.of("user_schema"),
