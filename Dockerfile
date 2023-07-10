@@ -21,7 +21,6 @@ COPY sql_setups /usr/src/app/sql_setups
 
 # Set LF endline in shell scripts
 RUN dos2unix /usr/src/app/scripts/*.sh
-
 # Grant permissions for to our scripts to be executable
 RUN chmod +x /usr/src/app/scripts/*.sh
 
