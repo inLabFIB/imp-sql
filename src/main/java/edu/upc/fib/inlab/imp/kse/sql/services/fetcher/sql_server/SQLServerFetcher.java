@@ -108,7 +108,7 @@ public class SQLServerFetcher implements DatabaseFetcher {
             case "numeric", "decimal" -> new SQLNumeric(precision, scale);
             case "int" -> new SQLInteger();
             case "smallint" -> new SQLSmallint();
-                case "bigint" -> new SQLNumeric(precision, scale); // length should be 8 Bytes
+            case "bigint" -> new SQLNumeric(precision, scale); // length should be 8 Bytes
 
             case "float" -> new SQLFloat(precision); // FIXME: Precision does not match SQLServer query...
             case "real" -> new SQLReal();
@@ -117,7 +117,7 @@ public class SQLServerFetcher implements DatabaseFetcher {
             case "date" -> new SQLDate();
             //time
             case "datetime" -> new SQLDateTime(scale);
-                case "datetime2" -> new SQLDateTime(scale); //FIXME: possible errors in precision or date ranges
+            case "datetime2" -> new SQLDateTime(scale); //FIXME: possible errors in precision or date ranges
             //timestamp
             //interval
 
@@ -125,6 +125,7 @@ public class SQLServerFetcher implements DatabaseFetcher {
             case "money" -> new SQLNumeric(19,4);
             case "smallmoney" -> new SQLNumeric(9,4);
             case "uniqueidentifier" -> new SQLCharacter(255);
+            case "tinyint" -> new SQLSmallint();
 
             default -> throw new RuntimeException("Table contains an attribute of unsupported data-type (" + type + ").");
         };
