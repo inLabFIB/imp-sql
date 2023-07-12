@@ -44,6 +44,13 @@ public class SQLServerFetcher implements DatabaseFetcher {
     }
 
     @Override
+    public SQLObjectSchema fetch(String dbName, List<String> schemaNames) {
+        SQLObjectSchema schema = new SQLObjectSchema();
+        fetch(dbName, schemaNames, schema);
+        return schema;
+    }
+
+    @Override
     public void fetch(String dbName, List<String> schemaNames, SQLObjectSchema schema) {
         List<SchemaReference> schemaReferences = schemaNames.stream().map(s -> new SchemaReference(dbName, s)).toList();
         getTables(schemaReferences).forEach(schema::addTable);

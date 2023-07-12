@@ -7,7 +7,6 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.TableConstraint;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.SQLFunction;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.SQLPrimitiveInteger;
-import edu.upc.fib.inlab.imp.kse.sql.core.services.fetcher.SQLObjectSchemaFetcher;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,6 +22,7 @@ import static org.junit.jupiter.api.Named.named;
 
 public class SQLServerFetcherIT {
 
+    public static final String TEST_DB = "test_db";
     private static String serverName;
 
     @BeforeAll
@@ -32,34 +32,18 @@ public class SQLServerFetcherIT {
 
     @Test
     public void fetchTestTables() {
-        SQLObjectSchemaFetcher fetcher = new SQLObjectSchemaFetcher(
-            serverName,
-            1433,
-            "SA", "PasswordO1.", "test_db",
-            List.of("test_schema", "ref_test_schema"),
-            SQLObjectSchemaFetcher.DBType.SQLServer
-        );
+        SQLServerFetcher fetcher = new SQLServerFetcher(serverName, 1433, TEST_DB, "SA", "PasswordO1.");
 
-        fetcher.fetch();
-
-        SQLObjectSchema schema = fetcher.getSQLObjectSchema();
+        SQLObjectSchema schema = fetcher.fetch(TEST_DB, List.of("test_schema", "ref_test_schema"));
 
         assertThat(schema.getTables()).hasSize(3);
     }
 
     @Test
     public void fetchTestTableConstraints() {
-        SQLObjectSchemaFetcher fetcher = new SQLObjectSchemaFetcher(
-            serverName,
-            1433,
-            "SA", "PasswordO1.", "test_db",
-            List.of("test_schema", "ref_test_schema"),
-            SQLObjectSchemaFetcher.DBType.SQLServer
-        );
+        SQLServerFetcher fetcher = new SQLServerFetcher(serverName, 1433, TEST_DB, "SA", "PasswordO1.");
 
-        fetcher.fetch();
-
-        SQLObjectSchema schema = fetcher.getSQLObjectSchema();
+        SQLObjectSchema schema = fetcher.fetch(TEST_DB, List.of("test_schema", "ref_test_schema"));
 
         Table testedTable = schema.getTables().stream().filter(s -> s.getTableName().equals("test")).findFirst().orElseThrow();
 
@@ -73,17 +57,9 @@ public class SQLServerFetcherIT {
     @ParameterizedTest(name = "{index} - Attribute type {0}")
     @MethodSource("attributesProvider")
     public void fetchTestTableAttribute(Attribute attribute) {
-        SQLObjectSchemaFetcher fetcher = new SQLObjectSchemaFetcher(
-            serverName,
-            1433,
-            "SA", "PasswordO1.", "test_db",
-            List.of("test_schema", "ref_test_schema"),
-            SQLObjectSchemaFetcher.DBType.SQLServer
-        );
+        SQLServerFetcher fetcher = new SQLServerFetcher(serverName, 1433, TEST_DB, "SA", "PasswordO1.");
 
-        fetcher.fetch();
-
-        SQLObjectSchema schema = fetcher.getSQLObjectSchema();
+        SQLObjectSchema schema = fetcher.fetch(TEST_DB, List.of("test_schema", "ref_test_schema"));
 
         Table testedTable = schema.getTables().stream().filter(s -> s.getTableName().equals("test")).findFirst().orElseThrow();
         assertThat(testedTable.getAttributes()).contains(attribute);

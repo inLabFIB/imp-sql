@@ -4,7 +4,6 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.Assertion;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLObjectSchema;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.SchemaReference;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;
-import edu.upc.fib.inlab.imp.kse.sql.core.services.fetcher.SQLObjectSchemaFetcher;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.SQLObjectSchemaParser;
 import edu.upc.fib.inlab.imp.kse.sql.core.utils.TintinAssertionsProvider;
 import edu.upc.fib.inlab.imp.kse.sql.sql_server.services.printer.SQLServerPrinter;
@@ -20,8 +19,9 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class TPCHIT {
 
+    public static final String TPCH_DB = "tpch_db";
     private static String serverName;
-    private SQLObjectSchemaFetcher tpch_fetcher;
+    private SQLServerFetcher tpch_fetcher;
 
     @BeforeAll
     static void beforeAll() {
@@ -30,31 +30,23 @@ public class TPCHIT {
 
     @BeforeEach
     public void fetcherSetUp() {
-        tpch_fetcher = new SQLObjectSchemaFetcher(
-            serverName,
-            1433,
-                "SA", "PasswordO1.", "tpch_db",
-            List.of("user_schema"),
-                SQLObjectSchemaFetcher.DBType.SQLServer
-        );
+        tpch_fetcher = new SQLServerFetcher(serverName, 1433, TPCH_DB, "SA", "PasswordO1.");
     }
 
     @Test
     public void fetchingTPCHSchema() {
-        tpch_fetcher.fetch();
-        SQLObjectSchema cv2FetchedSchema = tpch_fetcher.getSQLObjectSchema();
+        SQLObjectSchema tpchFetchedSchema = tpch_fetcher.fetch(TPCH_DB, List.of("user_schema"));
 
         assertThat("Fetcher didn't correctly fetch the TPCH schema tables.",
-            !cv2FetchedSchema.getTables().isEmpty());
+            !tpchFetchedSchema.getTables().isEmpty());
     }
 
    @Test
     public void parsingTPCHAssertionsWithFetchedTables() {
-        tpch_fetcher.fetch();
-        SQLObjectSchema tpchFetchedSchema = tpch_fetcher.getSQLObjectSchema();
+        SQLObjectSchema tpchFetchedSchema = tpch_fetcher.fetch(TPCH_DB, List.of("user_schema"));
 
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser(tpchFetchedSchema);
-        parser.parse(TintinAssertionsProvider.getTPCHAssertions(), new SchemaReference("tpch_db", "user_schema"));
+        parser.parse(TintinAssertionsProvider.getTPCHAssertions(), new SchemaReference(TPCH_DB, "user_schema"));
         SQLObjectSchema tpchSchemaWithAssertions = parser.getSQLObjectSchema();
 
         assertThat("Assertions were not parsed correctly.",
@@ -63,11 +55,10 @@ public class TPCHIT {
 
     @Test
     public void TPCHAssertions() {
-        tpch_fetcher.fetch();
-        SQLObjectSchema tpchFetchedSchema = tpch_fetcher.getSQLObjectSchema();
+        SQLObjectSchema tpchFetchedSchema = tpch_fetcher.fetch(TPCH_DB, List.of("user_schema"));
 
         SQLObjectSchemaParser parser1 = new SQLObjectSchemaParser(tpchFetchedSchema);
-        parser1.parse(TintinAssertionsProvider.getTPCHAssertions(), new SchemaReference("tpch_db", "user_schema"));
+        parser1.parse(TintinAssertionsProvider.getTPCHAssertions(), new SchemaReference(TPCH_DB, "user_schema"));
         SQLObjectSchema schema1 = parser1.getSQLObjectSchema();
 
         List<Assertion> expectedAssertions = schema1.getAssertions();

@@ -8,7 +8,7 @@ import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.SQLParserBaseVisitor;
 import java.util.List;
 import java.util.Objects;
 
-public class SQLExpressionGrammarVisitorImpl extends SQLParserBaseVisitor {
+class SQLExpressionGrammarVisitorImpl extends SQLParserBaseVisitor {
     private final String contextTableName;
 
     public SQLExpressionGrammarVisitorImpl(String tableName) {
