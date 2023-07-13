@@ -20,7 +20,6 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
 
     /**
      * When a parsed table is referenced without any SchemaReference, this default schema reference is used.
-     * TODO: created objects should contain this schema reference if no other is provided.
      */
     private final SchemaReference defaultSchemaReference;
 
@@ -154,19 +153,23 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
         }
     }
 
-    public Predicate visitPredicate(SQLParser.PredicateContext ctx) {
+    public BooleanExpression visitPredicate(SQLParser.PredicateContext ctx) {
         if (ctx.EXISTS() != null) return new ExistsPredicate(visitSubquery(ctx.subquery()));
-        else if (ctx.IN() != null) {
-            //TODO: V2
-            throw new RuntimeException("Grammar expression of different predicates not supported yet!");
-        }
         else if (ctx.comparison_operator() != null && ctx.subquery() == null) {
             return new ComparisonPredicate(
                 visitComparison_operator(ctx.comparison_operator()),
                 visitExpression(ctx.expression(0)),
                 visitExpression(ctx.expression(1)));
-        } else {
-            //TODO: V2
+        }
+        else if (ctx.IN() != null) {
+            BooleanExpression expression = new ValueListInPredicate(
+                visitExpression(ctx.expression(0)),
+                visitExpression_list(ctx.expression_list())
+            );
+            for (int i = 0; i < ctx.NOT().size(); i++) expression = new NotOperation(expression);
+            return expression;
+        }
+        else {
             throw new RuntimeException("Grammar expression of different predicates not supported yet!");
         }
     }
@@ -178,8 +181,6 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
         if(ctx.full_column_name() != null) return visitFull_column_name(ctx.full_column_name());
         if(ctx.bracket_expression() != null) return visitBracket_expression(ctx.bracket_expression());
         if (ctx.function_call() != null) return visitFunction_call(ctx.function_call());
-
-        //TODO: V2
         throw new RuntimeException("Grammar expression of other expressions not supported yet!");
     }
 
@@ -209,7 +210,6 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
     public ColumnReference visitFull_column_name(SQLParser.Full_column_nameContext ctx) {
         String tableName = null;
         if (ctx.DELETED() != null || ctx.INSERTED() != null || ctx.IDENTITY() != null || ctx.ROWGUID() != null) {
-            //TODO: V2
             throw new RuntimeException("Grammar expression related to extra info for full_column_name not supported yet!");
         }
         else if (ctx.full_table_name() != null) {
@@ -228,11 +228,11 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
     public Query visitQuery_expression(SQLParser.Query_expressionContext ctx) {
         if (ctx.select_order_by_clause() != null) throw new RuntimeException("Grammar expression (`ORDER BY`) not supported yet!");
         if (ctx.UNION() != null) {
-            //TODO: V2
+            //TODO: Future Work - IMPSQL-46, IMPSQL-50
             throw new RuntimeException("UNIONS not supported yet!");
         }
         if (ctx.unions.size() != 0) {
-            //TODO: V2
+            //TODO: Future Work - IMPSQL-46, IMPSQL-50
             throw new RuntimeException("UNIONS not supported yet!");
         }
         return visitQuerySpecification(ctx.query_specification());
@@ -279,8 +279,6 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
         return new Asterisk();
     }
 
-
-    //TODO: store more information of the original sql statement (equality/ as / implicit as)
     public AliasableSelectItem visitExpression_elem(SQLParser.Expression_elemContext ctx) {
         if (ctx.eq != null) return new AliasableSelectItem(visitExpression(ctx.leftAssignment), ctx.leftAlias.getText());
         else {
@@ -394,11 +392,8 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
         if (ctx.table_value_constructor() != null) throw new RuntimeException("Grammar expression table_value_constructor not supported yet!");
 
         Query root = visitSubquery(ctx.subquery().get(0));
-        //TODO: V2
+        //TODO: Future Work - IMPSQL-46, IMPSQL-50
         if (ctx.subquery().size() > 1) throw new RuntimeException("UNIONS not supported yet!");
-//        for (int i = 1; i < ctx.subquery().size(); i++) {
-//            root = new (root, visitTable_source(ctx.source.get(i)));
-//        }
         return root;
     }
 
@@ -434,10 +429,19 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
     }
 
     public SQLDataType visitData_type(SQLParser.Data_typeContext ctx) {
-        if (ctx.VARCHAR() != null) return new SQLVarchar(Integer.parseInt(ctx.length.getText()));
-        else if (ctx.BIT() != null) return ctx.length != null ? new SQLBit(Integer.parseInt(ctx.length.getText())) : new SQLBit();
-        else if (ctx.CHAR() != null || ctx.CHARACTER() != null) return ctx.length != null ? new SQLBit(Integer.parseInt(ctx.length.getText())) : new SQLBit();
-        else if (ctx.NUMERIC() != null || ctx.DECIMAL_() != null || ctx.DEC_() != null) {
+        if (ctx.CHAR() != null || ctx.CHARACTER() != null) {
+            if (ctx.VARYING() == null) return ctx.length != null ? new SQLCharacter(Integer.parseInt(ctx.length.getText())) : new SQLCharacter();
+            else return new SQLVarchar(Integer.parseInt(ctx.length.getText()));
+        }
+        else if (ctx.VARCHAR() != null) return new SQLVarchar(Integer.parseInt(ctx.length.getText()));
+        else if (ctx.NATIONAL() != null) throw new RuntimeException("NATIONAL characters not supported yet!");
+
+        else if (ctx.BIT() != null) {
+            if (ctx.VARYING() == null) return ctx.length != null ? new SQLBit(Integer.parseInt(ctx.length.getText())) : new SQLBit();
+            else return new SQLVarbit(Integer.parseInt(ctx.length.getText()));
+        }
+
+        else if (ctx.NUMERIC() != null) {
             if (ctx.prec != null) {
                 if (ctx.scale != null) {
                     return new SQLNumeric(Integer.parseInt(ctx.prec.getText()), Integer.parseInt(ctx.scale.getText()));
@@ -446,11 +450,27 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
             }
             else return new SQLNumeric();
         }
-        else if (ctx.INT() != null) return new SQLInteger();
+        if (ctx.DECIMAL_() != null || ctx.DEC_() != null) {
+            if (ctx.prec != null) {
+                if (ctx.scale != null) {
+                    return new SQLDecimal(Integer.parseInt(ctx.prec.getText()), Integer.parseInt(ctx.scale.getText()));
+                }
+                else return new SQLDecimal(Integer.parseInt(ctx.prec.getText()));
+            }
+            else return new SQLDecimal();
+        }
+        else if (ctx.INT() != null || ctx.INTEGER() != null) return new SQLInteger();
         else if (ctx.SMALLINT() != null) return new SQLSmallint();
         else if (ctx.FLOAT_() != null) return ctx.prec != null ? new SQLFloat(Integer.parseInt(ctx.prec.getText())) : new SQLFloat();
+        else if (ctx.REAL_() != null) return new SQLReal();
+        else if (ctx.DOUBLE() != null) return new SQLDoublePrecision();
+
+        else if (ctx.ZONE() != null) throw new RuntimeException("'WITH TIME ZONE' expression not supported!");
         else if (ctx.DATE() != null) return new SQLDate();
         else if (ctx.DATETIME() != null) return ctx.prec != null ? new SQLDateTime(Integer.parseInt(ctx.prec.getText())) : new SQLDateTime();
+        else if (ctx.TIME() != null) return ctx.prec != null ? new SQLTime(Integer.parseInt(ctx.prec.getText())) : new SQLTime();
+        else if (ctx.TIMESTAMP() != null) return ctx.prec != null ? new SQLTimestamp(Integer.parseInt(ctx.prec.getText())) : new SQLTimestamp();
+
         else {
             throw new RuntimeException("Other SQL data types not supported yet!");
         }
@@ -534,12 +554,11 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
 
     public ValueExpression visitPrimitive_expression(SQLParser.Primitive_expressionContext ctx) {
         if (ctx.NULL_() != null) {
-            //TODO: V2
+            //TODO: Future Work - IMPSQL-50
             throw new RuntimeException("Grammar expression of other NULL not supported yet!");
             //return new Null...
         } else if (ctx.primitive_constant() != null) return visitPrimitive_constant(ctx.primitive_constant());
         else {
-            //TODO: V2
             throw new RuntimeException("Grammar expression of other primitive expressions not supported yet!");
         }
     }
@@ -552,7 +571,6 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
         else if (ctx.DECIMAL() != null) return new SQLPrimitiveInteger(Integer.parseInt(ctx.DECIMAL().getText()));
         else if (ctx.FLOAT() != null) return new SQLPrimitiveFloat(Float.parseFloat(ctx.FLOAT().getText()));
         else {
-            //TODO: V2
             throw new RuntimeException("Grammar expression of other primitive constants not supported yet!");
         }
     }
@@ -566,9 +584,7 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
             case "<=" -> ComparisonPredicate.ComparisonOperator.LEQ;
             case ">" -> ComparisonPredicate.ComparisonOperator.GT;
             case ">=" -> ComparisonPredicate.ComparisonOperator.GEQ;
-            default ->
-                //TODO: V3
-                throw new RuntimeException("Grammar expression of different comparison predicates not supported yet!");
+            default -> throw new RuntimeException("Grammar expression of different comparison predicates not supported yet!");
         };
     }
 

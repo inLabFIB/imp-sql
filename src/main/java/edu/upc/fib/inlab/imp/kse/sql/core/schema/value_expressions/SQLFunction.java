@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-//TODO: future work: improve design of this class considering multiple types and its position in the hierarchy
 public class SQLFunction implements ValueExpression {
     private final String functionName;
 

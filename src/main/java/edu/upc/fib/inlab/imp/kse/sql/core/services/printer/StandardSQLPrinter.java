@@ -14,8 +14,6 @@ import java.util.stream.Collectors;
 
 import static edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.SetOperation.SetOperator.UNION;
 
-//TODO: check that it syntax is not coupled with SQL Server
-
 @SuppressWarnings("unchecked")
 public class StandardSQLPrinter extends SQLPrinter {
 
@@ -63,6 +61,7 @@ public class StandardSQLPrinter extends SQLPrinter {
 
     @Override
     public String visit(SetOperation so) {
+        // TODO: Future work - IMPSQL-46
         if (so.getOperator() != UNION && so.returnsDuplicates()) throw new RuntimeException("Can't translate a EXCEPT/INTERSECT clause with ALL modifier.");
         if (so.getAlias() != null) throw new RuntimeException("Can't translate a set operation with alias.");
 
@@ -133,9 +132,6 @@ public class StandardSQLPrinter extends SQLPrinter {
 
     @Override
     public String visit(Assertion a) {
-        // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
-        //  e.g. replace whitespaces with underscores
-
         String assertionName = (a.getSchemaReference() != null) ? a.getSchemaReference().visit(this) + "." : "";
         assertionName += a.getAssertionName();
 
@@ -144,9 +140,7 @@ public class StandardSQLPrinter extends SQLPrinter {
 
     @Override
     public String visit(View v) {
-        if (v.getQuery().getAlias() != null) throw new RuntimeException("Query of View cannot have an alias in TSQL.");
-        // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
-        //  e.g. replace whitespaces with underscores
+        if (v.getQuery().getAlias() != null) throw new RuntimeException("Query of View cannot have an alias in SQL.");
 
         String viewName = (v.getSchemaReference() != null) ? v.getSchemaReference().visit(this) + "." : "";
         viewName += v.getViewName();
@@ -164,7 +158,7 @@ public class StandardSQLPrinter extends SQLPrinter {
 
     @Override
     public String visit(ExistsPredicate ep) {
-        if (ep.getQuery().getAlias() != null) throw new RuntimeException("Query inside ExistsPredicate cannot have an alias in TSQL.");
+        if (ep.getQuery().getAlias() != null) throw new RuntimeException("Query inside ExistsPredicate cannot have an alias in SQL.");
         return "EXISTS " + ep.getQuery().<String>visit(this);
     }
 
@@ -181,6 +175,11 @@ public class StandardSQLPrinter extends SQLPrinter {
     @Override
     public String visit(SQLPrimitiveString s) {
         return "'" + s.getValue() + "'";
+    }
+
+    @Override
+    public String visit(SQLFunction f) {
+        return f.getFunctionName() + "(" + String.join(", ", f.getArguments().stream().map(p -> p.<String>visit(this)).toList()) + ")";
     }
 
     @Override
@@ -269,16 +268,7 @@ public class StandardSQLPrinter extends SQLPrinter {
         return fkCreationStatement;
     }
 
-    @Override
-    public String visit(SQLCharacter c) {
-        if (c.getLength() != null) return "CHAR(" + c.getLength() + ")";
-        return "CHAR";
-    }
-
-    @Override
-    public String visit(SQLVarchar v) {
-        return "VARCHAR(" + v.getLength() + ")";
-    }
+    /* Data types */
 
     @Override
     public String visit(SQLBit b) {
@@ -286,6 +276,32 @@ public class StandardSQLPrinter extends SQLPrinter {
         return "BIT";
     }
 
+    @Override
+    public String visit(SQLVarbit vb) {
+        if (vb.getLength() != null) return "BIT VARYING(" + vb.getLength() + ")";
+        return "BIT VARYING";
+    }
+
+    /**
+     * 'CHARACTER' could also be used.
+     */
+    @Override
+    public String visit(SQLCharacter c) {
+        if (c.getLength() != null) return "CHAR(" + c.getLength() + ")";
+        return "CHAR";
+    }
+
+    /**
+     * 'CHARACTER VARYING' or 'CHAR VARYING' could also be used.
+     */
+    @Override
+    public String visit(SQLVarchar v) {
+        return "VARCHAR(" + v.getLength() + ")";
+    }
+
+    /**
+     * 'INTEGER' could also be used.
+     */
     @Override
     public String visit(SQLInteger i) {
         return "INT";
@@ -340,16 +356,5 @@ public class StandardSQLPrinter extends SQLPrinter {
     @Override
     public String visit(SQLDateTime dt) {
         return "DATETIME(" + dt.getFractionalSecondsPrecision() + ")";
-    }
-
-    @Override
-    public String visit(SQLFunction f) {
-        return f.getFunctionName() + "(" + String.join(", ", f.getArguments().stream().map(p -> p.<String>visit(this)).toList()) + ")";
-    }
-
-    @Override
-    public String visit(SQLVarbit vb) {
-        if (vb.getLength() != null) return "VARBINARY(" + vb.getLength() + ")";
-        return "VARBINARY";
     }
 }

@@ -19,8 +19,7 @@ import edu.upc.fib.inlab.imp.kse.sql.sql_server.services.printer.SQLServerPrinte
 import java.util.*;
 
 
-//TODO: changes where made to be correct (on clauses needed to be checked) and the walk is now probably inefficient.
-// It surely can be optimized.
+//TODO: Optimize - IMPSQL-49
 /**
  * This visitor checks (returns FALSE for) the following cases:
  * - [1] Repeated table aliases in a FROM clause of a TableExpression
@@ -166,7 +165,7 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
 
     @Override
     public <T> T visit(SetOperation so) {
-        //TODO: implement this
+        //TODO: Future Work - IMPSQL-46
         throw new RuntimeException("Validator doesn't work yet with setOperations");
     }
 
@@ -231,8 +230,6 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         return new ArrayList<>();
     }
 
-
-    //TODO:V2
     @Override
     public <T> T visit(Check c) {
         return null;

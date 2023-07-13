@@ -132,9 +132,6 @@ public class SQLServerPrinter extends SQLPrinter {
 
     @Override
     public String visit(Assertion a) {
-        // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
-        //  e.g. replace whitespaces with underscores
-
         String assertionName = (a.getSchemaReference() != null) ? a.getSchemaReference().visit(this) + "." : "";
         assertionName += a.getAssertionName();
 
@@ -144,8 +141,6 @@ public class SQLServerPrinter extends SQLPrinter {
     @Override
     public String visit(View v) {
         if (v.getQuery().getAlias() != null) throw new RuntimeException("Query of View cannot have an alias in TSQL.");
-        // TODO: Ensure that the name is returned in a valid TSQL format by doing any necessary modifications.
-        //  e.g. replace whitespaces with underscores
 
         String viewName = (v.getSchemaReference() != null) ? v.getSchemaReference().visit(this) + "." : "";
         viewName += v.getViewName();

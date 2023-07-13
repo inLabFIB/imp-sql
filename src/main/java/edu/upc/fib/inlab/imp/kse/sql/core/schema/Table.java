@@ -20,7 +20,6 @@ public class Table implements SQLObjectSchemaValueObject {
     protected final List<Check> checkConstraints;
     protected final List<Unique> uniqueConstraints;
 
-    //TODO: isn't 1 the max number of pk's a table can have???
     protected final List<PrimaryKey> primaryKeyConstraints;
 
     protected final List<ForeignKey> foreignKeyConstraints;
@@ -105,7 +104,6 @@ public class Table implements SQLObjectSchemaValueObject {
             && Objects.equals(this.schemaReference, schemaReference);
     }
 
-    //FIXME: try to check equality of classes
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

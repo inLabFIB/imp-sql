@@ -329,14 +329,13 @@ public class TablesSQLObjectSchemaParserTest {
                 schema.getTables().get(0).equals(expectedTable));
         }
 
-        //TODO: when adding OR, and TRUE, FALSE change the constraint to {col1 > 18 OR col2 = FALSE}
         @Test
         public void parseTableWithCheckTableConstraints() {
             String createTable = """
             CREATE TABLE name (
                 col1 int,
                 col2 bit,
-                CONSTRAINT c1 CHECK ( col1 > 18 AND col2 = 1 )
+                CONSTRAINT c1 CHECK ( col1 > 18 OR col2 = 1 )
             );
             """;
             SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
@@ -351,7 +350,7 @@ public class TablesSQLObjectSchemaParserTest {
                     new Attribute("col2", new SQLBit())),
                 List.of(new Check("c1",
                     new PredicateOperation(
-                        PredicateOperation.PredicateOperator.AND,
+                        PredicateOperation.PredicateOperator.OR,
                         new ComparisonPredicate(
                             ComparisonPredicate.ComparisonOperator.GT,
                             new ColumnReference("col1"),
@@ -478,7 +477,6 @@ public class TablesSQLObjectSchemaParserTest {
 
         /** CONSTRAINTS INTEGRATION **/
 
-        //TODO: when adding more expressions add them to the test (OR, boolean types,...)
         @Test
         public void parseTableWithMultipleConstraints() {
             String createTables = """

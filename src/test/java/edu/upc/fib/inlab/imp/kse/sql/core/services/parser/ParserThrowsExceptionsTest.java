@@ -1,6 +1,5 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.services.parser;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -21,17 +20,6 @@ public class ParserThrowsExceptionsTest {
     public void incorrectTableCreationThrowsException2() {
         String createTable = """
             CREATE ASSERT
-            """;
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
-
-        assertThrows(Exception.class, () -> parser.parse(createTable));
-    }
-
-    @Disabled
-    @Test
-    public void incorrectTableCreationThrowsException3() {
-        String createTable = """
-            CREA
             """;
         SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
 

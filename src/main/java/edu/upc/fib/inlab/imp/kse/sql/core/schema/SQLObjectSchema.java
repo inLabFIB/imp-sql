@@ -112,7 +112,6 @@ public class SQLObjectSchema {
 
     /** OTHER **/
 
-    //TODO: improve this. Avoid calling printer + parser.
     public SQLObjectSchema getCopy() {
         String schemaString = "";
         schemaString += String.join("\n\n", tables.stream().map(s -> s.<String>visit(new StandardSQLPrinter())).toList());

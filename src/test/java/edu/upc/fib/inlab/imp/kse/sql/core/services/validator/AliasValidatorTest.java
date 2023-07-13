@@ -4,7 +4,7 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLObjectSchema;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.SQLObjectSchemaParser;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.validator.exceptions.InvalidColumnReferenceException;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.validator.exceptions.InvalidOnJoinColumReferenceException;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -213,8 +213,53 @@ public class AliasValidatorTest {
         assertThrows(InvalidOnJoinColumReferenceException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 
-    @Disabled
-    @Test
-    public void InPredicateIsCorrectlyVerified() {
+    @Nested
+    class InPredicateTests {
+        @Test
+        public void CorrectInPredicate() {
+            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+
+            String tableA = "CREATE TABLE a (col1 int, col2 int, col3 int)";
+            parser.parse(tableA);
+
+            // Object parsed from input string
+            String assertion = """
+            CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
+                SELECT *
+                FROM a
+                WHERE 1 IN (a.col1, a.col2, a.col3, 3)
+            ))""";
+            parser.parse(assertion);
+
+            SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+            SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
+
+            assertDoesNotThrow(() -> validator.validateAliases(schema.getAssertions().get(0)));
+        }
+
+        @Test
+        public void IncorrectInPredicate() {
+            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+
+            String tableA = "CREATE TABLE a (col1 int, col2 int, col3 int)";
+            parser.parse(tableA);
+
+            // Object parsed from input string
+            String assertion = """
+            CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
+                SELECT *
+                FROM a
+                WHERE 1 IN (a.col1, a.col5)
+            ))""";
+            parser.parse(assertion);
+
+            SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+            SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
+
+            assertThrows(InvalidColumnReferenceException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+        }
     }
+
 }

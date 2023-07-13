@@ -57,8 +57,7 @@ public class SetOperation extends Query {
 
     @Override
     public List<ColumnReference> getOfferedReferences() {
-        // todo: what does a union,dif offer?
-        // i guess they need to be unifiable and for that you can get the offered of one of the 2 expressions
+        // TODO: Future Work - IMPSQL-46
         throw new RuntimeException("OfferedReferences of set operations not defined yet!");
     }
 
