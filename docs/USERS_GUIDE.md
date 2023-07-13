@@ -55,7 +55,7 @@ packages:
 
   - SQL Date
   - SQL Time
-  - SQL DateTime*
+  - SQL DateTime
   - SQL Timestamp
 
   - SQL Decimal
@@ -78,14 +78,11 @@ packages:
     
 By contract, almost all IMP SQL entities are immutable.
 
-
-[comment]: <> (TODO: FINISH THIS)
-
 ## Supported SQL expressions
 
 All that can be deduced from the previous objects.
 
-### Supported SQL expressions
+### Supported SQL data types
 All SLQ92 supported data types are considered and defined below. Some variables are also used which are also defined below:
 
 - length `l` - number of elements of a string
@@ -135,8 +132,6 @@ All SLQ92 supported data types are considered and defined below. Some variables 
 
 *DateTime is ANSI standard but not from the SQL92 revision!
 
-[comment]: <> (TODO: FINISH THIS)
-
 ## Work in progress / Future work
 
 - **Value Expressions**
@@ -148,10 +143,6 @@ All SLQ92 supported data types are considered and defined below. Some variables 
   - MORE PREDICATES
 - **Other**
   - MORE DATA TYPES (Interval, other from other revisions)
-
-  
-
-[comment]: <> (TODO: FINISH THIS)
 
 ## Instantiating a SQL object schema
 
@@ -165,8 +156,6 @@ There are two main ways the general user is expected to instantiate an SQLObject
 
 Both ways use, under the hood, the `TableSetBuilder` class, which helps create `Table` instances with the correct
 immutable attributes and constraints.
-
-[comment]: <> (TODO: FINISH THIS)
 
 ### How to use the TableBuilder and TableSetBuilder
 
@@ -191,7 +180,7 @@ A subsequent call to `build` traverses these provisional instances and returns t
 ## Validating the correctness of an SQL object schema
 
 While building the SQL object schema via the parser, some 'easy' checks are done automatically, like
-ensuring that table references found in an Assertion's definition actually reference `Table` instances of
+ensuring that `TableReferences` found in an Assertion's definition actually reference `Table` instances of
 the schema (that is why order matters, the necessary `CREATE TABLE` statements should be given before the 
 `CREATE ASSERTION` statement).
 
