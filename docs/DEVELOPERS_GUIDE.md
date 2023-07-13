@@ -34,3 +34,28 @@ original Java base implementations. This is to facilitate and standardize the co
 
 [comment]: <> (TODO: DECIDE CONVENTION)
 *TO DECIDE*
+
+
+mirar on es posa!!
+## Developer notes
+
+Generic methods defined in a visitor interface can be used to implement visitors with specific return types.
+
+However, it is left to the developer to correctly enforce that the type returned matches the expected type, otherwise
+there could be ```ClassCastExceptions``` thrown at execution time.
+
+Below, there is an example of how to correctly use the generic visitor methods:
+```Java
+// In a visitable class VisitableClass:
+@Override
+public <T> T visit(Visitor visitor) {
+    return visitor.visit(this);
+}
+
+// In a function of the Visitor class that needs to call the visit method from above:
+MyExpectedType visit (VisitableClass vc) {
+    return vc.<MyExpectedType>visit(this);
+}
+
+// Notice how the expected return type is indicated between "<>" immediately in front of the visit call. 
+```
