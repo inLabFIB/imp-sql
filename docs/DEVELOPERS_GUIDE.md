@@ -1,26 +1,32 @@
 # Developers guide
 
 ## Project structure
-
 The code is organized as follows:
 
-- `sql.sqlobjectschema`: contains the entities that represent the sql objects
-- `sql.services`: contains the services that operate over such entities:
-  - `sql.services.builders`: contains different builders to help in the `sqlobjectschema` construction process.
-  - `sql.services.fetcher`: tool to generate a `sqlobjectschema` instance from a real database schema. A connection to
-    a database is needed to utilise it.
-  - `sql.services.parser`: standard SQL parsing service.
-  - `sql.services.validator`: tool to check the correctness of a `sqlobjectschema` instance.
-  - `sql.services.printer`: printer service to express a `sqlobjectschema` in different SQL languages such as SQLServer.
-  
+- `sql.core`: Standard SQL domain classes and services
+  - `sql.core.schema`: contains the entities that represent the sql objects
+  - `sql.core.services`: contains the services that operate over such entities:
+    - `sql.core.services.builders`: contains different builders to help in the `sqlobjectschema` construction process.
+    - `sql.core.services.fetcher`: tool to generate a `sqlobjectschema` instance from a real database schema. This 
+      package contains the interfaces that can be implemented with a dialect of SQL.
+    - `sql.core.services.parser`: standard SQL parsing service.
+    - `sql.core.services.validator`: tool to check the correctness of a `sqlobjectschema` instance.
+    - `sql.core.services.printer`: printer service to express a `sqlobjectschema` in standard SQL expressions.
+- `sql.sql_server`: SQLServer services
+  - `sql.sql_server.services`
+    - `sql.core.services.fetcher`: Specific fetcher for SQLServer databases. Conversions are needed.
+    - `sql.core.services.printer`: printer service to express a `sqlobjectschema` in SQLServer expressions. Conversions are needed.
+
 ## Guidance for creating a SQLObjectSchema
 
 As a general rule, entities of a `SQLObjectSchema` should not be used in other schemas.
 
 ## Guidance for creating equals & hashcode
 
-A new implementation of the equals & hashcode methods has been used for every 'SQLObjectSchemaEntity', overwriting the 
+A new implementation of the equals & hashcode methods has been used for every `SQLObjectSchemaValueObject`, overwriting the 
 original Java base implementations. This is to facilitate and standardize the comparison of different schema entities.
+
+The default implementation used has been `Intellij Default`.
 
 ## Testing code
 
@@ -32,12 +38,15 @@ original Java base implementations. This is to facilitate and standardize the co
 
 ### Test Naming Conventions
 
-[comment]: <> (TODO: DECIDE CONVENTION)
-*TO DECIDE*
+Unit tests classes contain the suffix `Test` while integrations tests the suffix `IT`.
+
+When naming specific tests an exact convention is not used but each test name should express what the test is tesing and
+the expected result.
+
+Different tests of the same test class can be grouped using the `@Nested` tag under unifying characteristics.
 
 
-mirar on es posa!!
-## Developer notes
+## Domain class visitors
 
 Generic methods defined in a visitor interface can be used to implement visitors with specific return types.
 
@@ -46,16 +55,25 @@ there could be ```ClassCastExceptions``` thrown at execution time.
 
 Below, there is an example of how to correctly use the generic visitor methods:
 ```Java
+
 // In a visitable class VisitableClass:
-@Override
-public <T> T visit(Visitor visitor) {
+class VisitableClass {
+  // ...
+  @Override
+  public <T> T visit(Visitor visitor) {
     return visitor.visit(this);
+  }
+  // ...
 }
 
 // In a function of the Visitor class that needs to call the visit method from above:
-MyExpectedType visit (VisitableClass vc) {
-    return vc.<MyExpectedType>visit(this);
+class Visitor {
+  // ...
+  // Notice how the expected return type is indicated between "<>" immediately in front of the visit call. 
+  MyExpectedType visit(VisitableClass vc) {
+      return vc.<MyExpectedType>visit(this);
+  }
+  // ...
 }
 
-// Notice how the expected return type is indicated between "<>" immediately in front of the visit call. 
 ```
