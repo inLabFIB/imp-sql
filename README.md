@@ -1,66 +1,46 @@
 # IMP SQL
 
-## Developer notes
+IMP SQL is the implementation of the standard SQL metamodel. More precisely it is inspired in the metamodel of the 92' 
+SQL revision.
 
-Generic methods defined in a visitor interface can be used to implement visitors with specific return types.
+This tool focuses on representing 3 basic SQL schema objects: `Table`, `View` and `Assertion`. The 3 united under the concept 
+of a `SQLObjectSchema` which acts as a container for different SQL objects.
 
-However, it is left to the developer to correctly enforce that the type returned matches the expected type, otherwise
-there could be ```ClassCastExceptions``` thrown at execution time.
+The IMP SQL tool has a `core` package, where all the domain classes and functionalities are standard SQL, but also has 
+other implementation dependent packages. In this first version of the tool the package `sql_server` is provided, with 
+functionalities of this concrete implementation of SQL.
 
-Below, there is an example of how to correctly use the generic visitor methods:
-```Java
-// In a visitable class VisitableClass:
-@Override
-public <T> T visit(Visitor visitor) {
-    return visitor.visit(this);
-}
+## What is this library good for?
+IMP SQL can be used to parse SQL expressions to generate instances of the metamodel representing SQL objects.These can 
+be analyzed, validated and printed back to SQL.
 
-// In a function of the Visitor class that needs to call the visit method from above:
-MyExpectedType visit (VisitableClass vc) {
-    return vc.<MyExpectedType>visit(this);
-}
+The following expressions can be parsed to instance the different SQL objects the metamodel accepts:
+````sql92
+CREATE TABLE people (
+  name varchar(64),
+  age int,
+  legalTutor varchar(64) NOT NULL,
+  CONSTRAINT pk1 PRIMARY KEY (name),
+  CONSTRAINT fk1 FOREIGN KEY (legalTutor) REFERENCES people (name)
+);
 
-// Notice how the expected return type is indicated between "<>" immediately in front of the visit call. 
-```
+CREATE VIEW adult AS (
+  SELECT *
+  FROM people AS p
+  WHERE p.age >= 18
+);
 
-# README template for open-source projects.
+CREATE ASSERTION menorAmbTutor CHECK ( NOT ( EXISTS (
+  SELECT * 
+  FROM people AS p
+  WHERE p.age < 18 AND p.legalTutor IS NULL
+)));
+````
 
-## Name
-Choose a self-explaining name for your project.
+## Build
+### Building with ANTLR4
+To compile the project for the first time, or whenever we change the grammar files, we need to execute
+the `mvn generate-sources` phase.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Indeed, this phase creates the ANTLR4 autogenerated classes to visit the grammar. Hence, we recommend compiling the
+project with maven.

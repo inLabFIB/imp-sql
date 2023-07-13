@@ -20,12 +20,12 @@ packages:
   - **Aliasable Relational Expression**
     - Table Reference
     - **Query**
-      - Set Operation (NOT IMPLEMENTED YET)
+      - Set Operation
       - Table Expression
 - **Boolean Expressions**:
   - Not Operation
   - Is Operation (NOT IMPLEMENTED YET)
-  - Predicate Operation (ONLY `AND` IMPLEMENTED)
+  - Predicate Operation
   - **Predicate**
     - Comparison Predicate
     - Exist Predicate
@@ -34,6 +34,7 @@ packages:
   - Column Reference
   - Unary Operation (NOT IMPLEMENTED YET)
   - Arithmetic Operation (NOT IMPLEMENTED YET)
+  - SQLFunction
   - _Query_ (should be scalar)
   - **Primitive Expressions**
     - Null (NOT IMPLEMENTED YET)
@@ -46,15 +47,27 @@ packages:
   - Asterisk
   - Aliasable Select Item
 - **SQL Data Types**:
+  - SQL Bit
+  - SQL Varbit
+
   - SQL Char
   - SQL Varchar
-  - SQL Bit
-  - SQL Int
-  - SQL Smallint
-  - SQL Float
-  - SQL Real
+
   - SQL Date
-  - (...) (NOT IMPLEMENTED YET)
+  - SQL Time
+  - SQL DateTime
+  - SQL Timestamp
+
+  - SQL Decimal
+  - SQL DoublePrecision
+  - SQL Float
+  - SQL Integer
+  - SQL Smallint
+  - SQL Numeric
+  - SQL Real
+
+  - SQL Interval (NOT IMPLEMENTED YET)
+
 - **Constraints**:
   - _Assertion_
   - **Table Constraint**
@@ -65,32 +78,71 @@ packages:
     
 By contract, almost all IMP SQL entities are immutable.
 
-
-[comment]: <> (TODO: FINISH THIS)
-
 ## Supported SQL expressions
 
 All that can be deduced from the previous objects.
 
-[comment]: <> (TODO: FINISH THIS)
+### Supported SQL data types
+All SLQ92 supported data types are considered and defined below. Some variables are also used which are also defined below:
 
-## Work in progress
+- length `l` - number of elements of a string
+- precision `p` - number of significant digits of an exact number or the length of the mantissa of an approximate number.
+- scale `s` - number of decimal digits of an exact number
+- time fractional seconds precision `tfsp` - 
+- Datetime related:
+  - YEAR - Integer
+  - MONTH - (0-11)
+  - DAY - Integer
+  - HOUR - (0-23)
+  - MINUTE - (0-59)
+  - SECOND - (0-59.999...)
 
-- **Relational Expressions**
-  - UNIONS
-  - SET OPERATIONS
+#### Character Strings
+- SQL Bit(`l`): String of bits of a fix size `l`.
+- SQL Varbit(`l`): String of bits of a variable size, with a maximum of `l`.
+#### Bit Strings
+- SQL Char(`l`): String of characters of a fix size `l`.
+- SQL Varchar(`l`): String of characters of a variable size, with a maximum of `l`.
+#### Numbers
+- SQL Numeric(`p`,`s`): Exact numeric type.
+- SQL Decimal(`p`,`s`): Exact numeric type with the implementation-defined
+  decimal precision equal to or greater than the value of the
+  specified `p`. (NOT IMPLEMENTED YET)
+- SQL Integer(): Exact numeric type with binary or
+  decimal precision and scale of 0.
+- SQL Smallint(): Exact numeric type with binary or
+  decimal precision and scale of 0. The precision of SMALLINT shall be less than or
+  equal to the precision of INTEGER.
+
+- SQL Float(`p`): Approximate numeric type
+- SQL Real(): Approximate numeric type with implementation-
+  defined precision.
+- SQL DoublePrecision(): Approximate numeric type with implementation-defined precision that is greater than the
+  implementation-defined precision of REAL.
+
+
+#### Datetimes & Intervals
+- SQL Date(): Contains the fields YEAR, MONTH and DAY.
+- SQL Time(`tfsp`): Contains the fields HOUR, MINUTE and SECOND.
+- SQL DateTime(`tfsp`)*: Datatype which is the addition of SQLDate and SQLTime with their restrictions and ranges.
+- SQL Timestamp(`tfsp`): YEAR, MONTH, DAY, HOUR, MINUTE and SECOND. Synonym for rowversion which is a guaranteed unique value and with higher range limitations in respect to SQLDateTime
+- SQL Interval(): Can be of 2 types: (NOT IMPLEMENTED YET)
+  - YEAR-MONTH():  Information of YEAR-MONTH.
+  - DAY-TIME(`tfsp`): Information of DAY-HOUR-MINUTE-SECOND.
+
+*DateTime is ANSI standard but not from the SQL92 revision!
+
+## Work in progress / Future work
+
 - **Value Expressions**
   - VALUE OPERATIONS (unary & arithmetic)
   - NULL
   - MORE PRIMITIVE CONSTANTS
 - **Boolean Expressions**
   - IS OPERATION
-  - PREDICATE OPERATION (additional, e.g. `OR`)
   - MORE PREDICATES
 - **Other**
-  - MORE DATA TYPES
-
-[comment]: <> (TODO: FINISH THIS)
+  - MORE DATA TYPES (Interval, other from other revisions)
 
 ## Instantiating a SQL object schema
 
@@ -104,8 +156,6 @@ There are two main ways the general user is expected to instantiate an SQLObject
 
 Both ways use, under the hood, the `TableSetBuilder` class, which helps create `Table` instances with the correct
 immutable attributes and constraints.
-
-[comment]: <> (TODO: FINISH THIS)
 
 ### How to use the TableBuilder and TableSetBuilder
 
@@ -130,7 +180,7 @@ A subsequent call to `build` traverses these provisional instances and returns t
 ## Validating the correctness of an SQL object schema
 
 While building the SQL object schema via the parser, some 'easy' checks are done automatically, like
-ensuring that table references found in an Assertion's definition actually reference `Table` instances of
+ensuring that `TableReferences` found in an Assertion's definition actually reference `Table` instances of
 the schema (that is why order matters, the necessary `CREATE TABLE` statements should be given before the 
 `CREATE ASSERTION` statement).
 

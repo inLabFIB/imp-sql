@@ -16,12 +16,10 @@ RUN apt-get -y update && apt-get install -y \
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-COPY scripts /usr/src/app/scripts
-COPY sql_setups /usr/src/app/sql_setups
+COPY docker /usr/src/app
 
 # Set LF endline in shell scripts
 RUN dos2unix /usr/src/app/scripts/*.sh
-
 # Grant permissions for to our scripts to be executable
 RUN chmod +x /usr/src/app/scripts/*.sh
 
