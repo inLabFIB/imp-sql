@@ -3,11 +3,11 @@ package edu.upc.fib.inlab.imp.kse.sql.core.services.parser;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.Check;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.Asterisk;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.SelectItem;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.builders.TableSetBuilder;
 

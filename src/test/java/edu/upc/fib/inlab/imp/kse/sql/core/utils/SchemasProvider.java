@@ -3,9 +3,9 @@ package edu.upc.fib.inlab.imp.kse.sql.core.utils;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.Attribute;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.SchemaReference;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.Table;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types.SQLFloat;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types.SQLInteger;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types.SQLVarchar;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types.SQLFloat;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types.SQLInteger;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types.SQLVarchar;
 
 import java.util.List;
 

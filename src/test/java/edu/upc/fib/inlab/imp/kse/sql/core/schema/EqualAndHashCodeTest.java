@@ -1,6 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.schema;
 
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types.SQLInteger;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types.SQLInteger;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

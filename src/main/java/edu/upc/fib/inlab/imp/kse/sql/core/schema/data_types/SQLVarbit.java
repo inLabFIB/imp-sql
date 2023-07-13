@@ -1,17 +1,17 @@
-package edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types;
+package edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.Objects;
 
-public class SQLBit implements SQLDataType {
+public class SQLVarbit implements SQLDataType {
     private final Integer length;
 
-    public SQLBit() {
+    public SQLVarbit() {
         this(null);
     }
 
-    public SQLBit(Integer length) {
+    public SQLVarbit(Integer length) {
         this.length = length;
     }
 
@@ -30,9 +30,9 @@ public class SQLBit implements SQLDataType {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SQLBit sqlBit = (SQLBit) o;
+        SQLVarbit sqlVarbit = (SQLVarbit) o;
 
-        return Objects.equals(length, sqlBit.length);
+        return Objects.equals(length, sqlVarbit.length);
     }
 
     @Override

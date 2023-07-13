@@ -1,6 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.schema;
 
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types.SQLDataType;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types.SQLDataType;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.ValueExpression;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaValueObject;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;

@@ -7,9 +7,9 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.Check;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.ForeignKey;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.PrimaryKey;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.Unique;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types.SQLDataType;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.exceptions.MissingReferencedObjectException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.exceptions.SQLObjectAlreadyExistsException;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types.SQLDataType;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.ValueExpression;
 
 import java.util.ArrayList;

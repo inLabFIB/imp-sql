@@ -1,4 +1,4 @@
-package edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types;
+package edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;
 

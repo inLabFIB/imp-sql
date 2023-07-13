@@ -4,7 +4,7 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.Attribute;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLObjectSchema;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.Table;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.TableConstraint;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types.*;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.SQLFunction;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.SQLPrimitiveInteger;
 import org.junit.jupiter.api.BeforeAll;

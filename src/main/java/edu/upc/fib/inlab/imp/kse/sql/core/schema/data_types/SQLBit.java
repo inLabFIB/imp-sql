@@ -1,22 +1,22 @@
-package edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types;
+package edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.Objects;
 
-public class SQLFloat implements SQLDataType {
-    private final Integer precision;
+public class SQLBit implements SQLDataType {
+    private final Integer length;
 
-    public SQLFloat() {
+    public SQLBit() {
         this(null);
     }
 
-    public SQLFloat(Integer precision) {
-        this.precision = precision;
+    public SQLBit(Integer length) {
+        this.length = length;
     }
 
-    public Integer getPrecision() {
-        return precision;
+    public Integer getLength() {
+        return length;
     }
 
     @Override
@@ -30,13 +30,13 @@ public class SQLFloat implements SQLDataType {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SQLFloat sqlFloat = (SQLFloat) o;
+        SQLBit sqlBit = (SQLBit) o;
 
-        return Objects.equals(precision, sqlFloat.precision);
+        return Objects.equals(length, sqlBit.length);
     }
 
     @Override
     public int hashCode() {
-        return precision != null ? precision.hashCode() : 0;
+        return length != null ? length.hashCode() : 0;
     }
 }

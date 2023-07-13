@@ -6,7 +6,7 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.SchemaReference;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.Table;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.BooleanExpression;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.Check;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types.*;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.ValueExpression;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.builders.TableSetBuilder;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.fetcher.DatabaseFetcher;
@@ -115,16 +115,16 @@ public class SQLServerFetcher implements DatabaseFetcher {
             case "numeric", "decimal" -> new SQLNumeric(precision, scale);
             case "int" -> new SQLInteger();
             case "smallint" -> new SQLSmallint();
-            case "bigint" -> new SQLNumeric(precision, scale); // length should be 8 Bytes
+            case "bigint" -> new SQLNumeric(precision, scale);
 
-            case "float" -> new SQLFloat(precision); // FIXME: Precision does not match SQLServer query...
+            case "float" -> new SQLFloat(precision);
             case "real" -> new SQLReal();
             //double precision
 
             case "date" -> new SQLDate();
             //time
             case "datetime" -> new SQLDateTime(scale);
-            case "datetime2" -> new SQLDateTime(scale); //FIXME: possible errors in precision or date ranges
+            case "datetime2" -> new SQLDateTime(scale);
             //timestamp
             //interval
 

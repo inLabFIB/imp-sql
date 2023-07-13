@@ -1,10 +1,10 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.schema;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.ComparisonPredicate;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types.SQLInteger;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.exceptions.SQLObjectAlreadyExistsException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.TableExpression;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.AliasableSelectItem;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.sql_data_types.SQLInteger;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.SQLPrimitiveInteger;
 import org.junit.jupiter.api.Test;
 
