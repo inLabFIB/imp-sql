@@ -6,7 +6,7 @@
 
   <groupId>edu.upc.fib.inlab.imp.kse</groupId>
   <artifactId>imp-sql</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0-SNAPSHOT</version>
 
   <name>IMP SQL</name>
   <description>IMP SQL is a metamodel for expressing standard SQL objects.</description>
