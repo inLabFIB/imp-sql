@@ -235,7 +235,8 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
             //TODO: Future Work - IMPSQL-46, IMPSQL-50
             throw new RuntimeException("UNIONS not supported yet!");
         }
-        return visitQuerySpecification(ctx.query_specification());
+        if (!ctx.query_expression().isEmpty()) return visitQuery_expression(ctx.query_expression(0));
+        else return visitQuerySpecification(ctx.query_specification());
     }
 
     public TableExpression visitQuerySpecification(SQLParser.Query_specificationContext ctx) {
