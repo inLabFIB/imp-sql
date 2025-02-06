@@ -2,7 +2,7 @@ package edu.upc.fib.inlab.imp.kse.sql.core.schema;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.exceptions.MissingReferencedObjectException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.exceptions.SQLObjectAlreadyExistsException;
-import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.SQLObjectSchemaParser;
+import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.StandardSQLParser;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.printer.SQLPrinter;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.printer.StandardSQLPrinter;
 
@@ -118,7 +118,7 @@ public class SQLObjectSchema {
         schemaString += String.join("\n\n", views.stream().map(s -> s.<String>visit(new StandardSQLPrinter())).toList());
         schemaString += String.join("\n\n", assertions.stream().map(s -> s.<String>visit(new StandardSQLPrinter())).toList());
 
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(schemaString);
         return parser.getSQLObjectSchema();
     }

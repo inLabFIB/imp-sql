@@ -151,6 +151,7 @@ There are two main ways the general user is expected to instantiate an SQLObject
   - `CREATE TABLE`
   - `CREATE VIEW`
   - `CREATE ASSERTION`
+  - `SELECT-FROM-WHERE expressions`
 - Using the `SQLObjectSchemaFetcher` to connect to a database and retrieve the tables of the specified schemas.
   - Future work: Retrieve also the views.
 

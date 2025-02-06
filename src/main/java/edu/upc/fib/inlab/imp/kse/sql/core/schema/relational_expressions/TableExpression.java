@@ -1,5 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions;
 
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.BooleanExpression;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.Asterisk;
@@ -36,8 +37,9 @@ public class TableExpression extends Query {
         this.fromClause = fromClause;
         this.whereClause = whereClause;
 
-        if (this.selectClause.stream().anyMatch(s -> s instanceof Asterisk) && this.fromClause == null)
-            throw new RuntimeException("Cannot select * without a FROM clause");
+        if (this.selectClause.isEmpty()) throw new IMPSqlException("SELECT clause cannot be empty.");
+        if (this.selectClause.stream().anyMatch(Asterisk.class::isInstance) && this.fromClause == null)
+            throw new IMPSqlException("Cannot select * without a FROM clause");
 
         this.fromClauseTerminalExpressions = getFromClauseTerminalExpressions(fromClause);
     }

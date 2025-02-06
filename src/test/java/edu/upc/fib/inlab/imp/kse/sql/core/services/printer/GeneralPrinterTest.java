@@ -1,25 +1,25 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.services.printer;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLObjectSchema;
-import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.SQLObjectSchemaParser;
+import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.StandardSQLParser;
 import edu.upc.fib.inlab.imp.kse.sql.sql_server.services.printer.SQLServerPrinter;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class GeneralPrinterTest {
+class GeneralPrinterTest {
 
     /* SQL SERVER */
     @Test
-    public void assertSchemaPrintsCorrectly() {
+    void assertSchemaPrintsCorrectly() {
         String statements = """
             CREATE TABLE A (col1 int, col2 int);
             CREATE TABLE B (col3 int);
             CREATE ASSERTION assert CHECK (NOT (EXISTS (SELECT B.col2 FROM B)));
             """;
 
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(statements);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 

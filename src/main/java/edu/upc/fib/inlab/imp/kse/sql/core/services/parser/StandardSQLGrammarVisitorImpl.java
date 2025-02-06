@@ -1,5 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.services.parser;
 
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.Check;
@@ -14,9 +15,10 @@ import edu.upc.fib.inlab.imp.kse.sql.core.services.builders.TableSetBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
+public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
 
     private final SQLObjectSchema schema;
+    private final List<Query> queries;
 
     /**
      * When a parsed table is referenced without any SchemaReference, this default schema reference is used.
@@ -35,11 +37,12 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
     private final String unnamedConstraintName = "constraint";
     private int unnamedConstraintNumber = 1;
 
-    public SQLObjectSchemaGrammarVisitorImpl(SQLObjectSchema schema, SchemaReference defaultSchemaReference) {
+    public StandardSQLGrammarVisitorImpl(SQLObjectSchema schema, List<Query> queries, SchemaReference defaultSchemaReference) {
         this.schema = schema;
         this.defaultSchemaReference = defaultSchemaReference;
         this.builder = new TableSetBuilder();
         this.tablesInStandBy = false;
+        this.queries = queries;
     }
 
     private void generateTableBatch() {
@@ -54,6 +57,13 @@ public class SQLObjectSchemaGrammarVisitorImpl extends SQLParserBaseVisitor {
         Object o = visitChildren(ctx);
         generateTableBatch(); // If input ends with CREATE TABLE statements, they need to be created at the EOF.
         return o;
+    }
+
+    public Object visitDml_clause(SQLParser.Dml_clauseContext ctx) {
+        if (ctx.select_statement_standalone() == null) throw new IMPSqlException("Unknown DML clause.");
+        Query query = visitSelect_statement_standalone(ctx.select_statement_standalone());
+        queries.add(query);
+        return query;
     }
 
     public Assertion visitCreate_assertion(SQLParser.Create_assertionContext ctx) {

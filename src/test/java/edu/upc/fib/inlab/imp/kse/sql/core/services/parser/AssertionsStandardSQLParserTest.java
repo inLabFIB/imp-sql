@@ -18,14 +18,14 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class AssertionsSQLObjectSchemaParserTest {
+class AssertionsStandardSQLParserTest {
 
 
     @Test
-    public void parseSimpleCreateAssertionStatement() {
+    void parseSimpleCreateAssertionStatement() {
         // Object parsed from input string
         String basicAssertion = "CREATE ASSERTION assertionName CHECK ( NOT EXISTS ( SELECT 1))";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(basicAssertion);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -45,8 +45,8 @@ public class AssertionsSQLObjectSchemaParserTest {
     }
 
     @Test
-    public void parseAssertionWithAliases() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void parseAssertionWithAliases() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
@@ -87,10 +87,10 @@ public class AssertionsSQLObjectSchemaParserTest {
     }
 
     @Test
-    public void parseCreateAssertionWithOrOperation() {
+    void parseCreateAssertionWithOrOperation() {
         // Object parsed from input string
         String basicAssertion = "CREATE ASSERTION assertionName CHECK ( 1=1 OR 1<>1 )";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(basicAssertion);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 

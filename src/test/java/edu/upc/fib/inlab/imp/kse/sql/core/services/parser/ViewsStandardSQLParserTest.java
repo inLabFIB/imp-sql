@@ -28,7 +28,7 @@ import static edu.upc.fib.inlab.imp.kse.sql.core.utils.SchemasProvider.getMyTabl
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class ViewsSQLObjectSchemaParserTest {
+class ViewsStandardSQLParserTest {
 
     @Nested
     class ParsingViewsAfterParsingTablesTests {
@@ -37,7 +37,7 @@ class ViewsSQLObjectSchemaParserTest {
         void parseTrivialCrateViewStatement() {
             // Object parsed from input string
             String basicView = "CREATE TABLE tableA ( c1 INT, c2 INT ); CREATE VIEW view1 AS ( SELECT 1 );";
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(basicView);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -50,7 +50,7 @@ class ViewsSQLObjectSchemaParserTest {
     void parseTrivialCrateViewStatementWithColumnNames() {
         // Object parsed from input string
         String basicView = "CREATE VIEW viewName (col1) AS SELECT 1;";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(basicView);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -71,7 +71,7 @@ class ViewsSQLObjectSchemaParserTest {
     void parseTrivialCrateViewStatement() {
         // Object parsed from input string
         String basicView = "CREATE VIEW viewName AS SELECT 1;";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(basicView);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -90,7 +90,7 @@ class ViewsSQLObjectSchemaParserTest {
     void parseCreateViewStatementWithSimpleSelect() {
         // Object parsed from input string
         String basicSelect = "CREATE VIEW viewName AS SELECT a, b FROM myTable WHERE a = 1;";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(getMyTableSchemaStatements());
         parser.parse(basicSelect);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
@@ -119,7 +119,7 @@ class ViewsSQLObjectSchemaParserTest {
     void parseSelectWithJoinClause() {
         // Object parsed from input string
         String selectWithJoin = "CREATE VIEW viewName AS SELECT A.attr1, B.attr2 FROM sameSchema.A INNER JOIN sameSchema.B ON (A.fk = B.pk) WHERE B.attr3 = 1.1;";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(SchemasProvider.getABSchemaStatements());
         parser.parse(selectWithJoin);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
@@ -152,7 +152,7 @@ class ViewsSQLObjectSchemaParserTest {
     void parseSelectWithRecursiveSelectAndFrom() {
         // Object parsed from input string
         String basicSelect = "CREATE VIEW viewName AS SELECT b AS money, (SELECT c FROM otherTable) FROM (SELECT a, b FROM myTable) WHERE a = 1;";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(getMyTableSchemaStatements());
         parser.parse(basicSelect);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
@@ -189,7 +189,7 @@ class ViewsSQLObjectSchemaParserTest {
     void parseSelectWithMultipleJoinClausesOfPriority() {
         // Object parsed from input string
         String selectWithJoins = "CREATE VIEW viewName AS SELECT * FROM A, B INNER JOIN C ON (B.B_pk = C.C_pk), (D CROSS JOIN E);";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(SchemasProvider.getJoinsSchemaStatements());
         parser.parse(selectWithJoins);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
@@ -237,7 +237,7 @@ class ViewsSQLObjectSchemaParserTest {
                 CROSS JOIN C;
             """;
 
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(SchemasProvider.getJoinsSchemaStatements());
         parser.parse(selectWithJoins);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
@@ -269,7 +269,7 @@ class ViewsSQLObjectSchemaParserTest {
     void parseSelectStatementWithComplexPredicate() {
         // Object parsed from input string
         String selectStatement = "CREATE VIEW viewName AS SELECT *, * FROM myTable WHERE 1 = 0 AND ('SQLCommonSense' = '' AND NOT NOT (NOT 0 = 0));";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(getMyTableSchemaStatements());
         parser.parse(selectStatement);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
@@ -313,7 +313,7 @@ class ViewsSQLObjectSchemaParserTest {
     @Test
     void parseSelectStatementWithAliasedColumns() {
         String selectStatement = "CREATE VIEW viewName AS SELECT sub.q as d FROM (SELECT myTable.a as q FROM myTable) as sub;";
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(getMyTableSchemaStatements());
         parser.parse(selectStatement);
         SQLObjectSchema schema = parser.getSQLObjectSchema();

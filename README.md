@@ -15,7 +15,8 @@ IMP SQL can be used to parse SQL expressions to generate instances of the metamo
 be analyzed, validated and printed back to SQL.
 
 The following expressions can be parsed to instance the different SQL objects the metamodel accepts:
-````sql92
+
+```sql92
 CREATE TABLE people (
   name varchar(64),
   age int,
@@ -35,7 +36,16 @@ CREATE ASSERTION menorAmbTutor CHECK ( NOT ( EXISTS (
   FROM people AS p
   WHERE p.age < 18 AND p.legalTutor IS NULL
 )));
-````
+```
+
+Additionally, query expressions can also be parsed with the same available grammar:
+
+```sql92
+SELECT *
+FROM people AS p
+WHERE p.age < 18
+  AND p.legalTutor IS NULL;
+```
 
 ## Build
 ### Building with ANTLR4

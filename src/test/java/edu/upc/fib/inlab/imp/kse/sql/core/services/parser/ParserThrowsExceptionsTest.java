@@ -4,24 +4,24 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ParserThrowsExceptionsTest {
+class ParserThrowsExceptionsTest {
 
     @Test
-    public void incorrectTableCreationThrowsException() {
+    void incorrectTableCreationThrowsException() {
        String createTable = """
             CREATE TABLE tableName (col int,
             """;
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
 
         assertThrows(Exception.class, () -> parser.parse(createTable));
     }
 
     @Test
-    public void incorrectTableCreationThrowsException2() {
+    void incorrectTableCreationThrowsException2() {
         String createTable = """
             CREATE ASSERT
             """;
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
 
         assertThrows(Exception.class, () -> parser.parse(createTable));
     }

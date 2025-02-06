@@ -1,6 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.schema;
 
-import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.SQLObjectSchemaParser;
+import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.StandardSQLParser;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -8,7 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 class AssertionTest {
 
     @Test
-    public void shouldGenerateViewFromSimpleAssertion() {
+    void shouldGenerateViewFromSimpleAssertion() {
         String schema = """
             CREATE TABLE LINEITEM (L_ORDERKEY int, L_COMMITDATE int);
             CREATE TABLE ORDERS (O_ORDERKEY int, O_ORDERDATE int);
@@ -29,7 +29,7 @@ class AssertionTest {
             ;
             """;
 
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(schema);
         parser.parse(assertionString);
         parser.parse(viewString);
@@ -39,6 +39,6 @@ class AssertionTest {
         View obtainedView = assertion.getEquivalentViolationDetectionView();
 
         assertThat("Obtained view is not equal to expected views.",
-            obtainedView.equals(expectedView));
+                   obtainedView.equals(expectedView));
     }
 }

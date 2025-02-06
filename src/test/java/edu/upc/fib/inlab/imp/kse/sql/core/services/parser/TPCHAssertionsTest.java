@@ -18,10 +18,10 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class TPCHAssertionsTest {
+class TPCHAssertionsTest {
 
     @Test
-    public void checkSupplierNotCustomerAssertion() {
+    void checkSupplierNotCustomerAssertion() {
         String dummyTables = """
             CREATE TABLE LINEITEM (L_ORDERKEY int, L_SUPPKEY int);
             CREATE TABLE SUPPLIER (S_SUPPKEY int, S_NAME varchar(10));
@@ -39,7 +39,7 @@ public class TPCHAssertionsTest {
             ));
             """;
 
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(dummyTables);
         parser.parse(createAssertionStatement);
         SQLObjectSchema schema = parser.getSQLObjectSchema();

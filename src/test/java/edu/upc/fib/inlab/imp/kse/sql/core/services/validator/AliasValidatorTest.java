@@ -1,7 +1,7 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.services.validator;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLObjectSchema;
-import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.SQLObjectSchemaParser;
+import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.StandardSQLParser;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.validator.exceptions.InvalidColumnReferenceException;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.validator.exceptions.InvalidOnJoinColumReferenceException;
 import org.junit.jupiter.api.Nested;
@@ -10,11 +10,11 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AliasValidatorTest {
+class AliasValidatorTest {
 
     @Test
-    public void validAssertionAliases() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void validAssertionAliases() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
@@ -34,8 +34,8 @@ public class AliasValidatorTest {
     }
 
     @Test
-    public void invalidColumnReference() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void invalidColumnReference() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (col1 int)";
         parser.parse(tableA);
@@ -55,8 +55,8 @@ public class AliasValidatorTest {
     }
 
     @Test
-    public void invalidAssertionAliasesMoreRequired() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void invalidAssertionAliasesMoreRequired() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
@@ -76,8 +76,8 @@ public class AliasValidatorTest {
     }
 
     @Test
-    public void invalidAssertionAliasesAmbiguousTable() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void invalidAssertionAliasesAmbiguousTable() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
@@ -97,8 +97,8 @@ public class AliasValidatorTest {
     }
 
     @Test
-    public void invalidAssertionAliasesRepeatedColumnAlias() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void invalidAssertionAliasesRepeatedColumnAlias() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
@@ -118,7 +118,7 @@ public class AliasValidatorTest {
     }
 
     @Test
-    public void validSimpleAssertionWithWhereClause() {
+    void validSimpleAssertionWithWhereClause() {
         String createTableStatement = """
             CREATE TABLE tableA (
                 col1 int,
@@ -135,7 +135,7 @@ public class AliasValidatorTest {
             )));
             """;
 
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(createTableStatement);
         parser.parse(createAssertionStatement);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
@@ -146,8 +146,8 @@ public class AliasValidatorTest {
     }
 
     @Test
-    public void validViewAliases() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void validViewAliases() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
@@ -165,8 +165,8 @@ public class AliasValidatorTest {
     }
 
     @Test
-    public void invalidViewAliasesMoreRequired() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void invalidViewAliasesMoreRequired() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
@@ -184,8 +184,8 @@ public class AliasValidatorTest {
     }
 
     @Test
-    public void TPCHSupplierNotCustomerWithWrongSchema() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void TPCHSupplierNotCustomerWithWrongSchema() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         //LINEITEM is missing L_SUPPKEY
         String createTableStatement = """
@@ -216,8 +216,8 @@ public class AliasValidatorTest {
     @Nested
     class InPredicateTests {
         @Test
-        public void CorrectInPredicate() {
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        void CorrectInPredicate() {
+            StandardSQLParser parser = new StandardSQLParser();
 
             String tableA = "CREATE TABLE a (col1 int, col2 int, col3 int)";
             parser.parse(tableA);
@@ -239,8 +239,8 @@ public class AliasValidatorTest {
         }
 
         @Test
-        public void IncorrectInPredicate() {
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        void IncorrectInPredicate() {
+            StandardSQLParser parser = new StandardSQLParser();
 
             String tableA = "CREATE TABLE a (col1 int, col2 int, col3 int)";
             parser.parse(tableA);
