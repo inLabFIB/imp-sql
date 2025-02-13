@@ -1,9 +1,8 @@
 image: maven:3-openjdk-17-slim
 cache:
   paths:
-    - ./.m2/repository
-    - target/
-  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
+    - .m2/repository
+  key: maven-cache
 
 variables:
   MAVEN_CLI_OPTS: "-s ci_settings.xml --batch-mode"
@@ -20,18 +19,15 @@ environment:test-db:
   only:
     changes:
       - Dockerfile
-      - scripts/*
-      - sql_setups/*
+      - docker/**
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   variables:
     IMAGE_TAG: $NEXUS_REGISTRY/imp-sql/db:latest
   script:
-    - mkdir -p /kaniko/.docker
     - cat "$DOCKER_AUTH_CONFIG" > /kaniko/.docker/config.json
-    - >-
-      /kaniko/executor
+    - /kaniko/executor
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${IMAGE_TAG}"
@@ -48,7 +44,7 @@ test:unit:
 test:integration:
   stage: test
   variables:
-    TINTIN_DB_HOST: 'db'
+    SQL_DB_HOST: 'db'
     ACCEPT_EULA: Y
     SA_PASSWORD: PasswordO1.
   services:
