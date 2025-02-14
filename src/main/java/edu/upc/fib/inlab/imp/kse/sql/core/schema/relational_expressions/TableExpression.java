@@ -99,7 +99,8 @@ public class TableExpression extends Query {
             } else if (s instanceof AliasableSelectItem as){
                 String selectAlias = as.getColumAlias();
                 if (selectAlias == null) selectAlias = as.getDefaultAlias();
-                if (selectAlias == null) throw new RuntimeException("No column alias specified for '"+superAlias+"'");
+                if (selectAlias == null)
+                    throw new IMPSqlException("No column alias specified for '" + superAlias + "'");
                 result.add(new ColumnReference(superAlias, selectAlias));
             }
         }

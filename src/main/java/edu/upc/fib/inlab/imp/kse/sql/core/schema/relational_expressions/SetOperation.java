@@ -1,5 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions;
 
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.ColumnReference;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;
 
@@ -22,15 +23,15 @@ public class SetOperation extends Query {
     private final Query leftExpression;
     private final Query rightExpression;
 
-    public SetOperation(SetOperator operator, boolean all, Query rightExpression, Query leftExpression) {
-        this(operator, all, rightExpression, leftExpression, null);
+    public SetOperation(SetOperator operator, boolean all, Query leftExpression, Query rightExpression) {
+        this(operator, all, leftExpression, rightExpression, null);
     }
 
-    public SetOperation(SetOperator operator, boolean all, Query rightExpression, Query leftExpression, String alias) {
+    public SetOperation(SetOperator operator, boolean all, Query leftExpression, Query rightExpression, String alias) {
         super(alias);
         this.operator = Objects.requireNonNull(operator, "The parameter 'operator' cannot be null.");
-        this.leftExpression = Objects.requireNonNull(leftExpression, "The parameter 'operator' cannot be null.");
-        this.rightExpression = Objects.requireNonNull(rightExpression, "The parameter 'operator' cannot be null.");
+        this.leftExpression = Objects.requireNonNull(leftExpression, "The parameter 'leftExpression' cannot be null.");
+        this.rightExpression = Objects.requireNonNull(rightExpression, "The parameter 'rightExpression' cannot be null.");
         this.all = all;
     }
 
@@ -52,13 +53,13 @@ public class SetOperation extends Query {
 
     @Override
     public AliasableRelationalExpression getAliasedCopy(String newAlias) {
-        return new SetOperation(operator, all, rightExpression, leftExpression, newAlias);
+        return new SetOperation(operator, all, leftExpression, rightExpression, newAlias);
     }
 
     @Override
     public List<ColumnReference> getOfferedReferences() {
         // TODO: Future Work - IMPSQL-46
-        throw new RuntimeException("OfferedReferences of set operations not defined yet!");
+        throw new IMPSqlException("OfferedReferences of set operations not defined yet!");
     }
 
     @Override

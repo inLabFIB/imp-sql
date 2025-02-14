@@ -27,7 +27,7 @@ class SQLServerPrinterTest {
     @Nested
     class TableTests {
         @Test
-        public void printTableWithAttrTypes() {
+        void printTableWithAttrTypes() {
             // Object built directly in Java
             Table table = new Table(
                 "tableName",
@@ -52,7 +52,7 @@ class SQLServerPrinterTest {
         }
 
         @Test
-        public void printTableWithConstraints() {
+        void printTableWithConstraints() {
             Attribute attrA = new Attribute("attrA", new SQLInteger());
             Attribute attrB = new Attribute("attrB", new SQLVarchar(64));
 
@@ -91,7 +91,7 @@ class SQLServerPrinterTest {
         }
 
         @Test
-        public void attributeTypesArePrintedAsExpected() {
+        void attributeTypesArePrintedAsExpected() {
             Table table = new Table("table", List.of(
                 new Attribute("col1", new SQLBit()),
                 new Attribute("col2", new SQLBit(2)),
@@ -110,7 +110,7 @@ class SQLServerPrinterTest {
     @Nested
     class AssertionTests {
         @Test
-        public void printSimpleCreateAssertionStatement() {
+        void printSimpleCreateAssertionStatement() {
             // Object built directly in java
             Assertion assertion = new Assertion(
                 "assertionName",
@@ -130,7 +130,7 @@ class SQLServerPrinterTest {
     @Nested
     class ViewTests {
         @Test
-        public void printCrateViewStatementWithColumnNames() {
+        void printCrateViewStatementWithColumnNames() {
             // Object built directly in java
             View view = new View(
                 "viewName", null, List.of("col1"),
@@ -144,7 +144,7 @@ class SQLServerPrinterTest {
         }
 
         @Test
-        public void printCrateViewStatement() {
+        void printCrateViewStatement() {
             // Object built directly in java
             View view = new View(
                 "viewName",
@@ -157,7 +157,7 @@ class SQLServerPrinterTest {
             MatcherAssert.assertThat(view.visit(new SQLServerPrinter()), is(expectedView));
         }
         @Test
-        public void printViewWithSchema() {
+        void printViewWithSchema() {
             View view = new View(
                 "viewName",
                 new SchemaReference("db","schema"),
@@ -181,7 +181,7 @@ class SQLServerPrinterTest {
         @Nested
         class SimpleSelectTests {
             @Test
-            public void printSelectStatement() {
+            void printSelectStatement() {
                 // Object built directly in java
                 Query select = new TableExpression(
                     List.of(
@@ -199,7 +199,7 @@ class SQLServerPrinterTest {
             }
 
             @Test
-            public void parseSelectStatementWithComplexPredicate() {
+            void parseSelectStatementWithComplexPredicate() {
                 // Object built directly in java
                 Query select = new TableExpression(
                     List.of(new Asterisk(), new Asterisk()),
@@ -237,7 +237,7 @@ class SQLServerPrinterTest {
         @Nested
         class JoinTests {
             @Test
-            public void printSelectWithJoinClause() {
+            void printSelectWithJoinClause() {
                 // Object built directly in java
                 Query select = new TableExpression(
                     List.of(
@@ -259,7 +259,7 @@ class SQLServerPrinterTest {
             }
 
             @Test
-            public void parseSelectWithMultipleJoinClausesOfPriority() {
+            void parseSelectWithMultipleJoinClausesOfPriority() {
                 // Object built directly in java
                 Query select = new TableExpression(
                     List.of(new Asterisk()),
@@ -293,7 +293,7 @@ class SQLServerPrinterTest {
         @Nested
         class RecursiveSelectTests {
             @Test
-            public void printSelectWithRecursiveSelectAndFrom() {
+            void printSelectWithRecursiveSelectAndFrom() {
                 // Object built directly in java
                 Query select = new TableExpression(
                     List.of(
@@ -324,7 +324,7 @@ class SQLServerPrinterTest {
     @Nested
     class InPredicateTests {
         @Test
-        public void printInPredicate() {
+        void printInPredicate() {
             View view = new View(
                 "viewName",
                 new SchemaReference("db","schema"),
@@ -339,7 +339,7 @@ class SQLServerPrinterTest {
         }
 
         @Test
-        public void printInPredicate2() {
+        void printInPredicate2() {
             View view = new View(
                 "viewName",
                 new SchemaReference("db","schema"),
@@ -357,7 +357,7 @@ class SQLServerPrinterTest {
     @Nested
     class OrOperationTests {
         @Test
-        public void printAssertionWithOr() {
+        void printAssertionWithOr() {
             Assertion assertion = new Assertion(
                 "assertionName",
                 new PredicateOperation(
@@ -380,7 +380,7 @@ class SQLServerPrinterTest {
         }
 
         @Test
-        public void printOrInWhere() {
+        void printOrInWhere() {
             View view = new View(
                 "viewName",
                 new SchemaReference("db","schema"),
@@ -410,7 +410,7 @@ class SQLServerPrinterTest {
     @Nested
     class UnionTests {
         @Test
-        public void unionOfSelects() {
+        void unionOfSelects() {
             Assertion assertion = new Assertion(
                 "assertionName",
                 new NotOperation(new ExistsPredicate(
@@ -420,11 +420,11 @@ class SQLServerPrinterTest {
                         new TableExpression(
                             List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
                             null, null
-                        ),
-                        new TableExpression(
+                        ), new TableExpression(
                             List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
                             null, null
-                        ))
+                    )
+                    )
                 ))
             );
 

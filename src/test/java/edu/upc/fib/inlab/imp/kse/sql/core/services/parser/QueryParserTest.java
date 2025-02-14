@@ -2,13 +2,11 @@ package edu.upc.fib.inlab.imp.kse.sql.core.services.parser;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLObjectSchema;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.CrossJoin;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.Query;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.TableExpression;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.TableReference;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.ColumnReference;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.SQLPrimitiveInteger;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -35,7 +33,7 @@ class QueryParserTest {
         List<Query> queries = parser.getQueries();
 
         // Object built directly in java
-        Query expectedQuery = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))), null, null);
+        Query expectedQuery = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
 
         assertThat(queries).hasSize(1).first().isEqualTo(expectedQuery);
     }
@@ -52,8 +50,8 @@ class QueryParserTest {
         List<Query> queries = parser.getQueries();
 
         // Object built directly in java
-        Query expectedQuery1 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))), null, null);
-        Query expectedQuery2 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))), null, null);
+        Query expectedQuery1 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+        Query expectedQuery2 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))));
 
         assertThat(queries).hasSize(2).first().isEqualTo(expectedQuery1);
         assertThat(queries).last().isEqualTo(expectedQuery2);
@@ -91,5 +89,147 @@ class QueryParserTest {
         );
 
         assertThat(queries).hasSize(1).first().isEqualTo(expectedQuery);
+    }
+
+    @Nested
+    class SetOperationTests {
+        @Test
+        void parseUnion() {
+            // Object parsed from input string
+            String basicQuery = """
+                (SELECT 1) UNION SELECT 2;
+                """;
+            StandardSQLParser parser = new StandardSQLParser();
+            parser.parse(basicQuery);
+            List<Query> queries = parser.getQueries();
+
+            // Object built directly in java
+            Query expectedQuery1 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+            Query expectedQuery2 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))));
+
+            Query union = new SetOperation(SetOperation.SetOperator.UNION, false, expectedQuery1, expectedQuery2);
+
+            assertThat(queries).hasSize(1)
+                .first().isEqualTo(union);
+        }
+
+        @Test
+        void parseUnionAll() {
+            // Object parsed from input string
+            String basicQuery = """
+                (SELECT 1) UNION ALL SELECT 2;
+                """;
+            StandardSQLParser parser = new StandardSQLParser();
+            parser.parse(basicQuery);
+            List<Query> queries = parser.getQueries();
+
+            // Object built directly in java
+            Query expectedQuery1 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+            Query expectedQuery2 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))));
+
+            Query union = new SetOperation(SetOperation.SetOperator.UNION, true, expectedQuery1, expectedQuery2);
+
+            assertThat(queries).hasSize(1)
+                .first().isEqualTo(union);
+        }
+
+        @Test
+        void parseSQLUnion_Union() {
+            // Object parsed from input string
+            String basicQuery = """
+                SELECT 1 UNION SELECT 2;
+                """;
+            StandardSQLParser parser = new StandardSQLParser();
+            parser.parse(basicQuery);
+            List<Query> queries = parser.getQueries();
+
+            // Object built directly in java
+            Query expectedQuery1 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+            Query expectedQuery2 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))));
+
+            Query union = new SetOperation(SetOperation.SetOperator.UNION, false, expectedQuery1, expectedQuery2);
+
+            assertThat(queries).hasSize(1).first().isEqualTo(union);
+        }
+
+        @Test
+        void parseSQLUnion_UnionAll() {
+            // Object parsed from input string
+            String basicQuery = """
+                SELECT 1 UNION ALL SELECT 2;
+                """;
+            StandardSQLParser parser = new StandardSQLParser();
+            parser.parse(basicQuery);
+            List<Query> queries = parser.getQueries();
+
+            // Object built directly in java
+            Query expectedQuery1 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+            Query expectedQuery2 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))));
+
+            Query union = new SetOperation(SetOperation.SetOperator.UNION, true, expectedQuery1, expectedQuery2);
+
+            assertThat(queries).hasSize(1).first().isEqualTo(union);
+        }
+
+        @Test
+        void parseSQLUnion_Except() {
+            // Object parsed from input string
+            String basicQuery = """
+                SELECT 1 EXCEPT SELECT 2;
+                """;
+            StandardSQLParser parser = new StandardSQLParser();
+            parser.parse(basicQuery);
+            List<Query> queries = parser.getQueries();
+
+            // Object built directly in java
+            Query expectedQuery1 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+            Query expectedQuery2 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))));
+
+            Query union = new SetOperation(SetOperation.SetOperator.EXCEPT, false, expectedQuery1, expectedQuery2);
+
+            assertThat(queries).hasSize(1).first().isEqualTo(union);
+        }
+
+        @Test
+        void parseSQLUnion_Intersect() {
+            // Object parsed from input string
+            String basicQuery = """
+                SELECT 1 INTERSECT SELECT 2;
+                """;
+            StandardSQLParser parser = new StandardSQLParser();
+            parser.parse(basicQuery);
+            List<Query> queries = parser.getQueries();
+
+            // Object built directly in java
+            Query expectedQuery1 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+            Query expectedQuery2 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))));
+
+            Query union = new SetOperation(SetOperation.SetOperator.INTERSECT, false, expectedQuery1, expectedQuery2);
+
+            assertThat(queries).hasSize(1).first().isEqualTo(union);
+        }
+
+        @Test
+        void parseSQLUnions() {
+            // Object parsed from input string
+            String basicQuery = """
+                SELECT 1 UNION SELECT 2 UNION SELECT 3;
+                """;
+            StandardSQLParser parser = new StandardSQLParser();
+            parser.parse(basicQuery);
+            List<Query> queries = parser.getQueries();
+
+            // Object built directly in java
+            Query expectedQuery1 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+            Query expectedQuery2 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))));
+            Query expectedQuery3 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(3))));
+
+            Query union = new SetOperation(SetOperation.SetOperator.UNION, false,
+                                           new SetOperation(SetOperation.SetOperator.UNION, false, expectedQuery1, expectedQuery2),
+                                           expectedQuery3
+            );
+
+            assertThat(queries).hasSize(1).first().isEqualTo(union);
+        }
     }
 }

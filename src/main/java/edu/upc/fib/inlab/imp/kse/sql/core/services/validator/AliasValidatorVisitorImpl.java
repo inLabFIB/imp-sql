@@ -1,5 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.services.validator;
 
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.Check;
@@ -166,7 +167,7 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
     @Override
     public <T> T visit(SetOperation so) {
         //TODO: Future Work - IMPSQL-46
-        throw new RuntimeException("Validator doesn't work yet with setOperations");
+        throw new IMPSqlException("Validator doesn't work yet with setOperations");
     }
 
     @Override
@@ -269,81 +270,81 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
 
     @Override
     public <T> T visit(SQLCharacter c) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLVarchar v) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLBit b) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLInteger i) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLSmallint s) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLFloat f) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLReal r) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLDate d) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLDoublePrecision dp) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLNumeric n) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLDateTime dt) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLFunction f) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLVarbit vb) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLDecimal d) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLTime t) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
     public <T> T visit(SQLTimestamp ts) {
-        throw new RuntimeException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 }

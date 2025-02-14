@@ -1,5 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.services.printer;
 
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.*;
@@ -62,8 +63,9 @@ public class StandardSQLPrinter extends SQLPrinter {
     @Override
     public String visit(SetOperation so) {
         // TODO: Future work - IMPSQL-46
-        if (so.getOperator() != UNION && so.returnsDuplicates()) throw new RuntimeException("Can't translate a EXCEPT/INTERSECT clause with ALL modifier.");
-        if (so.getAlias() != null) throw new RuntimeException("Can't translate a set operation with alias.");
+        if (so.getOperator() != UNION && so.returnsDuplicates())
+            throw new IMPSqlException("Can't translate a EXCEPT/INTERSECT clause with ALL modifier.");
+        if (so.getAlias() != null) throw new IMPSqlException("Can't translate a set operation with alias.");
 
         String operator = switch (so.getOperator()) {
             case UNION -> " UNION ";
@@ -140,7 +142,7 @@ public class StandardSQLPrinter extends SQLPrinter {
 
     @Override
     public String visit(View v) {
-        if (v.getQuery().getAlias() != null) throw new RuntimeException("Query of View cannot have an alias in SQL.");
+        if (v.getQuery().getAlias() != null) throw new IMPSqlException("Query of View cannot have an alias in SQL.");
 
         String viewName = (v.getSchemaReference() != null) ? v.getSchemaReference().visit(this) + "." : "";
         viewName += v.getViewName();
@@ -158,7 +160,8 @@ public class StandardSQLPrinter extends SQLPrinter {
 
     @Override
     public String visit(ExistsPredicate ep) {
-        if (ep.getQuery().getAlias() != null) throw new RuntimeException("Query inside ExistsPredicate cannot have an alias in SQL.");
+        if (ep.getQuery().getAlias() != null)
+            throw new IMPSqlException("Query inside ExistsPredicate cannot have an alias in SQL.");
         return "EXISTS " + ep.getQuery().<String>visit(this);
     }
 

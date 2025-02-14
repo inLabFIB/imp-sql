@@ -1,5 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.schema;
 
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.BooleanExpression;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.ExistsPredicate;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.NotOperation;
@@ -38,7 +39,7 @@ public class Assertion implements Constraint {
 
     public View getEquivalentViolationDetectionView() {
         if (!(booleanExpression instanceof NotOperation nop && nop.getExpression() instanceof ExistsPredicate ep))
-            throw new RuntimeException("Only assertions with predicate of type \"NOT EXISTS (<query>)\" have equivalent violation detection views.");
+            throw new IMPSqlException("Only assertions with predicate of type \"NOT EXISTS (<query>)\" have equivalent violation detection views.");
         SchemaReference newSchemaReference = (getSchemaReference() != null) ? new SchemaReference(getSchemaReference().getSchemaName()) : null;
         return new View(getAssertionName(), newSchemaReference, ep.getQuery());
     }
