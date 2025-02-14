@@ -26,7 +26,7 @@ public class SQLNumeric implements SQLDataType {
 
 
     @Override
-    public <T> T visit(SQLObjectSchemaVisitor visitor) {
+    public <T> T visit(SQLObjectSchemaVisitor<T> visitor) {
         return visitor.visit(this);
     }
 

@@ -68,7 +68,7 @@ public class SetOperation extends Query {
     }
 
     @Override
-    public <T> T visit(SQLObjectSchemaVisitor visitor) {
+    public <T> T visit(SQLObjectSchemaVisitor<T> visitor) {
         return visitor.visit(this);
     }
 

@@ -12,46 +12,86 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.Aliasable
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.Asterisk;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.*;
 
-public interface SQLObjectSchemaVisitor {
-    <T> T visit(TableExpression te);
-    <T> T visit(CrossJoin j);
-    <T> T visit(OnJoin j);
-    <T> T visit(TableReference tr);
-    <T> T visit(ComparisonPredicate cp);
-    <T> T visit(ColumnReference cr);
-    <T> T visit(PredicateOperation po);
-    <T> T visit(Assertion a);
-    <T> T visit(View v);
-    <T> T visit(NotOperation no);
-    <T> T visit(ExistsPredicate ep);
-    <T> T visit(SQLPrimitiveInteger d);
-    <T> T visit(SQLPrimitiveFloat f);
-    <T> T visit(SQLPrimitiveString s);
-    <T> T visit(Asterisk a);
-    <T> T visit(AliasableSelectItem asi);
-    <T> T visit(Table t);
-    <T> T visit(SchemaReference sr);
-    <T> T visit(Attribute a);
-    <T> T visit(Check c);
-    <T> T visit(Unique u);
-    <T> T visit(PrimaryKey pk);
-    <T> T visit(ForeignKey fk);
-    <T> T visit(SQLCharacter c);
-    <T> T visit(SQLVarchar v);
-    <T> T visit(SQLBit b);
-    <T> T visit(SQLInteger i);
-    <T> T visit(SQLSmallint s);
-    <T> T visit(SQLFloat f);
-    <T> T visit(SQLReal r);
-    <T> T visit(SQLDate d);
-    <T> T visit(SQLDoublePrecision dp);
-    <T> T visit(SQLNumeric n);
-    <T> T visit(SQLDateTime dt);
-    <T> T visit(SQLFunction f);
-    <T> T visit(ValueListInPredicate vlip);
-    <T> T visit(SetOperation so);
-    <T> T visit(SQLVarbit vb);
-    <T> T visit(SQLDecimal d);
-    <T> T visit(SQLTime t);
-    <T> T visit(SQLTimestamp ts);
+public interface SQLObjectSchemaVisitor<T> {
+    T visit(TableExpression te);
+
+    T visit(CrossJoin j);
+
+    T visit(OnJoin j);
+
+    T visit(TableReference tr);
+
+    T visit(ComparisonPredicate cp);
+
+    T visit(ColumnReference cr);
+
+    T visit(PredicateOperation po);
+
+    T visit(Assertion a);
+
+    T visit(View v);
+
+    T visit(NotOperation no);
+
+    T visit(ExistsPredicate ep);
+
+    T visit(SQLPrimitiveInteger d);
+
+    T visit(SQLPrimitiveFloat f);
+
+    T visit(SQLPrimitiveString s);
+
+    T visit(Asterisk a);
+
+    T visit(AliasableSelectItem asi);
+
+    T visit(Table t);
+
+    T visit(SchemaReference sr);
+
+    T visit(Attribute a);
+
+    T visit(Check c);
+
+    T visit(Unique u);
+
+    T visit(PrimaryKey pk);
+
+    T visit(ForeignKey fk);
+
+    T visit(SQLCharacter c);
+
+    T visit(SQLVarchar v);
+
+    T visit(SQLBit b);
+
+    T visit(SQLInteger i);
+
+    T visit(SQLSmallint s);
+
+    T visit(SQLFloat f);
+
+    T visit(SQLReal r);
+
+    T visit(SQLDate d);
+
+    T visit(SQLDoublePrecision dp);
+
+    T visit(SQLNumeric n);
+
+    T visit(SQLDateTime dt);
+
+    T visit(SQLFunction f);
+
+    T visit(ValueListInPredicate vlip);
+
+    T visit(SetOperation so);
+
+    T visit(SQLVarbit vb);
+
+    T visit(SQLDecimal d);
+
+    T visit(SQLTime t);
+
+    T visit(SQLTimestamp ts);
 }

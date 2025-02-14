@@ -38,7 +38,7 @@ import java.util.*;
  * ---- over multiple identical aliases, only one will be "referencable", with priority of the closest level to the one
  * ---- containing the column reference.
  */
-public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
+public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<ColumnReference>> {
 
     private boolean isOffered(List<ColumnReference> offered, Set<String> cachedOfferedTableAliases, ColumnReference target) {
         if (target.getTableName() != null) {
@@ -56,24 +56,30 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         return found;
     }
 
-    @Override
-    public Boolean visit(Assertion a) {
+    public void validateAssertion(Assertion a) {
         List<ColumnReference> required = a.getBooleanExpression().visit(this);
         if (!required.isEmpty()) {
             String cr = new SQLServerPrinter().visit(required.get(0));
             throw new InvalidColumnReferenceException("The columnReference (" + cr + ") is not a valid reference.");
         }
-        return true;
     }
 
-    @Override
-    public Boolean visit(View v) {
+    public void validateView(View v) {
         List<ColumnReference> required = v.getQuery().visit(this);
         if (!required.isEmpty()) {
             String cr = new SQLServerPrinter().visit(required.get(0));
             throw new InvalidColumnReferenceException("The columnReference (" + cr + ") is not a valid reference.");
         }
-        return true;
+    }
+
+    @Override
+    public List<ColumnReference> visit(Assertion a) {
+        throw new IMPSqlException("Visitor shouldn't reach this expression. Use validateAssertion method.");
+    }
+
+    @Override
+    public List<ColumnReference> visit(View v) {
+        throw new IMPSqlException("Visitor shouldn't reach this expression. Use validateView method.");
     }
 
     @Override
@@ -119,7 +125,7 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         // Process SELECT clause
         if (te.getSelectClause() != null) {
             for (SelectItem s : te.getSelectClause()) {
-                for (ColumnReference cr : s.<List<ColumnReference>>visit(this)) {
+                for (ColumnReference cr : s.visit(this)) {
                     if (!isOffered(offered, cachedOfferedTableAliases, cr)) {
                         required.add(cr);
                     }
@@ -129,7 +135,7 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
 
         // Process WHERE clause
         if (te.getWhereClause() != null) {
-            for (ColumnReference cr : te.getWhereClause().<List<ColumnReference>>visit(this)) {
+            for (ColumnReference cr : te.getWhereClause().visit(this)) {
                 if (!isOffered(offered, cachedOfferedTableAliases, cr)) {
                     required.add(cr);
                 }
@@ -158,14 +164,13 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
         if (cr.isPresent()) throw new InvalidOnJoinColumReferenceException("The columnReference (" + new SQLServerPrinter().visit(cr.get()) + ") is not valid for the on clause.");
 
         List<ColumnReference> required = new ArrayList<>();
-//        required.addAll(onRequired.stream().filter(r -> !offered.contains(r)).toList());
         required.addAll(j.getLeftExpression().visit(this));
         required.addAll(j.getRightExpression().visit(this));
         return required;
     }
 
     @Override
-    public <T> T visit(SetOperation so) {
+    public List<ColumnReference> visit(SetOperation so) {
         //TODO: Future Work - IMPSQL-46
         throw new IMPSqlException("Validator doesn't work yet with setOperations");
     }
@@ -185,11 +190,8 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
 
     @Override
     public List<ColumnReference> visit(ValueListInPredicate vlip) {
-        List<ColumnReference> required = new ArrayList<>();
-        required.addAll(vlip.getMainExpression().visit(this));
-        for (ValueExpression ve : vlip.getValueList()) {
-            required.addAll(ve.visit(this));
-        }
+        List<ColumnReference> required = new ArrayList<>(vlip.getMainExpression().visit(this));
+        for (ValueExpression ve : vlip.getValueList()) required.addAll(ve.visit(this));
         return required;
     }
 
@@ -232,119 +234,119 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor {
     }
 
     @Override
-    public <T> T visit(Check c) {
-        return null;
+    public List<ColumnReference> visit(Check c) {
+        return Collections.emptyList();
     }
 
     @Override
-    public <T> T visit(Unique u) {
-        return null;
+    public List<ColumnReference> visit(Unique u) {
+        return Collections.emptyList();
     }
 
     @Override
-    public <T> T visit(PrimaryKey pk) {
-        return null;
+    public List<ColumnReference> visit(PrimaryKey pk) {
+        return Collections.emptyList();
     }
 
     @Override
-    public <T> T visit(ForeignKey fk) {
-        return null;
+    public List<ColumnReference> visit(ForeignKey fk) {
+        return Collections.emptyList();
     }
 
 
     /* NON REACHABLE EXPRESSIONS */
     @Override
-    public <T> T visit(SchemaReference sr) {
-        return null;
+    public List<ColumnReference> visit(SchemaReference sr) {
+        return Collections.emptyList();
     }
 
     @Override
-    public <T> T visit(Table t) {
-        return null;
+    public List<ColumnReference> visit(Table t) {
+        return Collections.emptyList();
     }
 
     @Override
-    public <T> T visit(Attribute a) {
-        return null;
+    public List<ColumnReference> visit(Attribute a) {
+        return Collections.emptyList();
     }
 
     @Override
-    public <T> T visit(SQLCharacter c) {
+    public List<ColumnReference> visit(SQLCharacter c) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLVarchar v) {
+    public List<ColumnReference> visit(SQLVarchar v) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLBit b) {
+    public List<ColumnReference> visit(SQLBit b) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLInteger i) {
+    public List<ColumnReference> visit(SQLInteger i) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLSmallint s) {
+    public List<ColumnReference> visit(SQLSmallint s) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLFloat f) {
+    public List<ColumnReference> visit(SQLFloat f) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLReal r) {
+    public List<ColumnReference> visit(SQLReal r) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLDate d) {
+    public List<ColumnReference> visit(SQLDate d) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLDoublePrecision dp) {
+    public List<ColumnReference> visit(SQLDoublePrecision dp) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLNumeric n) {
+    public List<ColumnReference> visit(SQLNumeric n) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLDateTime dt) {
+    public List<ColumnReference> visit(SQLDateTime dt) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLFunction f) {
+    public List<ColumnReference> visit(SQLFunction f) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLVarbit vb) {
+    public List<ColumnReference> visit(SQLVarbit vb) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLDecimal d) {
+    public List<ColumnReference> visit(SQLDecimal d) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLTime t) {
+    public List<ColumnReference> visit(SQLTime t) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 
     @Override
-    public <T> T visit(SQLTimestamp ts) {
+    public List<ColumnReference> visit(SQLTimestamp ts) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
     }
 }
