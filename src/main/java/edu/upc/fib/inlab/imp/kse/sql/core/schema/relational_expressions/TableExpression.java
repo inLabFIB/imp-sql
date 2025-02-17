@@ -26,11 +26,6 @@ public class TableExpression extends Query {
         this(selectClause, null, null, null);
     }
 
-    public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause) {
-        this(selectClause, fromClause, whereClause, null);
-    }
-
-
     public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause, String alias) {
         super(alias);
         this.selectClause = Objects.requireNonNull(selectClause, "The select clause of a TableExpression cannot be null.");
@@ -63,12 +58,18 @@ public class TableExpression extends Query {
         return tempFromClauseTerminalExpressions;
     }
 
-    public List<SelectItem> getSelectClause() {
-        return new ArrayList<>(selectClause);
+    public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause) {
+        this(selectClause, fromClause, null, null);
     }
+
+    public TableExpression(List<SelectItem> selectClause, RelationalExpression fromClause, BooleanExpression whereClause) {
+        this(selectClause, fromClause, whereClause, null);
+    }
+
     public RelationalExpression getFromClause() {
         return fromClause;
     }
+
     public BooleanExpression getWhereClause() {
         return whereClause;
     }
@@ -81,36 +82,6 @@ public class TableExpression extends Query {
     @Override
     public AliasableRelationalExpression getAliasedCopy(String newAlias) {
         return new TableExpression(selectClause, fromClause, whereClause, newAlias);
-    }
-
-    public List<AliasableRelationalExpression> getFromClauseTerminalExpressions() {
-        return new ArrayList<>(fromClauseTerminalExpressions);
-    }
-
-    @Override
-    public List<ColumnReference> getOfferedReferences() {
-        List<ColumnReference> result = new ArrayList<>();
-
-        String superAlias = getAlias();
-        for (SelectItem s : getSelectClause()) {
-            if (s instanceof Asterisk && fromClause != null) {
-                fromClause.getOfferedReferences()
-                    .forEach(r -> result.add(new ColumnReference(superAlias, r.getColumnName())));
-            } else if (s instanceof AliasableSelectItem as){
-                String selectAlias = as.getColumAlias();
-                if (selectAlias == null) selectAlias = as.getDefaultAlias();
-                if (selectAlias == null)
-                    throw new IMPSqlException("No column alias specified for '" + superAlias + "'");
-                result.add(new ColumnReference(superAlias, selectAlias));
-            }
-        }
-
-        return result;
-    }
-
-    @Override
-    public String computeDefaultColumnAlias() {
-        return getAlias();
     }
 
     @Override
@@ -135,5 +106,51 @@ public class TableExpression extends Query {
         result = 31 * result + (whereClause != null ? whereClause.hashCode() : 0);
         result = 31 * result + (fromClauseTerminalExpressions != null ? fromClauseTerminalExpressions.hashCode() : 0);
         return result;
+    }
+
+    public List<AliasableRelationalExpression> getFromClauseTerminalExpressions() {
+        return new ArrayList<>(fromClauseTerminalExpressions);
+    }
+
+    @Override
+    public List<ColumnReference> getOfferedReferences() {
+        List<ColumnReference> result = new ArrayList<>();
+
+        String superAlias = getAlias();
+        for (SelectItem s : getSelectClause()) {
+            if (s instanceof Asterisk && fromClause != null) {
+                fromClause.getOfferedReferences()
+                    .forEach(r -> result.add(new ColumnReference(superAlias, r.getColumnName())));
+            } else if (s instanceof AliasableSelectItem as) {
+                String selectAlias = as.getColumAlias();
+                if (selectAlias == null) selectAlias = as.getDefaultAlias();
+                if (selectAlias == null)
+                    throw new IMPSqlException("No column alias specified for '" + superAlias + "'");
+                result.add(new ColumnReference(superAlias, selectAlias));
+            }
+        }
+
+        return result;
+    }
+
+    public List<SelectItem> getSelectClause() {
+        return new ArrayList<>(selectClause);
+    }
+
+    @Override
+    public String computeDefaultColumnAlias() {
+        return getAlias();
+    }
+
+    @Override
+    public int getNumberOfReturnColumns() {
+        int total = 0;
+
+        for (SelectItem s : getSelectClause()) {
+            if (s instanceof Asterisk) total += fromClause.getOfferedReferences().size();
+            else total++;
+        }
+
+        return total;
     }
 }

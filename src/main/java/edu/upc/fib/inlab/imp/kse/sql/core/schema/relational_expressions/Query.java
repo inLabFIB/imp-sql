@@ -8,4 +8,5 @@ public abstract class Query extends AliasableRelationalExpression implements Val
         super(alias);
     }
 
+    public abstract int getNumberOfReturnColumns();
 }

@@ -7,18 +7,16 @@ import java.util.Objects;
 public class ColumnReference implements ValueExpression {
 
     private final String tableName;
-
     private final String columnName;
-    public ColumnReference(String tableName, String columnName) {
-        this.tableName = tableName;
-        this.columnName = Objects.requireNonNull(columnName, "The parameter 'columnName' cannot be null.");
-    }
 
     public ColumnReference(String columnName) {
         this(null, columnName);
     }
 
-
+    public ColumnReference(String tableName, String columnName) {
+        this.tableName = tableName;
+        this.columnName = Objects.requireNonNull(columnName, "The parameter 'columnName' cannot be null.");
+    }
 
     public String getTableName() {
         return tableName;
@@ -39,6 +37,13 @@ public class ColumnReference implements ValueExpression {
     }
 
     @Override
+    public int hashCode() {
+        int result = tableName != null ? tableName.hashCode() : 0;
+        result = 31 * result + columnName.hashCode();
+        return result;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -47,12 +52,5 @@ public class ColumnReference implements ValueExpression {
 
         if (!Objects.equals(tableName, that.tableName)) return false;
         return columnName.equals(that.columnName);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = tableName != null ? tableName.hashCode() : 0;
-        result = 31 * result + columnName.hashCode();
-        return result;
     }
 }

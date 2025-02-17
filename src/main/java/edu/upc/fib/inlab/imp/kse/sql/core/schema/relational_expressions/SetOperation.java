@@ -12,17 +12,10 @@ import java.util.Objects;
  */
 public class SetOperation extends Query {
 
-    public enum SetOperator {
-        UNION,
-        EXCEPT,
-        INTERSECT
-    }
-
     private final SetOperator operator;
     private final boolean all;
     private final Query leftExpression;
     private final Query rightExpression;
-
     public SetOperation(SetOperator operator, boolean all, Query leftExpression, Query rightExpression) {
         this(operator, all, leftExpression, rightExpression, null);
     }
@@ -33,6 +26,22 @@ public class SetOperation extends Query {
         this.leftExpression = Objects.requireNonNull(leftExpression, "The parameter 'leftExpression' cannot be null.");
         this.rightExpression = Objects.requireNonNull(rightExpression, "The parameter 'rightExpression' cannot be null.");
         this.all = all;
+
+        checkQueriesAreCompatible();
+    }
+
+    /**
+     * This method checks:
+     * <ol>
+     *     <li>Checks both queries has same number of return columns.</li>
+     *     <li>TODO: IMPSQL-56 Check SetOperation query return column type matching</li>
+     * </ol>
+     */
+    private void checkQueriesAreCompatible() {
+        int leftReturns = this.leftExpression.getNumberOfReturnColumns();
+        int rightReturns = this.rightExpression.getNumberOfReturnColumns();
+        if (leftReturns != rightReturns)
+            throw new IMPSqlException("SELECTS to the left and right of UNION do not have the same number of result columns! (" + leftReturns + ", " + rightReturns + ")");
     }
 
     public SetOperator getOperator() {
@@ -57,22 +66,6 @@ public class SetOperation extends Query {
     }
 
     @Override
-    public List<ColumnReference> getOfferedReferences() {
-        // TODO: Future Work - IMPSQL-46
-        throw new IMPSqlException("OfferedReferences of set operations not defined yet!");
-    }
-
-    @Override
-    public String computeDefaultColumnAlias() {
-        return getAlias();
-    }
-
-    @Override
-    public <T> T visit(SQLObjectSchemaVisitor<T> visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -92,5 +85,35 @@ public class SetOperation extends Query {
         result = 31 * result + leftExpression.hashCode();
         result = 31 * result + rightExpression.hashCode();
         return result;
+    }
+
+    /**
+     * Only references from the left expression are used (this means that references from the right expression are
+     * invalid from this set operation upwards).
+     */
+    @Override
+    public List<ColumnReference> getOfferedReferences() {
+        return this.leftExpression.getOfferedReferences();
+    }
+
+    @Override
+    public String computeDefaultColumnAlias() {
+        return getAlias();
+    }
+
+    @Override
+    public <T> T visit(SQLObjectSchemaVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public int getNumberOfReturnColumns() {
+        return this.leftExpression.getNumberOfReturnColumns();
+    }
+
+    public enum SetOperator {
+        UNION,
+        EXCEPT,
+        INTERSECT
     }
 }

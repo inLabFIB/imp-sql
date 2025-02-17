@@ -13,6 +13,7 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.builders.TableSetBuilder;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
@@ -282,9 +283,12 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         else if (ctx.op != null) query = visitQuery_expression(ctx.op);
         else throw new IMPSqlException("Query of set operation not defined: " + ctx.getText());
 
-        TableExpression null_expression = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+        List<SelectItem> nullExpressionSelectClause = new LinkedList<>();
+        for (int i = 0; i < query.getNumberOfReturnColumns(); i++)
+            nullExpressionSelectClause.add(new AliasableSelectItem(new SQLPrimitiveInteger(1)));
+        TableExpression nullExpression = new TableExpression(nullExpressionSelectClause);
 
-        return new SetOperation(operator, returnsDuplicates, null_expression, query);
+        return new SetOperation(operator, returnsDuplicates, nullExpression, query);
     }
 
     public TableExpression visitQuerySpecification(SQLParser.Query_specificationContext ctx) {
