@@ -1,6 +1,8 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.services.validator.exceptions;
 
-public class RepeatedTableAliasException extends RuntimeException {
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
+
+public class RepeatedTableAliasException extends IMPSqlException {
 
     public RepeatedTableAliasException() {
         super();

@@ -21,40 +21,35 @@ import java.util.*;
 
 
 //TODO: Optimize - IMPSQL-49
+
 /**
  * This visitor checks (returns FALSE for) the following cases:
- * - [1] Repeated table aliases in a FROM clause of a TableExpression
- * - [2] Repeated column aliases in a SELECT clause of a TableExpression
- * - [3] Incorrect column references:
- * ---- Non-existent table alias
- * ---- Non-existent column alias for table alias
- * ---- Column references with only column alias has only one possible reference
+ * <ol>
+ *     <li>Repeated table aliases in a FROM clause of a TableExpression</li>
+ *     <li>Repeated column aliases in a SELECT clause of a TableExpression</li>
+ *     <li>Incorrect column references:</li>
+ *     <ul>
+ *         <li>Non-existent table alias</li>
+ *         <li>Non-existent column alias for table alias</li>
+ *         <li>Column references with only column alias has only one possible reference</li>
+ *     </ul>
+ * </ol>
  * Special cases to think about:
- * - Table Aliases:
- * ---- The original table name can't be referenced. Only the table alias.
- * - Identical Table aliases:
- * ---- It is permitted if they are in different levels.
- * ---- If they are referenced from a sub query inside a NOT EXISTS clause, for example, that grants visibility
- * ---- over multiple identical aliases, only one will be "referencable", with priority of the closest level to the one
- * ---- containing the column reference.
+ * <ul>
+ *     <li>Table Aliases:</li>
+ *     <ul>
+ *         <li>The original table name can't be referenced. Only the table alias.</li>
+ *     </ul>
+ *     <li>Identical Table aliases:</li>
+ *     <ul>
+ *         <li>It is permitted if they are in different levels.</li>
+ *         <li>If they are referenced from a sub query inside a NOT EXISTS clause, for example, that grants visibility
+ *         over multiple identical aliases, only one will be "referencable", with priority of the closest level to the
+ *         one containing the column reference.</li>
+ *     </ul>
+ * </ul>
  */
 public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<ColumnReference>> {
-
-    private boolean isOffered(List<ColumnReference> offered, Set<String> cachedOfferedTableAliases, ColumnReference target) {
-        if (target.getTableName() != null) {
-            if (!cachedOfferedTableAliases.contains(target.getTableName())) return false;
-            return offered.contains(target);
-        }
-        // No table name, look only one column name. If more than one throw error.
-        boolean found = false;
-        for (ColumnReference compared : offered) {
-            if (compared.getColumnName().equals(target.getColumnName())) {
-                if (found) throw new AmbiguousColumnReferenceException("Ambiguous column reference: multiple table aliases offer it.");
-                found = true;
-            }
-        }
-        return found;
-    }
 
     public void validateAssertion(Assertion a) {
         List<ColumnReference> required = a.getBooleanExpression().visit(this);
@@ -65,31 +60,15 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
     }
 
     public void validateView(View v) {
-        List<ColumnReference> required = v.getQuery().visit(this);
+        validateQuery(v.getQuery());
+    }
+
+    public void validateQuery(Query q) {
+        List<ColumnReference> required = q.visit(this);
         if (!required.isEmpty()) {
             String cr = new SQLServerPrinter().visit(required.get(0));
             throw new InvalidColumnReferenceException("The columnReference (" + cr + ") is not a valid reference.");
         }
-    }
-
-    @Override
-    public List<ColumnReference> visit(Assertion a) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression. Use validateAssertion method.");
-    }
-
-    @Override
-    public List<ColumnReference> visit(View v) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression. Use validateView method.");
-    }
-
-    @Override
-    public List<ColumnReference> visit(NotOperation no) {
-        return no.getExpression().visit(this);
-    }
-
-    @Override
-    public List<ColumnReference> visit(ExistsPredicate ep) {
-        return ep.getQuery().visit(this);
     }
 
     @Override
@@ -109,9 +88,11 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
             if (relationalExpressionAlias == null) {
                 if (a instanceof TableReference tr)
                     relationalExpressionAlias = tr.getTable().getTableName();
-                if (a instanceof Query) throw new NonAliasedFromClauseSubQueryException("Sub-queries in FROM clause must be aliased");
+                if (a instanceof Query)
+                    throw new NonAliasedFromClauseSubQueryException("Sub-queries in FROM clause must be aliased");
             }
-            if (cachedOfferedTableAliases.contains(relationalExpressionAlias)) throw new RepeatedTableAliasException("Repeated table alias (" + relationalExpressionAlias + ").");
+            if (cachedOfferedTableAliases.contains(relationalExpressionAlias))
+                throw new RepeatedTableAliasException("Repeated table alias (" + relationalExpressionAlias + ").");
             cachedOfferedTableAliases.add(relationalExpressionAlias);
             // Obtain required aliases
             required.addAll(a.visit(this));
@@ -145,6 +126,22 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
         return required;
     }
 
+    private boolean isOffered(List<ColumnReference> offered, Set<String> cachedOfferedTableAliases, ColumnReference target) {
+        if (target.getTableName() != null) {
+            if (!cachedOfferedTableAliases.contains(target.getTableName())) return false;
+            return offered.contains(target);
+        }
+        // No table name, look only one column name. If more than one throw error.
+        boolean found = false;
+        for (ColumnReference compared : offered) {
+            if (compared.getColumnName().equals(target.getColumnName())) {
+                if (found)
+                    throw new AmbiguousColumnReferenceException("Ambiguous column reference: multiple table aliases offer it.");
+                found = true;
+            }
+        }
+        return found;
+    }
 
     @Override
     public List<ColumnReference> visit(CrossJoin j) {
@@ -161,18 +158,13 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
 
         //ON CLAUSES shouldn't require upper ColumnReferences ?
         Optional<ColumnReference> cr = onRequired.stream().filter(r -> !offered.contains(r)).findAny();
-        if (cr.isPresent()) throw new InvalidOnJoinColumReferenceException("The columnReference (" + new SQLServerPrinter().visit(cr.get()) + ") is not valid for the on clause.");
+        if (cr.isPresent())
+            throw new InvalidOnJoinColumReferenceException("The columnReference (" + new SQLServerPrinter().visit(cr.get()) + ") is not valid for the on clause.");
 
         List<ColumnReference> required = new ArrayList<>();
         required.addAll(j.getLeftExpression().visit(this));
         required.addAll(j.getRightExpression().visit(this));
         return required;
-    }
-
-    @Override
-    public List<ColumnReference> visit(SetOperation so) {
-        //TODO: Future Work - IMPSQL-46
-        throw new IMPSqlException("Validator doesn't work yet with setOperations");
     }
 
     @Override
@@ -189,10 +181,8 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
     }
 
     @Override
-    public List<ColumnReference> visit(ValueListInPredicate vlip) {
-        List<ColumnReference> required = new ArrayList<>(vlip.getMainExpression().visit(this));
-        for (ValueExpression ve : vlip.getValueList()) required.addAll(ve.visit(this));
-        return required;
+    public List<ColumnReference> visit(ColumnReference cr) {
+        return List.of(cr);
     }
 
     @Override
@@ -204,18 +194,23 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
     }
 
     @Override
-    public List<ColumnReference> visit(Asterisk a) {
-        return new ArrayList<>(); // It returns the available offered aliases. So no more should be necessary.
+    public List<ColumnReference> visit(Assertion a) {
+        throw new IMPSqlException("Visitor shouldn't reach this expression. Use validateAssertion method.");
     }
 
     @Override
-    public List<ColumnReference> visit(AliasableSelectItem asi) {
-        return asi.getExpression().visit(this);
+    public List<ColumnReference> visit(View v) {
+        throw new IMPSqlException("Visitor shouldn't reach this expression. Use validateView method.");
     }
 
     @Override
-    public List<ColumnReference> visit(ColumnReference cr) {
-        return List.of(cr);
+    public List<ColumnReference> visit(NotOperation no) {
+        return no.getExpression().visit(this);
+    }
+
+    @Override
+    public List<ColumnReference> visit(ExistsPredicate ep) {
+        return ep.getQuery().visit(this);
     }
 
     @Override
@@ -231,6 +226,32 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
     @Override
     public List<ColumnReference> visit(SQLPrimitiveString s) {
         return new ArrayList<>();
+    }
+
+    @Override
+    public List<ColumnReference> visit(Asterisk a) {
+        return new ArrayList<>(); // It returns the available offered aliases. So no more should be necessary.
+    }
+
+    @Override
+    public List<ColumnReference> visit(AliasableSelectItem asi) {
+        return asi.getExpression().visit(this);
+    }
+
+    @Override
+    public List<ColumnReference> visit(Table t) {
+        return Collections.emptyList();
+    }
+
+    /* NON REACHABLE EXPRESSIONS */
+    @Override
+    public List<ColumnReference> visit(SchemaReference sr) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<ColumnReference> visit(Attribute a) {
+        return Collections.emptyList();
     }
 
     @Override
@@ -250,23 +271,6 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
 
     @Override
     public List<ColumnReference> visit(ForeignKey fk) {
-        return Collections.emptyList();
-    }
-
-
-    /* NON REACHABLE EXPRESSIONS */
-    @Override
-    public List<ColumnReference> visit(SchemaReference sr) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<ColumnReference> visit(Table t) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<ColumnReference> visit(Attribute a) {
         return Collections.emptyList();
     }
 
@@ -328,6 +332,21 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
     @Override
     public List<ColumnReference> visit(SQLFunction f) {
         throw new IMPSqlException("Visitor shouldn't reach this expression.");
+    }
+
+    @Override
+    public List<ColumnReference> visit(ValueListInPredicate vlip) {
+        List<ColumnReference> required = new ArrayList<>(vlip.getMainExpression().visit(this));
+        for (ValueExpression ve : vlip.getValueList()) required.addAll(ve.visit(this));
+        return required;
+    }
+
+    @Override
+    public List<ColumnReference> visit(SetOperation so) {
+        List<ColumnReference> required = new ArrayList<>();
+        required.addAll(so.getLeftExpression().visit(this));
+        required.addAll(so.getRightExpression().visit(this));
+        return required;
     }
 
     @Override

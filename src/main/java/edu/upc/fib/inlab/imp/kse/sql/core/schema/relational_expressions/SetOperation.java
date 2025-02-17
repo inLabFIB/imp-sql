@@ -93,7 +93,9 @@ public class SetOperation extends Query {
      */
     @Override
     public List<ColumnReference> getOfferedReferences() {
-        return this.leftExpression.getOfferedReferences();
+        return this.leftExpression.getOfferedReferences().stream()
+            .map(cr -> new ColumnReference(getAlias(), cr.getColumnName()))
+            .toList();
     }
 
     @Override
