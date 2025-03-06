@@ -16,8 +16,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
+public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor<Object> {
 
+    public static final String PK_OPTIONS_NOT_SUPPORTED_YET = "PK options not supported yet!";
     private final SQLObjectSchema schema;
     private final List<Query> queries;
 
@@ -35,7 +36,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
     /**
      * Needed for unnamed constraints.
      */
-    private final String unnamedConstraintName = "constraint";
+    private static final String UNNAMED_CONSTRAINT_NAME = "constraint";
     private int unnamedConstraintNumber = 1;
 
     public StandardSQLGrammarVisitorImpl(SQLObjectSchema schema, List<Query> queries, SchemaReference defaultSchemaReference) {
@@ -54,12 +55,14 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
 
     /* TOP LEVEL STATEMENTS NODES */
 
+    @Override
     public Object visitSql_file(SQLParser.Sql_fileContext ctx) {
         Object o = visitChildren(ctx);
         generateTableBatch(); // If input ends with CREATE TABLE statements, they need to be created at the EOF.
         return o;
     }
 
+    @Override
     public Object visitDml_clause(SQLParser.Dml_clauseContext ctx) {
         if (ctx.select_statement_standalone() == null) throw new IMPSqlException("Unknown DML clause.");
         Query query = visitSelect_statement_standalone(ctx.select_statement_standalone());
@@ -67,6 +70,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         return query;
     }
 
+    @Override
     public Assertion visitCreate_assertion(SQLParser.Create_assertionContext ctx) {
         if (tablesInStandBy) generateTableBatch();
 
@@ -78,16 +82,18 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         return newAssertion;
     }
 
+    @Override
     public BooleanExpression visitAssertion_check(SQLParser.Assertion_checkContext ctx) {
         return visitSearch_condition(ctx.search_condition());
     }
 
-
-    public Query visitSelect_statement_standalone(SQLParser.Select_statement_standaloneContext ctx)  {
+    @Override
+    public Query visitSelect_statement_standalone(SQLParser.Select_statement_standaloneContext ctx) {
         if (ctx.with_expression() != null) throw new IMPSqlException("Grammar expression (`WITH`) not supported yet!");
         return visitSelect_statement(ctx.select_statement());
     }
 
+    @Override
     public Query visitSelect_statement(SQLParser.Select_statementContext ctx) {
         if (ctx.select_order_by_clause() != null)
             throw new IMPSqlException("Grammar expression (`ORDER BY`) not supported yet!");
@@ -97,6 +103,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         return visitQuery_expression(ctx.query_expression());
     }
 
+    @Override
     public View visitCreate_view(SQLParser.Create_viewContext ctx) {
         if (!ctx.WITH().isEmpty())
             throw new IMPSqlException("Grammar expression (`WITH ...`) in create view not supported yet!");
@@ -114,10 +121,12 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         return view;
     }
 
+    @Override
     public List<String> visitColumn_name_list(SQLParser.Column_name_listContext ctx) {
         return ctx.col.stream().map(this::visitId_).toList();
     }
 
+    @Override
     public Table visitCreate_table(SQLParser.Create_tableContext ctx) {
         if (ctx.table_name().BLOCKING_HIERARCHY() != null)
             throw new IMPSqlException("Grammar expression (`BLOCKING_HIERARCHY`) not supported yet!");
@@ -135,28 +144,29 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         this.tablesInStandBy = true;
 
         for (SQLParser.Column_def_table_constraintContext c : ctx.column_def_table_constraints().column_def_table_constraint()) {
-            visitColumn_def_table_constraint(c, schemaReference, tableName);
+            visitColumnDefTableConstraint(c, schemaReference, tableName);
         }
         return null;
     }
 
-    /** BOOLEAN EXPRESSION / ASSERTION NODES **/
+    /**
+     * BOOLEAN EXPRESSION / ASSERTION NODES
+     **/
 
 
+    @Override
     public BooleanExpression visitSearch_condition(SQLParser.Search_conditionContext ctx) {
-        if (ctx.AND() != null)  {
+        if (ctx.AND() != null) {
             return new PredicateOperation(
                 PredicateOperation.PredicateOperator.AND,
                 visitSearch_condition(ctx.search_condition(0)),
                 visitSearch_condition(ctx.search_condition(1)));
-        }
-        else if (ctx.OR() != null)  {
+        } else if (ctx.OR() != null) {
             return new PredicateOperation(
                 PredicateOperation.PredicateOperator.OR,
                 visitSearch_condition(ctx.search_condition(0)),
                 visitSearch_condition(ctx.search_condition(1)));
-        }
-        else {
+        } else {
             BooleanExpression expression;
             if (ctx.predicate() != null) expression = visitPredicate(ctx.predicate());
             else expression = visitSearch_condition(ctx.search_condition(0));
@@ -169,6 +179,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         }
     }
 
+    @Override
     public BooleanExpression visitPredicate(SQLParser.PredicateContext ctx) {
         if (ctx.EXISTS() != null) return new ExistsPredicate(visitSubquery(ctx.subquery()));
         else if (ctx.comparison_operator() != null && ctx.subquery() == null) {
@@ -176,59 +187,63 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
                 visitComparison_operator(ctx.comparison_operator()),
                 visitExpression(ctx.expression(0)),
                 visitExpression(ctx.expression(1)));
-        }
-        else if (ctx.IN() != null) {
+        } else if (ctx.IN() != null) {
             BooleanExpression expression = new ValueListInPredicate(
                 visitExpression(ctx.expression(0)),
                 visitExpression_list(ctx.expression_list())
             );
             for (int i = 0; i < ctx.NOT().size(); i++) expression = new NotOperation(expression);
             return expression;
-        }
-        else {
+        } else {
             throw new IMPSqlException("Grammar expression of different predicates not supported yet!");
         }
     }
 
-    /** VALUE EXPRESSION NODES **/
+    /**
+     * VALUE EXPRESSION NODES
+     **/
 
+    @Override
     public ValueExpression visitExpression(SQLParser.ExpressionContext ctx) {
         if (ctx.primitive_expression() != null) return visitPrimitive_expression(ctx.primitive_expression());
-        if(ctx.full_column_name() != null) return visitFull_column_name(ctx.full_column_name());
-        if(ctx.bracket_expression() != null) return visitBracket_expression(ctx.bracket_expression());
+        if (ctx.full_column_name() != null) return visitFull_column_name(ctx.full_column_name());
+        if (ctx.bracket_expression() != null) return visitBracket_expression(ctx.bracket_expression());
         if (ctx.function_call() != null) return visitFunction_call(ctx.function_call());
         throw new IMPSqlException("Grammar expression of other expressions not supported yet!");
     }
 
+    @Override
     public ValueExpression visitBracket_expression(SQLParser.Bracket_expressionContext ctx) {
         if (ctx.expression() != null) return visitExpression(ctx.expression());
         else return visitSubquery(ctx.subquery());
     }
 
+    @Override
     public ValueExpression visitFunction_call(SQLParser.Function_callContext ctx) {
         if (ctx.scalar_function_name() == null) {
             throw new IMPSqlException("Grammar expression (`" + ctx.getText() + "`) not supported yet!");
         }
 
-        SQLParser.Expression_listContext expression_listContext = ctx.expression_list();
-        if (expression_listContext == null) {
+        SQLParser.Expression_listContext expressionListContext = ctx.expression_list();
+        if (expressionListContext == null) {
             return new SQLFunction(ctx.scalar_function_name().getText());
         } else {
-            List<ValueExpression> arguments = visitExpression_list(expression_listContext);
+            List<ValueExpression> arguments = visitExpression_list(expressionListContext);
             return new SQLFunction(ctx.scalar_function_name().getText(), arguments);
         }
     }
 
+    @Override
     public List<ValueExpression> visitExpression_list(SQLParser.Expression_listContext ctx) {
         return ctx.expression().stream().map(this::visitExpression).toList();
     }
 
+    @Override
     public ColumnReference visitFull_column_name(SQLParser.Full_column_nameContext ctx) {
         String tableName = null;
         if (ctx.DELETED() != null || ctx.INSERTED() != null || ctx.IDENTITY() != null || ctx.ROWGUID() != null) {
             throw new IMPSqlException("Grammar expression related to extra info for full_column_name not supported yet!");
-        }
-        else if (ctx.full_table_name() != null) {
+        } else if (ctx.full_table_name() != null) {
             tableName = visitId_(ctx.full_table_name().table);
             SchemaReference schemaReference = visitFull_table_name(ctx.full_table_name());
             if (schemaReference != visitFull_table_name(ctx.full_table_name())) {
@@ -239,8 +254,11 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         return new ColumnReference(tableName, visitId_(ctx.column_name));
     }
 
-    /** QUERY NODES **/
+    /**
+     * QUERY NODES
+     **/
 
+    @Override
     public Query visitQuery_expression(SQLParser.Query_expressionContext ctx) {
         if (ctx.select_order_by_clause() != null)
             throw new IMPSqlException("Grammar expression (`ORDER BY`) not supported yet!");
@@ -256,7 +274,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
             for (int i = 0; i < ctx.unions.size(); i++) {
                 SetOperation aux = visitSql_union(ctx.unions.get(i));
                 query = new SetOperation(aux.getOperator(), aux.returnsDuplicates(),
-                                         query, aux.getRightExpression()
+                    query, aux.getRightExpression()
                 );
             }
             return query;
@@ -268,6 +286,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
     /**
      * Returns incomplete SetOperation with first query as NULL!
      */
+    @Override
     public SetOperation visitSql_union(SQLParser.Sql_unionContext ctx) {
         SetOperation.SetOperator operator;
 
@@ -291,7 +310,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         return new SetOperation(operator, returnsDuplicates, nullExpression, query);
     }
 
-    public TableExpression visitQuerySpecification(SQLParser.Query_specificationContext ctx) {
+    private TableExpression visitQuerySpecification(SQLParser.Query_specificationContext ctx) {
         if (ctx.allOrDistinct != null)
             throw new IMPSqlException("Grammar expression (`ALL/DISTINCT`) not supported yet!");
         if (ctx.top != null) throw new IMPSqlException("Grammar expression (`TOP`) not supported yet!");
@@ -309,6 +328,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         return new TableExpression(selectClause, fromClause, whereClause, null);
     }
 
+    @Override
     public List<SelectItem> visitSelect_list(SQLParser.Select_listContext ctx) {
         List<SelectItem> columns = new ArrayList<>();
         for (SQLParser.Select_list_elemContext item : ctx.selectElement) {
@@ -317,6 +337,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         return columns;
     }
 
+    @Override
     public SelectItem visitSelect_list_elem(SQLParser.Select_list_elemContext ctx) {
         if (ctx.udt_elem() != null) throw new IMPSqlException("Grammar expression (udt elements) not supported yet!");
         if (ctx.LOCAL_ID() != null)
@@ -327,6 +348,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
 
     }
 
+    @Override
     public Asterisk visitAsterisk(SQLParser.AsteriskContext ctx) {
         if (ctx.table_name() != null
             || ctx.INSERTED() != null
@@ -334,8 +356,10 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         return new Asterisk();
     }
 
+    @Override
     public AliasableSelectItem visitExpression_elem(SQLParser.Expression_elemContext ctx) {
-        if (ctx.eq != null) return new AliasableSelectItem(visitExpression(ctx.leftAssignment), ctx.leftAlias.getText());
+        if (ctx.eq != null)
+            return new AliasableSelectItem(visitExpression(ctx.leftAssignment), ctx.leftAlias.getText());
         else {
             String alias = null;
             if (ctx.as_column_alias() != null) alias = visitAs_column_alias(ctx.as_column_alias());
@@ -343,21 +367,24 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         }
     }
 
+    @Override
     public String visitAs_table_alias(SQLParser.As_table_aliasContext ctx) {
         return ctx.table_alias().getText();
     }
 
+    @Override
     public String visitAs_column_alias(SQLParser.As_column_aliasContext ctx) {
         return visitColumn_alias(ctx.column_alias());
     }
 
+    @Override
     public String visitColumn_alias(SQLParser.Column_aliasContext ctx) {
         if (ctx.STRING() != null)
             throw new IMPSqlException("Grammar expression (STRING) in alias expressions not supported yet!");
         return visitId_(ctx.id_());
     }
 
-
+    @Override
     public RelationalExpression visitTable_sources(SQLParser.Table_sourcesContext ctx) {
         if (ctx.non_ansi_join() != null) return visitNon_ansi_join(ctx.non_ansi_join());
 
@@ -368,6 +395,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         return root;
     }
 
+    @Override
     public RelationalExpression visitNon_ansi_join(SQLParser.Non_ansi_joinContext ctx) {
         RelationalExpression root = visitTable_source(ctx.source.get(0));
         for (int i = 1; i < ctx.source.size(); i++) {
@@ -376,6 +404,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         return root;
     }
 
+    @Override
     public RelationalExpression visitTable_source(SQLParser.Table_sourceContext ctx) {
         RelationalExpression root = visitTable_source_item(ctx.table_source_item());
         for (SQLParser.Join_partContext join_part : ctx.join_part()) {
@@ -392,14 +421,14 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
                     root = new OnJoin(OnJoin.JoinOperator.FULL, root, rightExpression, onCondition);
                 else //if non specified inner join is considered
                     root = new OnJoin(OnJoin.JoinOperator.INNER, root, rightExpression, onCondition);
-            }
-            else if (join_part.cross_join() != null) {
+            } else if (join_part.cross_join() != null) {
                 root = new CrossJoin(root, rightExpression);
             }
         }
         return root;
     }
 
+    @Override
     public RelationalExpression visitJoin_part(SQLParser.Join_partContext ctx) {
         if (ctx.apply_() != null) throw new IMPSqlException("apply_ joins not supported yet!");
         if (ctx.pivot() != null || ctx.unpivot() != null) throw new IMPSqlException("pivot joins not supported yet!");
@@ -413,15 +442,18 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
     /**
      * On condition not processed in upper visitors.
      */
+    @Override
     public RelationalExpression visitJoin_on(SQLParser.Join_onContext ctx) {
         if (ctx.join_hint != null) throw new IMPSqlException("join_hint not supported yet!");
         return visitTable_source(ctx.source);
     }
 
+    @Override
     public RelationalExpression visitCross_join(SQLParser.Cross_joinContext ctx) {
         return visitTable_source_item(ctx.table_source_item());
     }
 
+    @Override
     public RelationalExpression visitTable_source_item(SQLParser.Table_source_itemContext ctx) {
         if (ctx.column_alias_list() != null) throw new IMPSqlException("column_alias_list not supported yet!");
 
@@ -437,7 +469,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
             String tableName = visitId_(ctx.full_table_name().table);
 
             SchemaReference schemaReference = visitFull_table_name(ctx.full_table_name());
-            return new TableReference(schema.getTable(tableName, schemaReference), alias);
+            return new TableReference(schema.getTableSource(tableName, schemaReference), alias);
         }
         if (ctx.derived_table() != null) return visitDerived_table(ctx.derived_table()).getAliasedCopy(alias);
         if (ctx.table_source() != null) return visitTable_source(ctx.table_source());
@@ -445,6 +477,7 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         throw new IMPSqlException("Other table_source_item types not supported yet!");
     }
 
+    @Override
     public Query visitDerived_table(SQLParser.Derived_tableContext ctx) {
         if (ctx.table_value_constructor() != null)
             throw new IMPSqlException("Grammar expression table_value_constructor not supported yet!");
@@ -455,12 +488,16 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         return root;
     }
 
+    @Override
     public Query visitSubquery(SQLParser.SubqueryContext ctx) {
         return visitSelect_statement(ctx.select_statement());
     }
 
-    /** TABLE NODES **/
+    /**
+     * TABLE NODES
+     **/
 
+    @Override
     public SchemaReference visitTable_name(SQLParser.Table_nameContext ctx) {
         if (ctx.BLOCKING_HIERARCHY() != null)
             throw new IMPSqlException("Grammar expression (`BLOCKING_HIERARCHY`) not supported yet!");
@@ -469,14 +506,15 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         else return new SchemaReference(ctx.database.getText(), ctx.schema.getText());
     }
 
-    public void visitColumn_def_table_constraint(SQLParser.Column_def_table_constraintContext ctx, SchemaReference schemaReference, String tableName) {
+    private void visitColumnDefTableConstraint(SQLParser.Column_def_table_constraintContext ctx, SchemaReference schemaReference, String tableName) {
         if (ctx.materialized_column_definition() != null)
             throw new IMPSqlException("Materialized column definition not supported yet!");
-        if (ctx.column_definition() != null) visitColumn_definition(ctx.column_definition(), schemaReference, tableName);
-        else if (ctx.table_constraint() != null) visitTable_constraint(ctx.table_constraint(), schemaReference, tableName);
+        if (ctx.column_definition() != null) visitColumnDefinition(ctx.column_definition(), schemaReference, tableName);
+        else if (ctx.table_constraint() != null)
+            visitTableConstraint(ctx.table_constraint(), schemaReference, tableName);
     }
 
-    private void visitColumn_definition(SQLParser.Column_definitionContext ctx, SchemaReference schemaReference, String tableName) {
+    private void visitColumnDefinition(SQLParser.Column_definitionContext ctx, SchemaReference schemaReference, String tableName) {
         if (ctx.column_index() != null) throw new IMPSqlException("Column indexes not supported yet!");
         if (ctx.AS() != null) throw new IMPSqlException("Columns defined as expressions not supported yet!");
 
@@ -484,124 +522,184 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         builder.addAttribute(schemaReference, tableName, attributeName, visitData_type(ctx.data_type()));
 
         for (SQLParser.Column_definition_elementContext defCtx : ctx.column_definition_element()) {
-            visitColumn_Definition_Element(defCtx, schemaReference, tableName, attributeName);
+            visitColumnDefinitionElement(defCtx, schemaReference, tableName, attributeName);
         }
     }
 
+    @Override
     public SQLDataType visitData_type(SQLParser.Data_typeContext ctx) {
-        if (ctx.CHAR() != null || ctx.CHARACTER() != null) {
-            if (ctx.VARYING() == null) return ctx.length != null ? new SQLCharacter(Integer.parseInt(ctx.length.getText())) : new SQLCharacter();
-            else return new SQLVarchar(Integer.parseInt(ctx.length.getText()));
-        }
-        else if (ctx.VARCHAR() != null) return new SQLVarchar(Integer.parseInt(ctx.length.getText()));
-        else if (ctx.NATIONAL() != null) throw new IMPSqlException("NATIONAL characters not supported yet!");
-
-        else if (ctx.BIT() != null) {
-            if (ctx.VARYING() == null) return ctx.length != null ? new SQLBit(Integer.parseInt(ctx.length.getText())) : new SQLBit();
-            else return new SQLVarbit(Integer.parseInt(ctx.length.getText()));
-        }
-
-        else if (ctx.NUMERIC() != null) {
-            if (ctx.prec != null) {
-                if (ctx.scale != null) {
-                    return new SQLNumeric(Integer.parseInt(ctx.prec.getText()), Integer.parseInt(ctx.scale.getText()));
-                }
-                else return new SQLNumeric(Integer.parseInt(ctx.prec.getText()));
-            }
-            else return new SQLNumeric();
-        }
-        if (ctx.DECIMAL_() != null || ctx.DEC_() != null) {
-            if (ctx.prec != null) {
-                if (ctx.scale != null) {
-                    return new SQLDecimal(Integer.parseInt(ctx.prec.getText()), Integer.parseInt(ctx.scale.getText()));
-                }
-                else return new SQLDecimal(Integer.parseInt(ctx.prec.getText()));
-            }
-            else return new SQLDecimal();
-        }
-        else if (ctx.INT() != null || ctx.INTEGER() != null) return new SQLInteger();
-        else if (ctx.SMALLINT() != null) return new SQLSmallint();
-        else if (ctx.FLOAT_() != null) return ctx.prec != null ? new SQLFloat(Integer.parseInt(ctx.prec.getText())) : new SQLFloat();
-        else if (ctx.REAL_() != null) return new SQLReal();
-        else if (ctx.DOUBLE() != null) return new SQLDoublePrecision();
-
-        else if (ctx.ZONE() != null) throw new IMPSqlException("'WITH TIME ZONE' expression not supported!");
-        else if (ctx.DATE() != null) return new SQLDate();
-        else if (ctx.DATETIME() != null) return ctx.prec != null ? new SQLDateTime(Integer.parseInt(ctx.prec.getText())) : new SQLDateTime();
-        else if (ctx.TIME() != null) return ctx.prec != null ? new SQLTime(Integer.parseInt(ctx.prec.getText())) : new SQLTime();
-        else if (ctx.TIMESTAMP() != null) return ctx.prec != null ? new SQLTimestamp(Integer.parseInt(ctx.prec.getText())) : new SQLTimestamp();
-
-        else {
+        if (isCharacterType(ctx)) {
+            return handleCharacterTypes(ctx);
+        } else if (isNumericType(ctx)) {
+            return handleNumericTypes(ctx);
+        } else if (isBitType(ctx)) {
+            return handleBitTypes(ctx);
+        } else if (isTimeType(ctx)) {
+            return handleTimeTypes(ctx);
+        } else {
             throw new IMPSqlException("Other SQL data types not supported yet!");
         }
     }
 
-    public void visitColumn_Definition_Element(SQLParser.Column_definition_elementContext ctx, SchemaReference schemaReference, String tableName, String attributeName) {
-        if (ctx.DEFAULT() != null) builder.setAttributeDefaultExpression(schemaReference, tableName, attributeName, visitExpression(ctx.constant_expr));
-        else if (ctx.column_constraint() != null) visitColumn_Constraint(ctx.column_constraint(), schemaReference, tableName, attributeName);
+    private static boolean isCharacterType(SQLParser.Data_typeContext ctx) {
+        return ctx.CHAR() != null || ctx.CHARACTER() != null || ctx.VARCHAR() != null || ctx.NATIONAL() != null;
+    }
+
+    private static SQLDataType handleCharacterTypes(SQLParser.Data_typeContext ctx) {
+        if ((ctx.CHAR() != null || ctx.CHARACTER() != null) && ctx.VARYING() == null) {
+            return (ctx.length != null) ? new SQLCharacter(Integer.parseInt(ctx.length.getText())) : new SQLCharacter();
+        } else if (ctx.NATIONAL() != null) throw new IMPSqlException("NATIONAL characters not supported yet!");
+        return new SQLVarchar(Integer.parseInt(ctx.length.getText()));
+    }
+
+    private boolean isNumericType(SQLParser.Data_typeContext ctx) {
+        return ctx.NUMERIC() != null || ctx.DECIMAL_() != null || ctx.DEC_() != null ||
+            ctx.INT() != null || ctx.INTEGER() != null || ctx.SMALLINT() != null ||
+            ctx.FLOAT_() != null || ctx.REAL_() != null || ctx.DOUBLE() != null;
+    }
+
+    private SQLDataType handleNumericTypes(SQLParser.Data_typeContext ctx) {
+        if (ctx.NUMERIC() != null) {
+            return handleNumeric(ctx);
+        } else if (ctx.DECIMAL_() != null || ctx.DEC_() != null) {
+            return handleDecimal(ctx);
+        } else if (ctx.INT() != null || ctx.INTEGER() != null) {
+            return new SQLInteger();
+        } else if (ctx.SMALLINT() != null) {
+            return new SQLSmallint();
+        } else if (ctx.FLOAT_() != null) {
+            return ctx.prec != null ? new SQLFloat(Integer.parseInt(ctx.prec.getText())) : new SQLFloat();
+        } else if (ctx.REAL_() != null) {
+            return new SQLReal();
+        } else if (ctx.DOUBLE() != null) {
+            return new SQLDoublePrecision();
+        } else {
+            throw new IMPSqlException("Unsupported numeric type!");
+        }
+    }
+
+    private static SQLNumeric handleNumeric(SQLParser.Data_typeContext ctx) {
+        if (ctx.prec != null) {
+            if (ctx.scale != null) {
+                return new SQLNumeric(Integer.parseInt(ctx.prec.getText()), Integer.parseInt(ctx.scale.getText()));
+            } else return new SQLNumeric(Integer.parseInt(ctx.prec.getText()));
+        } else return new SQLNumeric();
+    }
+
+    private static SQLDecimal handleDecimal(SQLParser.Data_typeContext ctx) {
+        if (ctx.prec != null) {
+            if (ctx.scale != null) {
+                return new SQLDecimal(Integer.parseInt(ctx.prec.getText()), Integer.parseInt(ctx.scale.getText()));
+            } else return new SQLDecimal(Integer.parseInt(ctx.prec.getText()));
+        } else return new SQLDecimal();
+    }
+
+    private static boolean isBitType(SQLParser.Data_typeContext ctx) {
+        return ctx.BIT() != null;
+    }
+
+    private static SQLDataType handleBitTypes(SQLParser.Data_typeContext ctx) {
+        if (ctx.VARYING() == null)
+            return ctx.length != null ? new SQLBit(Integer.parseInt(ctx.length.getText())) : new SQLBit();
+        else return new SQLVarbit(Integer.parseInt(ctx.length.getText()));
+    }
+
+    private boolean isTimeType(SQLParser.Data_typeContext ctx) {
+        return ctx.DATE() != null || ctx.DATETIME() != null ||
+            ctx.TIME() != null || ctx.TIMESTAMP() != null ||
+            ctx.ZONE() != null;
+    }
+
+    private SQLDataType handleTimeTypes(SQLParser.Data_typeContext ctx) {
+        if (ctx.DATE() != null) {
+            return new SQLDate();
+        } else if (ctx.DATETIME() != null) {
+            return ctx.prec != null ? new SQLDateTime(Integer.parseInt(ctx.prec.getText())) : new SQLDateTime();
+        } else if (ctx.TIME() != null) {
+            return ctx.prec != null ? new SQLTime(Integer.parseInt(ctx.prec.getText())) : new SQLTime();
+        } else if (ctx.TIMESTAMP() != null) {
+            return ctx.prec != null ? new SQLTimestamp(Integer.parseInt(ctx.prec.getText())) : new SQLTimestamp();
+        } else if (ctx.ZONE() != null) {
+            throw new IMPSqlException("'WITH TIME ZONE' expression not supported!");
+        } else {
+            throw new IMPSqlException("Unsupported datetime type!");
+        }
+    }
+
+    private void visitColumnDefinitionElement(SQLParser.Column_definition_elementContext ctx, SchemaReference schemaReference, String tableName, String attributeName) {
+        if (ctx.DEFAULT() != null)
+            builder.setAttributeDefaultExpression(schemaReference, tableName, attributeName, visitExpression(ctx.constant_expr));
+        else if (ctx.column_constraint() != null)
+            visitColumnConstraint(ctx.column_constraint(), schemaReference, tableName, attributeName);
         else throw new IMPSqlException("Other column_definition_elements not supported yet!");
     }
 
-    public void visitColumn_Constraint(SQLParser.Column_constraintContext ctx, SchemaReference schemaReference, String tableName, String attributeName) {
-        String constraintName = ctx.constraint != null ? ctx.constraint.getText() : unnamedConstraintName + unnamedConstraintNumber++;
+    private void visitColumnConstraint(SQLParser.Column_constraintContext ctx, SchemaReference schemaReference, String tableName, String attributeName) {
+        String constraintName = ctx.constraint != null ? ctx.constraint.getText() : UNNAMED_CONSTRAINT_NAME + unnamedConstraintNumber++;
 
         if (ctx.null_notnull() != null) builder.setAttributeNullable(schemaReference, tableName, attributeName, false);
         else if (ctx.PRIMARY() != null) {
-            if (ctx.clustered() != null) throw new IMPSqlException("PK options not supported yet!");
+            if (ctx.clustered() != null) throw new IMPSqlException(PK_OPTIONS_NOT_SUPPORTED_YET);
             if (ctx.primary_key_options().getChildCount() != 0)
-                throw new IMPSqlException("PK options not supported yet!");
+                throw new IMPSqlException(PK_OPTIONS_NOT_SUPPORTED_YET);
             builder.addPrimaryKeyConstraint(schemaReference, tableName, constraintName, attributeName);
         } else if (ctx.UNIQUE() != null) {
-            if (ctx.clustered() != null) throw new IMPSqlException("PK options not supported yet!");
+            if (ctx.clustered() != null) throw new IMPSqlException(PK_OPTIONS_NOT_SUPPORTED_YET);
             if (ctx.primary_key_options().getChildCount() != 0)
-                throw new IMPSqlException("PK options not supported yet!");
+                throw new IMPSqlException(PK_OPTIONS_NOT_SUPPORTED_YET);
             builder.addUniqueConstraint(schemaReference, tableName, constraintName, attributeName);
-        } else if (ctx.foreign_key_options() != null) visitForeign_key_options(ctx.foreign_key_options(), schemaReference, tableName, List.of(attributeName), constraintName);
+        } else if (ctx.foreign_key_options() != null)
+            visitForeignKeyOptions(ctx.foreign_key_options(), schemaReference, tableName, List.of(attributeName), constraintName);
         else if (ctx.check_constraint() != null)
             builder.addCheckConstraint(schemaReference, tableName, new Check(constraintName, visitCheck_constraint(ctx.check_constraint())));
     }
 
-    public void visitTable_constraint(SQLParser.Table_constraintContext ctx, SchemaReference schemaReference, String tableName) {
-        String constraintName = ctx.constraint != null ? ctx.constraint.getText() : unnamedConstraintName + unnamedConstraintNumber++;
+    private void visitTableConstraint(SQLParser.Table_constraintContext ctx, SchemaReference schemaReference, String tableName) {
+        String constraintName = ctx.constraint != null ? ctx.constraint.getText() : UNNAMED_CONSTRAINT_NAME + unnamedConstraintNumber++;
 
         if (ctx.PRIMARY() != null) {
-            if (ctx.clustered() != null) throw new IMPSqlException("PK options not supported yet!");
+            if (ctx.clustered() != null) throw new IMPSqlException(PK_OPTIONS_NOT_SUPPORTED_YET);
             if (ctx.primary_key_options().getChildCount() != 0)
-                throw new IMPSqlException("PK options not supported yet!");
+                throw new IMPSqlException(PK_OPTIONS_NOT_SUPPORTED_YET);
             builder.addPrimaryKeyConstraint(schemaReference, tableName, constraintName, visitColumn_name_list_with_order(ctx.column_name_list_with_order()));
         } else if (ctx.UNIQUE() != null) {
-            if (ctx.clustered() != null) throw new IMPSqlException("PK options not supported yet!");
+            if (ctx.clustered() != null) throw new IMPSqlException(PK_OPTIONS_NOT_SUPPORTED_YET);
             if (ctx.primary_key_options().getChildCount() != 0)
-                throw new IMPSqlException("PK options not supported yet!");
+                throw new IMPSqlException(PK_OPTIONS_NOT_SUPPORTED_YET);
             builder.addUniqueConstraint(schemaReference, tableName, constraintName, visitColumn_name_list_with_order(ctx.column_name_list_with_order()));
         } else if (ctx.FOREIGN() != null) {
-            visitForeign_key_options(ctx.foreign_key_options(), schemaReference, tableName, visitColumn_name_list(ctx.column_name_list()), constraintName);
+            visitForeignKeyOptions(ctx.foreign_key_options(), schemaReference, tableName, visitColumn_name_list(ctx.column_name_list()), constraintName);
         } else if (ctx.check_constraint() != null) {
             builder.addCheckConstraint(schemaReference, tableName, new Check(constraintName, visitCheck_constraint(ctx.check_constraint())));
         }
     }
 
+    @Override
     public List<String> visitColumn_name_list_with_order(SQLParser.Column_name_list_with_orderContext ctx) {
         if (!ctx.ASC().isEmpty() || !ctx.DESC().isEmpty())
             throw new IMPSqlException("ASC DESC elements in column_names_list not supported yet!");
         return ctx.id_().stream().map(this::visitId_).toList();
     }
 
+    @Override
     public BooleanExpression visitCheck_constraint(SQLParser.Check_constraintContext ctx) {
         if (ctx.REPLICATION() != null)
             throw new IMPSqlException("Grammar expression 'NOT FOR REPLICATION' not supported yet!");
         return visitSearch_condition(ctx.search_condition());
     }
 
-    public void visitForeign_key_options(SQLParser.Foreign_key_optionsContext ctx, SchemaReference schemaReference, String tableName, List<String> attributeNames, String constraintName) {
+    private void visitForeignKeyOptions(SQLParser.Foreign_key_optionsContext ctx, SchemaReference schemaReference, String tableName, List<String> attributeNames, String constraintName) {
         if (ctx.on_delete() != null || ctx.on_update() != null || ctx.REPLICATION() != null)
             throw new IMPSqlException("FK options not supported yet!");
         builder.addForeignKeyConstraint(schemaReference, tableName, constraintName, attributeNames, visitTable_name(ctx.table_name()), visitId_(ctx.table_name().table), visitColumn_name_list(ctx.pk));
     }
 
 
-    /** NAME/BASIC NODES **/
+    /**
+     * NAME/BASIC NODES
+     **/
 
+    @Override
     public SchemaReference visitFull_table_name(SQLParser.Full_table_nameContext ctx) {
         if (ctx.linkedServer != null)
             throw new IMPSqlException("Grammar expression related to linkedServer in full_table_name not supported yet!");
@@ -614,11 +712,13 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
             visitId_(ctx.schema));
     }
 
+    @Override
     public SchemaReference visitSimple_name(SQLParser.Simple_nameContext ctx) {
         if (ctx.schema == null) return defaultSchemaReference;
         return new SchemaReference(visitId_(ctx.schema));
     }
 
+    @Override
     public ValueExpression visitPrimitive_expression(SQLParser.Primitive_expressionContext ctx) {
         if (ctx.NULL_() != null) {
             //TODO: Future Work - IMPSQL-50
@@ -630,18 +730,19 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         }
     }
 
+    @Override
     public ValueExpression visitPrimitive_constant(SQLParser.Primitive_constantContext ctx) {
         if (ctx.STRING() != null) {
             String str = ctx.STRING().getText();
-            return new SQLPrimitiveString(str.substring(1,str.length()-1));
-        }
-        else if (ctx.DECIMAL() != null) return new SQLPrimitiveInteger(Integer.parseInt(ctx.DECIMAL().getText()));
+            return new SQLPrimitiveString(str.substring(1, str.length() - 1));
+        } else if (ctx.DECIMAL() != null) return new SQLPrimitiveInteger(Integer.parseInt(ctx.DECIMAL().getText()));
         else if (ctx.FLOAT() != null) return new SQLPrimitiveFloat(Float.parseFloat(ctx.FLOAT().getText()));
         else {
             throw new IMPSqlException("Grammar expression of other primitive constants not supported yet!");
         }
     }
 
+    @Override
     public ComparisonPredicate.ComparisonOperator visitComparison_operator(SQLParser.Comparison_operatorContext ctx) {
         String opString = ctx.getText();
         return switch (opString) {
@@ -656,8 +757,9 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor {
         };
     }
 
+    @Override
     public String visitId_(SQLParser.Id_Context ctx) {
-        if (ctx.SQUARE_BRACKET_ID() != null) return ctx.getText().substring(1, ctx.getText().length()-1);
+        if (ctx.SQUARE_BRACKET_ID() != null) return ctx.getText().substring(1, ctx.getText().length() - 1);
         return ctx.getText();
     }
 

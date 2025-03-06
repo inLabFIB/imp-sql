@@ -1,7 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions;
 
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.Attribute;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.Table;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.TableSource;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.ColumnReference;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;
 
@@ -11,19 +10,19 @@ import java.util.Objects;
 
 public class TableReference extends AliasableRelationalExpression {
 
-    private final Table table;
+    private final TableSource tableSource;
 
-    public TableReference(Table table, String alias) {
+    public TableReference(TableSource tableSource, String alias) {
         super(alias);
-        this.table = Objects.requireNonNull(table, "A table reference must be linked with a Table object previously defined in the IMP-SQL instance.");
+        this.tableSource = Objects.requireNonNull(tableSource, "A table reference must be linked with a TableSource object previously defined in the IMP-SQL instance.");
     }
 
-    public TableReference(Table table) {
-        this(table, null);
+    public TableReference(TableSource tableSource) {
+        this(tableSource, null);
     }
 
-    public Table getTable() {
-        return table;
+    public TableSource getTableSource() {
+        return tableSource;
     }
 
     @Override
@@ -31,11 +30,11 @@ public class TableReference extends AliasableRelationalExpression {
         List<ColumnReference> result = new ArrayList<>();
 
         String tableAlias = getAlias();
-        if (tableAlias == null) tableAlias = table.getTableName(); // Default alias
+        if (tableAlias == null) tableAlias = tableSource.getName(); // Default alias
 
         // Assuming column references' table aliases do not contain schema reference information
-        for (Attribute a : table.getAttributes()) {
-            result.add(new ColumnReference(tableAlias, a.getName()));
+        for (String columnName : tableSource.getColumnNames()) {
+            result.add(new ColumnReference(tableAlias, columnName));
         }
 
         return result;
@@ -48,7 +47,7 @@ public class TableReference extends AliasableRelationalExpression {
 
     @Override
     public AliasableRelationalExpression getAliasedCopy(String newAlias) {
-        return new TableReference(table, newAlias);
+        return new TableReference(tableSource, newAlias);
     }
 
 
@@ -60,13 +59,13 @@ public class TableReference extends AliasableRelationalExpression {
         TableReference that = (TableReference) o;
 
         if (getAlias() != null ? !getAlias().equals(that.getAlias()) : that.getAlias() != null) return false;
-        return table.equals(that.table);
+        return tableSource.equals(that.tableSource);
     }
 
     @Override
     public int hashCode() {
         int result = getAlias() != null ? getAlias().hashCode() : 0;
-        result = 31 * result + table.hashCode();
+        result = 31 * result + tableSource.hashCode();
         return result;
     }
 }

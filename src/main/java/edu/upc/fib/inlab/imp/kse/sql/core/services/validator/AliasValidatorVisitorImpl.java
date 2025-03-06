@@ -51,11 +51,13 @@ import java.util.*;
  */
 public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<ColumnReference>> {
 
+    public static final String VISITOR_EXCEPTION_MESSAGE = "Visitor shouldn't reach this expression.";
+
     public void validateAssertion(Assertion a) {
         List<ColumnReference> required = a.getBooleanExpression().visit(this);
         if (!required.isEmpty()) {
             String cr = new SQLServerPrinter().visit(required.get(0));
-            throw new InvalidColumnReferenceException("The columnReference (" + cr + ") is not a valid reference.");
+            throw new InvalidColumnReferenceException(cr);
         }
     }
 
@@ -67,7 +69,7 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
         List<ColumnReference> required = q.visit(this);
         if (!required.isEmpty()) {
             String cr = new SQLServerPrinter().visit(required.get(0));
-            throw new InvalidColumnReferenceException("The columnReference (" + cr + ") is not a valid reference.");
+            throw new InvalidColumnReferenceException(cr);
         }
     }
 
@@ -78,21 +80,32 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
         Set<String> cachedOfferedTableAliases = new HashSet<>();
 
         // Process FROM clause (needs to walk tree since ON clauses need to be checked)
+        required.addAll(visitFromClause(te));
+        // Process FROM clause - OLD
+        required.addAll(processFromClauseTerminalExpressions(te,offered, cachedOfferedTableAliases));
+        // Process SELECT clause
+        required.addAll(visitSelectClause(te, offered, cachedOfferedTableAliases));
+        // Process WHERE clause
+        required.addAll(visitWhereClause(te, offered, cachedOfferedTableAliases));
+
+        return required;
+    }
+
+    private List<ColumnReference> visitFromClause(TableExpression te) {
+        List<ColumnReference> required = new ArrayList<>();
         if (te.getFromClause() != null) {
             required.addAll(te.getFromClause().visit(this));
         }
+        return required;
+    }
 
-        // Process FROM clause - OLD
+    private List<ColumnReference> processFromClauseTerminalExpressions(TableExpression te, List<ColumnReference> offered, Set<String> cachedOfferedTableAliases) {
+        List<ColumnReference> required = new ArrayList<>();
         for (AliasableRelationalExpression a : te.getFromClauseTerminalExpressions()) {
-            String relationalExpressionAlias = a.getAlias();
-            if (relationalExpressionAlias == null) {
-                if (a instanceof TableReference tr)
-                    relationalExpressionAlias = tr.getTable().getTableName();
-                if (a instanceof Query)
-                    throw new NonAliasedFromClauseSubQueryException("Sub-queries in FROM clause must be aliased");
-            }
-            if (cachedOfferedTableAliases.contains(relationalExpressionAlias))
+            String relationalExpressionAlias = getRelationalExpressionAlias(a);
+            if (cachedOfferedTableAliases.contains(relationalExpressionAlias)) {
                 throw new RepeatedTableAliasException("Repeated table alias (" + relationalExpressionAlias + ").");
+            }
             cachedOfferedTableAliases.add(relationalExpressionAlias);
             // Obtain required aliases
             required.addAll(a.visit(this));
@@ -102,8 +115,24 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
                 throw new AmbiguousColumnReferenceException("Repeated table.column alias.");
             offered.addAll(newOffered);
         }
+        return required;
+    }
 
-        // Process SELECT clause
+    private String getRelationalExpressionAlias(AliasableRelationalExpression a) {
+        String relationalExpressionAlias = a.getAlias();
+        if (relationalExpressionAlias == null) {
+            if (a instanceof TableReference tr) {
+                relationalExpressionAlias = tr.getTableSource().getName();
+            }
+            if (a instanceof Query) {
+                throw new NonAliasedFromClauseSubQueryException("Sub-queries in FROM clause must be aliased");
+            }
+        }
+        return relationalExpressionAlias;
+    }
+
+    private List<ColumnReference> visitSelectClause(TableExpression te, List<ColumnReference> offered, Set<String> cachedOfferedTableAliases) {
+        List<ColumnReference> required = new ArrayList<>();
         if (te.getSelectClause() != null) {
             for (SelectItem s : te.getSelectClause()) {
                 for (ColumnReference cr : s.visit(this)) {
@@ -113,8 +142,11 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
                 }
             }
         }
+        return required;
+    }
 
-        // Process WHERE clause
+    private List<ColumnReference> visitWhereClause(TableExpression te, List<ColumnReference> offered, Set<String> cachedOfferedTableAliases) {
+        List<ColumnReference> required = new ArrayList<>();
         if (te.getWhereClause() != null) {
             for (ColumnReference cr : te.getWhereClause().visit(this)) {
                 if (!isOffered(offered, cachedOfferedTableAliases, cr)) {
@@ -122,7 +154,6 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
                 }
             }
         }
-
         return required;
     }
 
@@ -276,62 +307,62 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
 
     @Override
     public List<ColumnReference> visit(SQLCharacter c) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLVarchar v) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLBit b) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLInteger i) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLSmallint s) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLFloat f) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLReal r) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLDate d) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLDoublePrecision dp) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLNumeric n) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLDateTime dt) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLFunction f) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
@@ -351,21 +382,21 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
 
     @Override
     public List<ColumnReference> visit(SQLVarbit vb) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLDecimal d) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLTime t) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 
     @Override
     public List<ColumnReference> visit(SQLTimestamp ts) {
-        throw new IMPSqlException("Visitor shouldn't reach this expression.");
+        throw new IMPSqlException(VISITOR_EXCEPTION_MESSAGE);
     }
 }

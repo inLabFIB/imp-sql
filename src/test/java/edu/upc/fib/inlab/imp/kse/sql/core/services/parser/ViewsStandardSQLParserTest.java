@@ -131,16 +131,16 @@ class ViewsStandardSQLParserTest {
             "viewName",
             new TableExpression(
                 List.of(
-                    new AliasableSelectItem(new ColumnReference("A","attr1")),
-                    new AliasableSelectItem(new ColumnReference("B","attr2"))
+                    new AliasableSelectItem(new ColumnReference("A", "attr1")),
+                    new AliasableSelectItem(new ColumnReference("B", "attr2"))
                 ), new OnJoin(OnJoin.JoinOperator.INNER,
                 new TableReference(expectedSchemaTables.get(0)),
                 new TableReference(expectedSchemaTables.get(1)),
                 new ComparisonPredicate(ComparisonPredicate.ComparisonOperator.EQ,
-                    new ColumnReference("A","fk"),
-                    new ColumnReference("B","pk"))),
+                    new ColumnReference("A", "fk"),
+                    new ColumnReference("B", "pk"))),
                 new ComparisonPredicate(ComparisonPredicate.ComparisonOperator.EQ,
-                    new ColumnReference("B","attr3"),
+                    new ColumnReference("B", "attr3"),
                     new SQLPrimitiveFloat(1.1f))
             ));
 
@@ -168,7 +168,7 @@ class ViewsStandardSQLParserTest {
                     new AliasableSelectItem(
                         new TableExpression(
                             List.of(new AliasableSelectItem(new ColumnReference("c"))),
-                            new TableReference(expectedSchemaTables.get(1)),null))),
+                            new TableReference(expectedSchemaTables.get(1)), null))),
                 new TableExpression(
                     List.of(
                         new AliasableSelectItem(new ColumnReference("a")),
@@ -210,8 +210,8 @@ class ViewsStandardSQLParserTest {
                             new TableReference(expectedSchemaTables.get(2)),
                             new ComparisonPredicate(
                                 ComparisonPredicate.ComparisonOperator.EQ,
-                                new ColumnReference("B","B_pk"),
-                                new ColumnReference("C","C_pk")
+                                new ColumnReference("B", "B_pk"),
+                                new ColumnReference("C", "C_pk")
                             )
                         )
                     ),
@@ -342,6 +342,61 @@ class ViewsStandardSQLParserTest {
         );
 
         assertThat("Parsed view does not equal expected view", schema.getViews().get(0).equals(expectedView));
+    }
+
+    @Test
+    void parseViewThatReferenceOtherView() {
+        String viewStatement = """
+                CREATE VIEW view1 AS SELECT a FROM myTable WHERE a=b;
+                CREATE VIEW view2 AS SELECT a FROM view1;
+            """;
+
+        StandardSQLParser parser = new StandardSQLParser();
+        parser.parse(getMyTableSchemaStatements());
+        parser.parse(viewStatement);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        List<Table> expectedSchemaTables = getMyTableSchemaTables();
+
+        // Object built directly in java
+        View expectedView1 = new View(
+            "view1",
+            new TableExpression(
+                List.of(
+                    new AliasableSelectItem(new ColumnReference("a")
+                )),
+                new TableReference(expectedSchemaTables.get(0)),
+                new ComparisonPredicate(
+                    ComparisonPredicate.ComparisonOperator.EQ,
+                    new ColumnReference("a"),
+                    new ColumnReference("b")
+                ),
+                null
+            )
+        );
+
+        View expectedView2 = new View(
+            "view2",
+            new TableExpression(
+                List.of(
+                    new AliasableSelectItem(new ColumnReference( "a")
+                    )),
+                new TableReference(expectedView1),
+                null,
+                null
+            )
+        );
+
+        assertThat(schema.getViews().get(0))
+            .usingRecursiveComparison()
+            .describedAs("Parsed view does not equal expected view")
+            .isEqualTo(expectedView1);
+
+        assertThat(schema.getViews().get(1))
+            .usingRecursiveComparison()
+            .describedAs("Parsed view does not equal expected view")
+            .isEqualTo(expectedView2);
+
     }
 
 }

@@ -54,7 +54,6 @@ public class SQLServerPrinter extends SQLPrinter {
             case LEFT -> " LEFT OUTER JOIN ";
             case RIGHT -> " RIGHT OUTER JOIN ";
             case FULL -> " FULL OUTER JOIN ";
-            default -> " " + j.getOperator().toString() + " ";
         };
         return j.getLeftExpression().visit(this) + operation + j.getRightExpression().visit(this) +
             " ON ( " + j.getOnClause().visit(this) + " )";
@@ -70,7 +69,6 @@ public class SQLServerPrinter extends SQLPrinter {
             case UNION -> " UNION ";
             case EXCEPT -> " EXCEPT ";
             case INTERSECT -> " INTERSECT ";
-            default -> " " + so.getOperator().toString() + " ";
         };
 
         if (so.returnsDuplicates()) operator += "ALL ";
@@ -83,9 +81,9 @@ public class SQLServerPrinter extends SQLPrinter {
     @Override
     public String visit(TableReference tr) {
         String tableReference;
-        SchemaReference schemaReference = tr.getTable().getSchemaReference();
-        if (schemaReference == null) tableReference = tr.getTable().getTableName();
-        else tableReference = schemaReference.visit(this) + "." + tr.getTable().getTableName();
+        SchemaReference schemaReference = tr.getTableSource().getSchemaReference();
+        if (schemaReference == null) tableReference = tr.getTableSource().getName();
+        else tableReference = schemaReference.visit(this) + "." + tr.getTableSource().getName();
 
         if (tr.getAlias() != null) return tableReference + " AS " + tr.getAlias();
         return tableReference;
@@ -100,7 +98,6 @@ public class SQLServerPrinter extends SQLPrinter {
             case LEQ -> " <= ";
             case GT -> " > ";
             case GEQ -> " >= ";
-            default -> " " + cp.getOperator().toString() + " ";
         };
         return cp.getLeftExpression().visit(this) + operation + cp.getRightExpression().visit(this);
     }
@@ -126,7 +123,6 @@ public class SQLServerPrinter extends SQLPrinter {
         String operation = switch (po.getOperator()) {
             case AND -> " AND ";
             case OR -> " OR ";
-            default -> " " + po.getOperator().toString() + " ";
         };
         return po.getLeftExpression().visit(this) + operation + po.getRightExpression().visit(this);
     }
@@ -224,7 +220,7 @@ public class SQLServerPrinter extends SQLPrinter {
     @Override
     public String visit(Check c) {
         String checkCreationStatement = "";
-        if (c.hasName()) checkCreationStatement = "CONSTRAINT " + c.getName() + " ";
+        if (c.hasName()) checkCreationStatement = constraintBeginStatement(c.getName());
         checkCreationStatement += "CHECK (" +
             c.getExpression().visit(this) +
             ")";
@@ -234,7 +230,7 @@ public class SQLServerPrinter extends SQLPrinter {
     @Override
     public String visit(Unique u) {
         String uniqueCreationStatement = "";
-        if (u.hasName()) uniqueCreationStatement = "CONSTRAINT " + u.getName() + " ";
+        if (u.hasName()) uniqueCreationStatement = constraintBeginStatement(u.getName());
         uniqueCreationStatement += "UNIQUE (" +
             String.join(", ", u.getAttributes().stream().map(Attribute::getName).toList())
             + ")";
@@ -244,7 +240,7 @@ public class SQLServerPrinter extends SQLPrinter {
     @Override
     public String visit(PrimaryKey pk) {
         String pkCreationStatement = "";
-        if (pk.hasName()) pkCreationStatement = "CONSTRAINT " + pk.getName() + " ";
+        if (pk.hasName()) pkCreationStatement = constraintBeginStatement(pk.getName());
         pkCreationStatement += "PRIMARY KEY (" +
             String.join(", ", pk.getPkAttributes().stream().map(Attribute::getName).toList())
             + ")";
@@ -257,13 +253,17 @@ public class SQLServerPrinter extends SQLPrinter {
         if (fk.getPkReferenceTable().getSchemaReference() != null)
             prefix = fk.getPkReferenceTable().getSchemaReference().visit(this)+".";
         String fkCreationStatement = "";
-        if (fk.hasName()) fkCreationStatement = "CONSTRAINT " + fk.getName() + " ";
+        if (fk.hasName()) fkCreationStatement = constraintBeginStatement(fk.getName());
         fkCreationStatement += "FOREIGN KEY (" +
             String.join(", ", fk.getFkAttributes().stream().map(Attribute::getName).toList());
         fkCreationStatement += ") REFERENCES " + prefix + fk.getPkReferenceTable().getTableName() + " ("+
             String.join(", ", fk.getPkReference().stream().map(Attribute::getName).toList())
             + ")";
         return fkCreationStatement;
+    }
+
+    private static String constraintBeginStatement(String name) {
+        return "CONSTRAINT " + name + " ";
     }
 
     @Override

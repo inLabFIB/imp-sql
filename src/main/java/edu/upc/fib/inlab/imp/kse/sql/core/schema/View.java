@@ -1,14 +1,13 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.schema;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.Query;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaValueObject;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class View implements SQLObjectSchemaValueObject {
+public class View implements TableSource {
 
     private final String viewName;
     private final SchemaReference schemaReference;
@@ -30,6 +29,9 @@ public class View implements SQLObjectSchemaValueObject {
         this(viewName, null, null, query);
     }
 
+    public String getName() {
+        return getViewName();
+    }
 
     public String getViewName() {
         return viewName;
@@ -52,6 +54,15 @@ public class View implements SQLObjectSchemaValueObject {
         return visitor.visit(this);
     }
 
+    public boolean hasSameIdentifier(String viewName, SchemaReference schemaReference) {
+        return this.viewName.equalsIgnoreCase(viewName)
+            && Objects.equals(this.schemaReference, schemaReference);
+    }
+
+    public boolean hasSameIdentifier(View v) {
+        return viewName.equals(v.viewName)
+            && Objects.equals(schemaReference, v.schemaReference);
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -74,10 +85,5 @@ public class View implements SQLObjectSchemaValueObject {
         result = 31 * result + (columnNames != null ? columnNames.hashCode() : 0);
         result = 31 * result + query.hashCode();
         return result;
-    }
-
-    public boolean hasSameIdentifier(View v) {
-        return viewName.equals(v.viewName)
-            && Objects.equals(schemaReference, v.schemaReference);
     }
 }
