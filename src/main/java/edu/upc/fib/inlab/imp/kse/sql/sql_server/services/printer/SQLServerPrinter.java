@@ -5,7 +5,12 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.data_types.*;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.*;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.CrossJoin;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.OnJoin;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.RelationalExpression;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.SetOperation;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.TableExpression;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.TableReference;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.Asterisk;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.*;
@@ -13,8 +18,6 @@ import edu.upc.fib.inlab.imp.kse.sql.core.services.printer.SQLPrinter;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.SetOperation.SetOperator.UNION;
 
 public class SQLServerPrinter extends SQLPrinter {
 
@@ -61,10 +64,6 @@ public class SQLServerPrinter extends SQLPrinter {
 
     @Override
     public String visit(SetOperation so) {
-        if (so.getOperator() != UNION && so.returnsDuplicates())
-            throw new IMPSqlException("Can't translate a EXCEPT/INTERSECT clause with ALL modifier.");
-        if (so.getAlias() != null) throw new IMPSqlException("Can't translate a set operation with alias.");
-
         String operator = switch (so.getOperator()) {
             case UNION -> " UNION ";
             case EXCEPT -> " EXCEPT ";

@@ -13,8 +13,6 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.SetOperation.SetOperator.UNION;
-
 public class StandardSQLPrinter extends SQLPrinter {
 
     @Override
@@ -60,10 +58,6 @@ public class StandardSQLPrinter extends SQLPrinter {
 
     @Override
     public String visit(SetOperation so) {
-        if (so.getOperator() != UNION && so.returnsDuplicates())
-            throw new IMPSqlException("Can't translate a EXCEPT/INTERSECT clause with ALL modifier.");
-        if (so.getAlias() != null) throw new IMPSqlException("Can't translate a set operation with alias.");
-
         String operator = switch (so.getOperator()) {
             case UNION -> " UNION ";
             case EXCEPT -> " EXCEPT ";
