@@ -37,6 +37,6 @@ public class SQLPrimitiveInteger implements PrimitiveConstant {
 
     @Override
     public String computeDefaultColumnAlias() {
-        return null;
+        return Integer.toString(value);
     }
 }

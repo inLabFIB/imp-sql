@@ -38,6 +38,6 @@ public class SQLPrimitiveString implements PrimitiveConstant {
 
     @Override
     public String computeDefaultColumnAlias() {
-        return null;
+        return value;
     }
 }

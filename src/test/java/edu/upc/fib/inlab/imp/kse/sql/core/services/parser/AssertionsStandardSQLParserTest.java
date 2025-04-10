@@ -2,6 +2,7 @@ package edu.upc.fib.inlab.imp.kse.sql.core.services.parser;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.Assertion;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLObjectSchema;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLSchemaMother;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.ComparisonPredicate;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.ExistsPredicate;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.NotOperation;
@@ -34,7 +35,7 @@ class AssertionsStandardSQLParserTest {
             "assertionName",
             new NotOperation(new ExistsPredicate(
                 new TableExpression(
-                    List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                    List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))),
                     null, null
                 )
             ))
@@ -66,8 +67,8 @@ class AssertionsStandardSQLParserTest {
             new NotOperation(new ExistsPredicate(
                 new TableExpression(
                     List.of(
-                        new AliasableSelectItem(new ColumnReference("a", "b")),
-                        new AliasableSelectItem(new ColumnReference("d", "e"))),
+                        SQLSchemaMother.createAliasableSelectItem(new ColumnReference("a", "b")),
+                        SQLSchemaMother.createAliasableSelectItem(new ColumnReference("d", "e"))),
                     new CrossJoin(
                         new TableReference(schema.getTables().get(0)),
                         new TableExpression(

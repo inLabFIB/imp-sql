@@ -142,8 +142,8 @@ public class SQLServerPrinter extends SQLPrinter {
         viewName += v.getViewName();
 
         String viewCreationStatement = "CREATE VIEW " + viewName;
-        if (v.getColumnNames() != null && !v.getColumnNames().isEmpty())
-            viewCreationStatement += " ( " + String.join(", ", v.getColumnNames()) + " )";
+        if (!v.getExplicitColumnNames().isEmpty())
+            viewCreationStatement += " ( " + String.join(", ", v.getExplicitColumnNames()) + " )";
         viewCreationStatement += " AS " + v.getQuery().visit(this) + ";";
         return viewCreationStatement;
     }

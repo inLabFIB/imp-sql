@@ -303,8 +303,10 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor<Object> 
         else throw new IMPSqlException("Query of set operation not defined: " + ctx.getText());
 
         List<SelectItem> nullExpressionSelectClause = new LinkedList<>();
-        for (int i = 0; i < query.getNumberOfReturnColumns(); i++)
-            nullExpressionSelectClause.add(new AliasableSelectItem(new SQLPrimitiveInteger(1)));
+        for (int i = 0; i < query.getNumberOfReturnColumns(); i++) {
+            //TODO: SQLPrimitiveInteger ???
+            nullExpressionSelectClause.add(new AliasableSelectItem(new SQLPrimitiveInteger(1), "1"));
+        }
         TableExpression nullExpression = new TableExpression(nullExpressionSelectClause);
 
         return new SetOperation(operator, returnsDuplicates, nullExpression, query);
@@ -358,12 +360,15 @@ public class StandardSQLGrammarVisitorImpl extends SQLParserBaseVisitor<Object> 
 
     @Override
     public AliasableSelectItem visitExpression_elem(SQLParser.Expression_elemContext ctx) {
-        if (ctx.eq != null)
-            return new AliasableSelectItem(visitExpression(ctx.leftAssignment), ctx.leftAlias.getText());
+        if (ctx.eq != null) {
+            ValueExpression expression = visitExpression(ctx.leftAssignment);
+            return new AliasableSelectItem(expression, ctx.leftAlias.getText());
+        }
         else {
             String alias = null;
             if (ctx.as_column_alias() != null) alias = visitAs_column_alias(ctx.as_column_alias());
-            return new AliasableSelectItem(visitExpression(ctx.expressionAs), alias);
+            ValueExpression expression = visitExpression(ctx.expressionAs);
+            return new AliasableSelectItem(expression, alias);
         }
     }
 

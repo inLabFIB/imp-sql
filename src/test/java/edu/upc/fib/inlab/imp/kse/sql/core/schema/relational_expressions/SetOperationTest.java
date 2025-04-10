@@ -1,7 +1,7 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.AliasableSelectItem;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLSchemaMother;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.SQLPrimitiveInteger;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.StandardSQLParser;
 import org.junit.jupiter.api.Nested;
@@ -18,7 +18,7 @@ class SetOperationTest {
     class SetOperationCreationRestrictionsTest {
         @Test
         void shouldCreateUnionSetOperation_whenQueriesHaveEqualSelectClauseArity() {
-            Query query = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+            Query query = new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))));
 
             SetOperation so = new SetOperation(SetOperation.SetOperator.UNION, false, query, query);
 
@@ -27,9 +27,9 @@ class SetOperationTest {
 
         @Test
         void shouldNotCreateUnionSetOperation_whenQueriesHaveDifferentSelectClauseArity() {
-            Query query1 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
-            Query query2 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1)),
-                                                       new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+            Query query1 = new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))));
+            Query query2 = new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1)),
+                SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))));
 
             assertThatThrownBy(() -> new SetOperation(SetOperation.SetOperator.UNION, false, query1, query2))
                 .isInstanceOf(IMPSqlException.class);

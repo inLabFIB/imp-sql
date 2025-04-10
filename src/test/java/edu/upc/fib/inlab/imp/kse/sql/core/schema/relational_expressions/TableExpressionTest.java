@@ -1,6 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions;
 
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.AliasableSelectItem;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLSchemaMother;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.Asterisk;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.SQLPrimitiveInteger;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.StandardSQLParser;
@@ -19,15 +19,15 @@ class TableExpressionTest {
 
         @Test
         void shouldReturnOneWhenOneColumnIsReturned() {
-            TableExpression te = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+            TableExpression te = new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))));
 
             assertThat(te.getNumberOfReturnColumns()).isEqualTo(1);
         }
 
         @Test
         void shouldReturnTwoWhenTwoColumnIsReturned() {
-            TableExpression te = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1)),
-                                                             new AliasableSelectItem(new SQLPrimitiveInteger(1))));
+            TableExpression te = new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1)),
+                SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))));
 
             assertThat(te.getNumberOfReturnColumns()).isEqualTo(2);
         }

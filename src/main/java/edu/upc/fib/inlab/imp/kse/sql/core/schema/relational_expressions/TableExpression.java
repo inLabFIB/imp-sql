@@ -7,6 +7,7 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.Asterisk;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.SelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.ColumnReference;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;
+import edu.upc.fib.inlab.imp.kse.sql.core.services.printer.StandardSQLPrinter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -139,7 +140,10 @@ public class TableExpression extends Query {
 
     @Override
     public String computeDefaultColumnAlias() {
-        return getAlias();
+        // TODO: we should not invoke a service from the domain code
+        //  possibly, we should add an additional attribute in this class containing the String representation of this expressions
+        //  this attribute should be fed by the parser
+        return new StandardSQLPrinter().visit(this);
     }
 
     @Override

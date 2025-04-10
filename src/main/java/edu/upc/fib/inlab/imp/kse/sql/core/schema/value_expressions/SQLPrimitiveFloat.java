@@ -36,6 +36,6 @@ public class SQLPrimitiveFloat implements PrimitiveConstant {
 
     @Override
     public String computeDefaultColumnAlias() {
-        return null;
+        return Float.toString(value);
     }
 }

@@ -1,10 +1,10 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.services.printer;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLObjectSchema;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLSchemaMother;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.Query;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.SetOperation;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.TableExpression;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.selection_expressions.AliasableSelectItem;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.SQLPrimitiveInteger;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.StandardSQLParser;
 import edu.upc.fib.inlab.imp.kse.sql.sql_server.services.printer.SQLServerPrinter;
@@ -67,8 +67,8 @@ class GeneralPrinterTest {
         void printSetOperators(SetOperation.SetOperator operator, boolean repeatedValues, String setOperator) {
             // Object built directly in java
             Query union = new SetOperation(operator, repeatedValues,
-                                           new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1)))),
-                                           new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))))
+                                           new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1)))),
+                                           new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(2))))
             );
             String expectedUnion = "( ( SELECT 1 ) " + setOperator + " ( SELECT 2 ) )";
             MatcherAssert.assertThat(union.visit(new SQLServerPrinter()), is(expectedUnion));
@@ -76,9 +76,9 @@ class GeneralPrinterTest {
 
         @Test
         void printMultipleUnions() {
-            Query query1 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
-            Query query2 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))));
-            Query query3 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(3))));
+            Query query1 = new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))));
+            Query query2 = new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(2))));
+            Query query3 = new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(3))));
             // Object built directly in java
             Query union = new SetOperation(UNION, false,
                                            new SetOperation(EXCEPT, false, query1, query2),

@@ -120,7 +120,7 @@ class SQLServerPrinterTest {
                 "assertionName",
                 new NotOperation(new ExistsPredicate(
                     new TableExpression(
-                        List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                        List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))),
                         null, null
                     )
                 ))
@@ -139,7 +139,7 @@ class SQLServerPrinterTest {
             View view = new View(
                 "viewName", null, List.of("col1"),
                 new TableExpression(
-                    List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                    List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))),
                     null, null
                 ));
 
@@ -153,7 +153,7 @@ class SQLServerPrinterTest {
             View view = new View(
                 "viewName",
                 new TableExpression(
-                    List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                    List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))),
                     null, null
                 ));
 
@@ -167,7 +167,7 @@ class SQLServerPrinterTest {
                 "viewName",
                 new SchemaReference("db", "schema"),
                 new TableExpression(
-                    List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                    List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))),
                     null, null
                 ));
 
@@ -190,8 +190,8 @@ class SQLServerPrinterTest {
                 // Object built directly in java
                 Query select = new TableExpression(
                     List.of(
-                        new AliasableSelectItem(new ColumnReference("a")),
-                        new AliasableSelectItem(new ColumnReference("b"))),
+                        SQLSchemaMother.createAliasableSelectItem(new ColumnReference("a")),
+                        SQLSchemaMother.createAliasableSelectItem(new ColumnReference("b"))),
                     new TableReference(SchemasProvider.getMyTableSchemaTables().get(0)),
                     new ComparisonPredicate(
                         ComparisonPredicate.ComparisonOperator.EQ,
@@ -246,8 +246,8 @@ class SQLServerPrinterTest {
                 // Object built directly in java
                 Query select = new TableExpression(
                     List.of(
-                        new AliasableSelectItem(new ColumnReference("A", "attr1")),
-                        new AliasableSelectItem(new ColumnReference("B", "attr2"))
+                        SQLSchemaMother.createAliasableSelectItem(new ColumnReference("A", "attr1")),
+                        SQLSchemaMother.createAliasableSelectItem(new ColumnReference("B", "attr2"))
                     ), new OnJoin(OnJoin.JoinOperator.INNER,
                                   new TableReference(SchemasProvider.getABSchemaTables().get(0)),
                                   new TableReference(SchemasProvider.getABSchemaTables().get(1)),
@@ -303,14 +303,13 @@ class SQLServerPrinterTest {
                 Query select = new TableExpression(
                     List.of(
                         new AliasableSelectItem(new ColumnReference("b"), "money"),
-                        new AliasableSelectItem(
-                            new TableExpression(
-                                List.of(new AliasableSelectItem(new ColumnReference("c"))),
-                                new TableReference(SchemasProvider.getMyTableSchemaTables().get(1)), null))),
+                        SQLSchemaMother.createAliasableSelectItem(new TableExpression(
+                            List.of(SQLSchemaMother.createAliasableSelectItem(new ColumnReference("c"))),
+                            new TableReference(SchemasProvider.getMyTableSchemaTables().get(1)), null))),
                     new TableExpression(
                         List.of(
-                            new AliasableSelectItem(new ColumnReference("a")),
-                            new AliasableSelectItem(new ColumnReference("b"))),
+                            SQLSchemaMother.createAliasableSelectItem(new ColumnReference("a")),
+                            SQLSchemaMother.createAliasableSelectItem(new ColumnReference("b"))),
                         new TableReference(SchemasProvider.getMyTableSchemaTables().get(0)),
                         null),
                     new ComparisonPredicate(
@@ -341,8 +340,8 @@ class SQLServerPrinterTest {
             void printSetOperators(SetOperation.SetOperator operator, boolean repeatedValues, String setOperator) {
                 // Object built directly in java
                 Query union = new SetOperation(operator, repeatedValues,
-                                               new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1)))),
-                                               new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))))
+                                               new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1)))),
+                                               new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(2))))
                 );
                 String expectedUnion = "( ( SELECT 1 ) " + setOperator + " ( SELECT 2 ) )";
                 MatcherAssert.assertThat(union.visit(new SQLServerPrinter()), is(expectedUnion));
@@ -350,9 +349,9 @@ class SQLServerPrinterTest {
 
             @Test
             void printMultipleUnions() {
-                Query query1 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))));
-                Query query2 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(2))));
-                Query query3 = new TableExpression(List.of(new AliasableSelectItem(new SQLPrimitiveInteger(3))));
+                Query query1 = new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))));
+                Query query2 = new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(2))));
+                Query query3 = new TableExpression(List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(3))));
                 // Object built directly in java
                 Query union = new SetOperation(UNION, false,
                                                new SetOperation(EXCEPT, false, query1, query2),
@@ -373,7 +372,7 @@ class SQLServerPrinterTest {
                 "viewName",
                 new SchemaReference("db", "schema"),
                 new TableExpression(
-                    List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                    List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))),
                     new TableReference(new Table("t", List.of(new Attribute("at1", new SQLInteger())))),
                     new ValueListInPredicate(new SQLPrimitiveInteger(1), List.of(new SQLPrimitiveInteger(1), new SQLPrimitiveInteger(2)))
                 ));
@@ -388,7 +387,7 @@ class SQLServerPrinterTest {
                 "viewName",
                 new SchemaReference("db", "schema"),
                 new TableExpression(
-                    List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                    List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))),
                     new TableReference(new Table("t", List.of(new Attribute("at1", new SQLInteger())))),
                     new ValueListInPredicate(new ColumnReference("t", "at1"), List.of(new SQLPrimitiveInteger(1), new SQLPrimitiveInteger(2)))
                 ));
@@ -429,7 +428,7 @@ class SQLServerPrinterTest {
                 "viewName",
                 new SchemaReference("db", "schema"),
                 new TableExpression(
-                    List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                    List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))),
                     new TableReference(new Table("t", List.of(new Attribute("at1", new SQLInteger())))),
                     new PredicateOperation(
                         PredicateOperation.PredicateOperator.OR,
@@ -462,10 +461,10 @@ class SQLServerPrinterTest {
                         UNION,
                         true,
                         new TableExpression(
-                            List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                            List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))),
                             null, null
                         ), new TableExpression(
-                        List.of(new AliasableSelectItem(new SQLPrimitiveInteger(1))),
+                        List.of(SQLSchemaMother.createAliasableSelectItem(new SQLPrimitiveInteger(1))),
                         null, null
                     )
                     )

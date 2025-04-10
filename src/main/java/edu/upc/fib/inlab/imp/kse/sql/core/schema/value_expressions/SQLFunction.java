@@ -5,6 +5,7 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class SQLFunction implements ValueExpression {
     private final String functionName;
@@ -21,7 +22,10 @@ public class SQLFunction implements ValueExpression {
 
     @Override
     public String computeDefaultColumnAlias() {
-        return null;
+        String argumentsString = arguments.stream()
+            .map(ValueExpression::computeDefaultColumnAlias)
+            .collect(Collectors.joining(","));
+        return functionName+"("+ argumentsString +")";
     }
 
     public String getFunctionName() {
