@@ -18,6 +18,10 @@ public class AliasableSelectItem implements SelectItem {
         this.columnAlias = columnAlias;
     }
 
+    public AliasableSelectItem(ValueExpression expression) {
+        this(expression, null);
+    }
+
     public ValueExpression getExpression() {
         return expression;
     }
