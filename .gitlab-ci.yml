@@ -72,6 +72,7 @@ qa:sonarqube-check:
     - name: $NEXUS_REGISTRY/imp-sql/db:latest
       alias: db
   script:
+    - sleep 20
     - mvn verify sonar:sonar -Dsonar.projectKey=IMP_KSE_SQL -P coverage -U $MAVEN_CLI_OPTS
   allow_failure: true
   only:
