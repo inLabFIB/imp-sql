@@ -1,6 +1,8 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.services.validator.exceptions;
 
-public class AmbiguousColumnReferenceException extends RuntimeException {
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
+
+public class AmbiguousColumnReferenceException extends IMPSqlException {
 
     public AmbiguousColumnReferenceException() {
         super();

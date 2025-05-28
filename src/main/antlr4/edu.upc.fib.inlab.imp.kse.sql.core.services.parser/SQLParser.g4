@@ -43,15 +43,15 @@ batch_level_statement
     ;
 
 sql_clauses
-//    : dml_clause SEMI?
-    : ddl_clause SEMI?
+    : dml_clause SEMI?
+    | ddl_clause SEMI?
     | SEMI
     ;
 
 // Data Manipulation Language: https://msdn.microsoft.com/en-us/library/ff848766(v=sql.120).aspx
-//dml_clause
-//    : select_statement_standalone
-//    ;
+dml_clause
+    : select_statement_standalone
+    ;
 
 // Data Definition Language: https://msdn.microsoft.com/en-us/library/ff848799.aspx)
 ddl_clause

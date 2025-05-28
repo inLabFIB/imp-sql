@@ -22,7 +22,7 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.SQLPrimitiveI
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.SQLPrimitiveString;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;
 
-public abstract class SQLPrinter implements SQLObjectSchemaVisitor {
+public abstract class SQLPrinter implements SQLObjectSchemaVisitor<String> {
     public abstract String visit(TableExpression te);
     public abstract String visit(CrossJoin j);
     public abstract String visit(OnJoin j);

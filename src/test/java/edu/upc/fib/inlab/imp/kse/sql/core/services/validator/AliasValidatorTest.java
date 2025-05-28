@@ -1,29 +1,35 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.services.validator;
 
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.Assertion;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLObjectSchema;
-import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.SQLObjectSchemaParser;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.View;
+import edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.Query;
+import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.StandardSQLParser;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.validator.exceptions.InvalidColumnReferenceException;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.validator.exceptions.InvalidOnJoinColumReferenceException;
+import edu.upc.fib.inlab.imp.kse.sql.core.utils.SchemasProvider;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AliasValidatorTest {
+class AliasValidatorTest {
 
     @Test
-    public void validAssertionAliases() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void validAssertionAliases() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
 
         // Object parsed from input string
         String assertion = """
-        CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
-            SELECT a.b, d.e FROM a, (SELECT a.c as e FROM a) as d
-        ))""";
+            CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
+                SELECT a.b, d.e FROM a, (SELECT a.c as e FROM a) as d
+            ))""";
         parser.parse(assertion);
 
         SQLObjectSchema schema = parser.getSQLObjectSchema();
@@ -34,91 +40,93 @@ public class AliasValidatorTest {
     }
 
     @Test
-    public void invalidColumnReference() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
-
+    void invalidColumnReference() {
+        StandardSQLParser parser = new StandardSQLParser();
         String tableA = "CREATE TABLE a (col1 int)";
         parser.parse(tableA);
 
         // Object parsed from input string
-        String assertion = """
-        CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
-            SELECT a.col2;
-        ))""";
-        parser.parse(assertion);
-
+        String assertionString = """
+            CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
+                SELECT a.col2;
+            ))""";
+        parser.parse(assertionString);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
+        Assertion assertion = schema.getAssertions().get(0);
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
-
-        assertThrows(InvalidColumnReferenceException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+        assertThatThrownBy(() -> validator.validateAliases(assertion))
+            .isInstanceOf(InvalidColumnReferenceException.class);
     }
 
     @Test
-    public void invalidAssertionAliasesMoreRequired() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void invalidAssertionAliasesMoreRequired() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
 
         // Object parsed from input string
-        String assertion = """
-        CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
-            SELECT a.f, d.e FROM a, (SELECT a.c as e FROM a) as d
-        ))""";
-        parser.parse(assertion);
+        String assertionString = """
+            CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
+                SELECT a.f, d.e FROM a, (SELECT a.c as e FROM a) as d
+            ))""";
+        parser.parse(assertionString);
 
         SQLObjectSchema schema = parser.getSQLObjectSchema();
+        Assertion assertion = schema.getAssertions().get(0);
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
-
-        assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+        assertThatThrownBy(() -> validator.validateAliases(assertion))
+            .isInstanceOf(InvalidColumnReferenceException.class);
     }
 
     @Test
-    public void invalidAssertionAliasesAmbiguousTable() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void invalidAssertionAliasesAmbiguousTable() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
 
         // Object parsed from input string
-        String assertion = """
-        CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
-            SELECT b FROM a, (SELECT a.b FROM a) as d
-        ))""";
-        parser.parse(assertion);
+        String assertionString = """
+            CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
+                SELECT b FROM a, (SELECT a.b FROM a) as d
+            ))""";
+        parser.parse(assertionString);
 
         SQLObjectSchema schema = parser.getSQLObjectSchema();
+        Assertion assertion = schema.getAssertions().get(0);
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
-
-        assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+        assertThatThrownBy(() -> validator.validateAliases(assertion))
+            .isInstanceOf(IMPSqlException.class);
     }
 
     @Test
-    public void invalidAssertionAliasesRepeatedColumnAlias() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void invalidAssertionAliasesRepeatedColumnAlias() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
 
         // Object parsed from input string
-        String assertion = """
-        CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
-            SELECT * FROM a, (SELECT * FROM a) as a
-        ))""";
-        parser.parse(assertion);
+        String assertionString = """
+            CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
+                SELECT * FROM a, (SELECT * FROM a) as a
+            ))""";
+        parser.parse(assertionString);
 
         SQLObjectSchema schema = parser.getSQLObjectSchema();
+        Assertion assertion = schema.getAssertions().get(0);
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
-
-        assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+        assertThatThrownBy(() -> validator.validateAliases(assertion))
+            .isInstanceOf(IMPSqlException.class);
     }
 
     @Test
-    public void validSimpleAssertionWithWhereClause() {
+    void validSimpleAssertionWithWhereClause() {
         String createTableStatement = """
             CREATE TABLE tableA (
                 col1 int,
@@ -135,7 +143,7 @@ public class AliasValidatorTest {
             )));
             """;
 
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(createTableStatement);
         parser.parse(createAssertionStatement);
         SQLObjectSchema schema = parser.getSQLObjectSchema();
@@ -146,46 +154,49 @@ public class AliasValidatorTest {
     }
 
     @Test
-    public void validViewAliases() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void validViewAliases() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
 
         // Object parsed from input string
-        String view = """
-        CREATE VIEW viewName AS SELECT a.b, d.e FROM a, (SELECT a.c as e FROM a) as d""";
-        parser.parse(view);
+        String viewString = """
+            CREATE VIEW viewName AS SELECT a.b, d.e FROM a, (SELECT a.c as e FROM a) as d
+            """;
+        parser.parse(viewString);
 
         SQLObjectSchema schema = parser.getSQLObjectSchema();
+        View view = schema.getViews().get(0);
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
-
-        assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+        assertThatCode(() -> validator.validateAliases(view))
+            .doesNotThrowAnyException();
     }
 
     @Test
-    public void invalidViewAliasesMoreRequired() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void invalidViewAliasesMoreRequired() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         String tableA = "CREATE TABLE a (b int, c int)";
         parser.parse(tableA);
 
         // Object parsed from input string
-        String view = """
-        CREATE VIEW viewName AS SELECT a.f, d.e FROM a, (SELECT a.c as e FROM a) as d""";
-        parser.parse(view);
+        String viewString = """
+            CREATE VIEW viewName AS SELECT a.f, d.e FROM a, (SELECT a.c as e FROM a) as d""";
+        parser.parse(viewString);
 
         SQLObjectSchema schema = parser.getSQLObjectSchema();
+        View view = schema.getViews().get(0);
 
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
-
-        assertThrows(RuntimeException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+        assertThatThrownBy(() -> validator.validateAliases(view))
+            .isInstanceOf(IMPSqlException.class);
     }
 
     @Test
-    public void TPCHSupplierNotCustomerWithWrongSchema() {
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+    void TPCHSupplierNotCustomerWithWrongSchema() {
+        StandardSQLParser parser = new StandardSQLParser();
 
         //LINEITEM is missing L_SUPPKEY
         String createTableStatement = """
@@ -209,26 +220,29 @@ public class AliasValidatorTest {
         parser.parse(createAssertionStatement);
 
         SQLObjectSchema schema = parser.getSQLObjectSchema();
+        Assertion assertion = schema.getAssertions().get(0);
+
         SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
-        assertThrows(InvalidOnJoinColumReferenceException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+        assertThatThrownBy(() -> validator.validateAliases(assertion))
+            .isInstanceOf(InvalidOnJoinColumReferenceException.class);
     }
 
     @Nested
     class InPredicateTests {
         @Test
-        public void CorrectInPredicate() {
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        void CorrectInPredicate() {
+            StandardSQLParser parser = new StandardSQLParser();
 
             String tableA = "CREATE TABLE a (col1 int, col2 int, col3 int)";
             parser.parse(tableA);
 
             // Object parsed from input string
             String assertion = """
-            CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
-                SELECT *
-                FROM a
-                WHERE 1 IN (a.col1, a.col2, a.col3, 3)
-            ))""";
+                CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
+                    SELECT *
+                    FROM a
+                    WHERE 1 IN (a.col1, a.col2, a.col3, 3)
+                ))""";
             parser.parse(assertion);
 
             SQLObjectSchema schema = parser.getSQLObjectSchema();
@@ -239,26 +253,76 @@ public class AliasValidatorTest {
         }
 
         @Test
-        public void IncorrectInPredicate() {
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        void IncorrectInPredicate() {
+            StandardSQLParser parser = new StandardSQLParser();
 
             String tableA = "CREATE TABLE a (col1 int, col2 int, col3 int)";
             parser.parse(tableA);
 
             // Object parsed from input string
-            String assertion = """
-            CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
-                SELECT *
-                FROM a
-                WHERE 1 IN (a.col1, a.col5)
-            ))""";
-            parser.parse(assertion);
+            String assertionString = """
+                CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
+                    SELECT *
+                    FROM a
+                    WHERE 1 IN (a.col1, a.col5)
+                ))""";
+            parser.parse(assertionString);
 
             SQLObjectSchema schema = parser.getSQLObjectSchema();
+            Assertion assertion = schema.getAssertions().get(0);
 
             SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
+            assertThatThrownBy(() -> validator.validateAliases(assertion))
+                .isInstanceOf(InvalidColumnReferenceException.class);
+        }
+    }
 
-            assertThrows(InvalidColumnReferenceException.class, () -> validator.validateAliases(schema.getAssertions().get(0)));
+    @Nested
+    class SetOperatorsTests {
+
+        @Test
+        void validColumnReference() {
+            String assertionString = """
+                SELECT A.a
+                FROM (SELECT 1 AS a UNION SELECT 2 AS b) AS A
+                """;
+            StandardSQLParser parser = new StandardSQLParser();
+            parser.parse(assertionString);
+            Query query = parser.getQueries().get(0);
+
+            SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
+            assertThatCode(() -> validator.validateAliases(query)).doesNotThrowAnyException();
+        }
+
+        @Test
+        void invalidColumnReference() {
+            String assertionString = """
+                SELECT A.b
+                FROM (SELECT 1 AS a UNION SELECT 2 AS b) AS A
+                """;
+            StandardSQLParser parser = new StandardSQLParser();
+            parser.parse(assertionString);
+            Query query = parser.getQueries().get(0);
+
+            SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
+            assertThatThrownBy(() -> validator.validateAliases(query))
+                .isInstanceOf(InvalidColumnReferenceException.class);
+        }
+
+        @Test
+        void notFulfilledColumnReferenceInsideUnion() {
+            String assertionString = """
+                SELECT *
+                FROM (SELECT * FROM myTable as a WHERE a.a=b.a UNION SELECT 2 AS b, 3 as c) AS A
+                """;
+            StandardSQLParser parser = new StandardSQLParser();
+            parser.parse(SchemasProvider.getMyTableSchemaStatements());
+            parser.parse(assertionString);
+            Query query = parser.getQueries().get(0);
+
+            SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
+            assertThatThrownBy(() -> validator.validateAliases(query))
+                .isInstanceOf(InvalidColumnReferenceException.class);
         }
     }
 

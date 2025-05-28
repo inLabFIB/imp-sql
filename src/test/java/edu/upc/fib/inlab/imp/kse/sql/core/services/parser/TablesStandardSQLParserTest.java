@@ -28,7 +28,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class TablesSQLObjectSchemaParserTest {
+class TablesStandardSQLParserTest {
 
     @Nested
     class TableParsingThrowsException {
@@ -36,53 +36,53 @@ public class TablesSQLObjectSchemaParserTest {
         @Nested
         class RepeatedTableOrAttributeNamesTests {
             @Test
-            public void parsingMultipleTablesWithExactNamesRaisesAnExceptionInOneCall() {
+            void parsingMultipleTablesWithExactNamesRaisesAnExceptionInOneCall() {
                 String basicCreateTable = "CREATE TABLE tableName (col1 int, col2 float);";
-                SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+                StandardSQLParser parser = new StandardSQLParser();
 
                 assertThrows(SQLObjectAlreadyExistsException.class, () -> parser.parse(basicCreateTable+basicCreateTable));
             }
 
             @Test
-            public void parsingMultipleTablesWithExactNamesRaisesAnExceptionInDifferentCalls() {
+            void parsingMultipleTablesWithExactNamesRaisesAnExceptionInDifferentCalls() {
                 String basicCreateTable = "CREATE TABLE tableName (col1 int, col2 float);";
-                SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+                StandardSQLParser parser = new StandardSQLParser();
                 parser.parse(basicCreateTable);
 
                 assertThrows(SQLObjectAlreadyExistsException.class, () -> parser.parse(basicCreateTable));
             }
 
             @Test
-            public void parsingMultipleTablesWithExactNamesAndSchemaReferencesRaisesAnException() {
+            void parsingMultipleTablesWithExactNamesAndSchemaReferencesRaisesAnException() {
                 String basicCreateTable = "CREATE TABLE db.s1.tableName (col1 int, col2 float);";
-                SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+                StandardSQLParser parser = new StandardSQLParser();
                 parser.parse(basicCreateTable);
 
                 assertThrows(SQLObjectAlreadyExistsException.class, () -> parser.parse(basicCreateTable));
             }
 
             @Test
-            public void parsingTableWithRepeatedAttributesRaisesException() {
+            void parsingTableWithRepeatedAttributesRaisesException() {
                 String createTable = """
             CREATE TABLE tableName (
                 col int,
                 col int
             );
             """;
-                SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+                StandardSQLParser parser = new StandardSQLParser();
 
                 assertThrows(SQLObjectAlreadyExistsException.class, () -> parser.parse(createTable));
             }
 
             @Test
-            public void parsingTableWithRepeatedAttributesButWithDifferentTypesRaisesException() {
+            void parsingTableWithRepeatedAttributesButWithDifferentTypesRaisesException() {
                 String createTable = """
                 CREATE TABLE tableName (
                     col int,
                     col varchar(10)
                 );
                 """;
-                SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+                StandardSQLParser parser = new StandardSQLParser();
 
                 assertThrows(SQLObjectAlreadyExistsException.class, () -> parser.parse(createTable));
             }
@@ -92,9 +92,9 @@ public class TablesSQLObjectSchemaParserTest {
     @Nested
     class TableWithoutConstraintsTest {
         @Test
-        public void parseSimpleCreateTable() {
+        void parseSimpleCreateTable() {
             String basicCreateTable = "CREATE TABLE name (col1 int, col2 float);";
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(basicCreateTable);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -110,10 +110,10 @@ public class TablesSQLObjectSchemaParserTest {
         }
 
         @Test
-        public void parsingMultipleTablesWithExactNamesAndDifferentSchemaReferencesRaisesNoException() {
+        void parsingMultipleTablesWithExactNamesAndDifferentSchemaReferencesRaisesNoException() {
             String basicCreateTable1 = "CREATE TABLE db.s1.tableName (col1 int, col2 float);";
             String basicCreateTable2 = "CREATE TABLE db.s2.tableName (col1 int, col2 float);";
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(basicCreateTable1);
 
             parser.parse(basicCreateTable2);
@@ -127,14 +127,14 @@ public class TablesSQLObjectSchemaParserTest {
     class TableWithColumConstraintsTest {
         /** Coupled to parser naming of unnamed constraints! **/
         @Test
-        public void parseTableWithDefaultColumnConstraints() {
+        void parseTableWithDefaultColumnConstraints() {
             String createTable = """
             CREATE TABLE name (
                 col1 int DEFAULT 1,
                 col2 int DEFAULT MYFUNCTION()
             );
             """;
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(createTable);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -157,14 +157,14 @@ public class TablesSQLObjectSchemaParserTest {
 
         /** Coupled to parser naming of unnamed constraints! **/
         @Test
-        public void parseTableWithPrimaryKeyAndUniqueColumnConstraints() {
+        void parseTableWithPrimaryKeyAndUniqueColumnConstraints() {
             String createTable = """
             CREATE TABLE name (
                 col1 int CONSTRAINT pk1 PRIMARY KEY,
                 col2 int UNIQUE
             );
             """;
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(createTable);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -186,13 +186,13 @@ public class TablesSQLObjectSchemaParserTest {
         }
 
         @Test
-        public void parseTableWithCheckColumnConstraints() {
+        void parseTableWithCheckColumnConstraints() {
             String createTable = """
             CREATE TABLE name (
                 col varchar(10) CONSTRAINT c1 CHECK ( col = 'hello' )
             );
             """;
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(createTable);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -215,7 +215,7 @@ public class TablesSQLObjectSchemaParserTest {
         }
 
         @Test
-        public void parseTableWithForeignKeyColumnConstraint() {
+        void parseTableWithForeignKeyColumnConstraint() {
             String createTables = """
             CREATE TABLE tableA (
                 colPk int,
@@ -227,7 +227,7 @@ public class TablesSQLObjectSchemaParserTest {
                 colFk int CONSTRAINT fk1 FOREIGN KEY REFERENCES tableA (colAttr1)
             );
             """;
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(createTables);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -264,20 +264,20 @@ public class TablesSQLObjectSchemaParserTest {
         }
 
         @Test
-        public void parsingTableWithMissingForeignKeyReferenceRaisesException() {
+        void parsingTableWithMissingForeignKeyReferenceRaisesException() {
             String createTable = """            
             CREATE TABLE tableB (
                 colPk int,
                 colFk int CONSTRAINT fk1 FOREIGN KEY REFERENCES tableA (colAttr1)
             );
             """;
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
 
             assertThrows(MissingReferencedObjectException.class, () -> parser.parse(createTable));
         }
 
         @Test
-        public void parsingTableWithMissingForeignKeyReferenceAttributeRaisesException() {
+        void parsingTableWithMissingForeignKeyReferenceAttributeRaisesException() {
             String createTables = """
             CREATE TABLE tableA (
                 colPk int,
@@ -289,7 +289,7 @@ public class TablesSQLObjectSchemaParserTest {
                 colFk int CONSTRAINT fk1 FOREIGN KEY REFERENCES tableA (nonExistingAttr)
             );
             """;
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
 
             assertThrows(MissingReferencedObjectException.class, () -> parser.parse(createTables));
         }
@@ -299,7 +299,7 @@ public class TablesSQLObjectSchemaParserTest {
     class TablesWithTableConstraintsTests {
         /** Coupled to parser naming of unnamed constraints! **/
         @Test
-        public void parseTableWithPrimaryKeyAndUniqueTableConstraints() {
+        void parseTableWithPrimaryKeyAndUniqueTableConstraints() {
             String createTable = """
             CREATE TABLE name (
                 col1 int,
@@ -308,7 +308,7 @@ public class TablesSQLObjectSchemaParserTest {
                 UNIQUE (col2)
             );
             """;
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(createTable);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -330,7 +330,7 @@ public class TablesSQLObjectSchemaParserTest {
         }
 
         @Test
-        public void parseTableWithCheckTableConstraints() {
+        void parseTableWithCheckTableConstraints() {
             String createTable = """
             CREATE TABLE name (
                 col1 int,
@@ -338,7 +338,7 @@ public class TablesSQLObjectSchemaParserTest {
                 CONSTRAINT c1 CHECK ( col1 > 18 OR col2 = 1 )
             );
             """;
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(createTable);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -371,7 +371,7 @@ public class TablesSQLObjectSchemaParserTest {
         }
 
         @Test
-        public void parseTableWithForeignKeyTableConstraint() {
+        void parseTableWithForeignKeyTableConstraint() {
             String createTables = """
             CREATE TABLE tableA (
                 colPk int,
@@ -386,7 +386,7 @@ public class TablesSQLObjectSchemaParserTest {
                 CONSTRAINT fk1 FOREIGN KEY (colFk1, colFk2) REFERENCES tableA (colAttr1, colAttr2)
             );
             """;
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(createTables);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -429,7 +429,7 @@ public class TablesSQLObjectSchemaParserTest {
         }
 
         @Test
-        public void parseAutoReferencingForeignKeyConstraint() {
+        void parseAutoReferencingForeignKeyConstraint() {
             String createTables = """
             CREATE TABLE A (
                 colPk int,
@@ -437,7 +437,7 @@ public class TablesSQLObjectSchemaParserTest {
                 CONSTRAINT fk1 FOREIGN KEY (colFk) REFERENCES A (colPk)
             );
             """;
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(createTables);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -447,7 +447,7 @@ public class TablesSQLObjectSchemaParserTest {
         }
 
         @Test
-        public void parseLoopingForeignKeyConstraints() {
+        void parseLoopingForeignKeyConstraints() {
             String createTables = """
             CREATE TABLE [schema1].A (
                 colPk int,
@@ -461,7 +461,7 @@ public class TablesSQLObjectSchemaParserTest {
                 CONSTRAINT fk1 FOREIGN KEY (colFk) REFERENCES [schema1].A (colPk)
             );
             """;
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(createTables);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 
@@ -478,7 +478,7 @@ public class TablesSQLObjectSchemaParserTest {
         /** CONSTRAINTS INTEGRATION **/
 
         @Test
-        public void parseTableWithMultipleConstraints() {
+        void parseTableWithMultipleConstraints() {
             String createTables = """
             CREATE TABLE A (
               A_a1 int,
@@ -496,7 +496,7 @@ public class TablesSQLObjectSchemaParserTest {
               CONSTRAINT C1 CHECK (B_a5 < > B_a4)
             );
             """;
-            SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+            StandardSQLParser parser = new StandardSQLParser();
             parser.parse(createTables);
             SQLObjectSchema schema = parser.getSQLObjectSchema();
 

@@ -4,7 +4,7 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;
 
 public class Asterisk implements SelectItem {
     @Override
-    public <T> T visit(SQLObjectSchemaVisitor visitor) {
+    public <T> T visit(SQLObjectSchemaVisitor<T> visitor) {
         return visitor.visit(this);
     }
 

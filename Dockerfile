@@ -8,9 +8,9 @@ FROM mcr.microsoft.com/mssql/server:2019-latest
 USER root
 
 # Install dos2unix
-RUN apt-get -y update && apt-get install -y \
-    dos2unix  \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get -y update && \
+    apt-get install -y dos2unix && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create app directory
 RUN mkdir -p /usr/src/app
@@ -18,14 +18,13 @@ WORKDIR /usr/src/app
 
 COPY docker /usr/src/app
 
-# Set LF endline in shell scripts
-RUN dos2unix /usr/src/app/scripts/*.sh
-# Grant permissions for to our scripts to be executable
-RUN chmod +x /usr/src/app/scripts/*.sh
+# Convert line endigs in shell scripts to Unix and make them executable
+RUN dos2unix /usr/src/app/scripts/*.sh && \
+    chmod +x /usr/src/app/scripts/*.sh
 
 # Switch back to mssql user and run the entrypoint script
 USER mssql
 ENTRYPOINT ["/usr/src/app/scripts/entrypoint.sh"]
 
-# Tail the setup logs to trap the process
+# Keep the container running
 CMD ["tail -f /dev/null"]

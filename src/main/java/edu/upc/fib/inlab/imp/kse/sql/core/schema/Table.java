@@ -1,14 +1,14 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.schema;
 
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.exceptions.MissingReferencedObjectException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.exceptions.RepeatedAttributeNamesInSameTable;
-import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaValueObject;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.visitor.SQLObjectSchemaVisitor;
 
 import java.util.*;
 
-public class Table implements SQLObjectSchemaValueObject {
+public class Table implements TableSource {
 
     private final String tableName;
     /**
@@ -48,12 +48,20 @@ public class Table implements SQLObjectSchemaValueObject {
         this(tableName, null, attributes, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     }
 
+    public String getName() {
+        return getTableName();
+    }
+
     public String getTableName() {
         return tableName;
     }
 
     public SchemaReference getSchemaReference() {
         return schemaReference;
+    }
+
+    public List<String> getColumnNames() {
+        return attributes.stream().map(Attribute::getName).toList();
     }
 
     public List<Attribute> getAttributes() {
@@ -74,8 +82,8 @@ public class Table implements SQLObjectSchemaValueObject {
     }
 
     public List<Attribute> getPrimaryKeyAttributes() {
-        if (primaryKeyConstraints.size() > 1) throw new RuntimeException("Tables with more than 1 PK are not possible.");
-        if (primaryKeyConstraints.size() == 0) return new ArrayList<>();
+        if (primaryKeyConstraints.size() > 1) throw new IMPSqlException("Tables with more than 1 PK are not possible.");
+        if (primaryKeyConstraints.isEmpty()) return new ArrayList<>();
         return new ArrayList<>(primaryKeyConstraints.get(0).getPkAttributes());
     }
 
@@ -87,7 +95,7 @@ public class Table implements SQLObjectSchemaValueObject {
     }
 
     @Override
-    public <T> T visit(SQLObjectSchemaVisitor visitor) {
+    public <T> T visit(SQLObjectSchemaVisitor<T> visitor) {
         return visitor.visit(this);
     }
 

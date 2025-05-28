@@ -1,5 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.sql_server.services.fetcher;
 
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.SQLParser;
@@ -23,17 +24,17 @@ class SQLExpressionGrammarVisitorImpl extends SQLParserBaseVisitor {
         if (ctx.function_call() != null) return visitFunction_call(ctx.function_call());
         if (ctx.bracket_expression() != null) return visitExpression(ctx.bracket_expression().expression());
 
-        throw new RuntimeException("Expression not supported by grammar.");
+        throw new IMPSqlException("Expression not supported by grammar.");
     }
 
     @Override
     public ValueExpression visitPrimitive_expression(SQLParser.Primitive_expressionContext ctx) {
         if (ctx.NULL_() != null) {
-            throw new RuntimeException("Grammar expression (`NULL`) not supported yet!");
+            throw new IMPSqlException("Grammar expression (`NULL`) not supported yet!");
             //return new Null...
         }
         if (ctx.primitive_constant() != null) return visitPrimitive_constant(ctx.primitive_constant());
-        throw new RuntimeException("Expression not supported by grammar.");
+        throw new IMPSqlException("Expression not supported by grammar.");
     }
 
     @Override
@@ -44,13 +45,13 @@ class SQLExpressionGrammarVisitorImpl extends SQLParserBaseVisitor {
         }
         if (ctx.DECIMAL() != null) return new SQLPrimitiveInteger(Integer.parseInt(ctx.DECIMAL().getText()));
         if (ctx.FLOAT() != null) return new SQLPrimitiveFloat(Float.parseFloat(ctx.FLOAT().getText()));
-        throw new RuntimeException("Expression not supported by grammar.");
+        throw new IMPSqlException("Expression not supported by grammar.");
     }
 
     @Override
     public ValueExpression visitFunction_call(SQLParser.Function_callContext ctx) {
         if (ctx.scalar_function_name() == null) {
-            throw new RuntimeException("Grammar expression (`"+ctx.getText() +"`) not supported yet!");
+            throw new IMPSqlException("Grammar expression (`" + ctx.getText() + "`) not supported yet!");
         }
 
         SQLParser.Expression_listContext expression_listContext = ctx.expression_list();
@@ -75,7 +76,7 @@ class SQLExpressionGrammarVisitorImpl extends SQLParserBaseVisitor {
                 visitSearch_condition(ctx.search_condition(0)),
                 visitSearch_condition(ctx.search_condition(1)));
         if (ctx.OR() != null) {
-            throw new RuntimeException("Grammar expression (`OR`) not supported yet!");
+            throw new IMPSqlException("Grammar expression (`OR`) not supported yet!");
             //TODO: V2
             /*return new PredicateOperation(
                 PredicateOperation.PredicateOperator.OR,
@@ -105,7 +106,7 @@ class SQLExpressionGrammarVisitorImpl extends SQLParserBaseVisitor {
     public ComparisonPredicate.ComparisonOperator visitComparison_operator(SQLParser.Comparison_operatorContext ctx) {
         if (Objects.equals(ctx.getText(), "=")) return ComparisonPredicate.ComparisonOperator.EQ;
         //TODO: V2
-        throw new RuntimeException("Grammar expression of different comparison predicates not supported yet!");
+        throw new IMPSqlException("Grammar expression of different comparison predicates not supported yet!");
     }
 
     @Override

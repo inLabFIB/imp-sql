@@ -1,11 +1,10 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.services.validator.exceptions;
 
-public class InvalidColumnReferenceException extends RuntimeException {
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
 
-    public InvalidColumnReferenceException() {
-        super();
-    }
-    public InvalidColumnReferenceException(String message) {
-        super(message);
+public class InvalidColumnReferenceException extends IMPSqlException {
+
+    public InvalidColumnReferenceException(String columnReferenceName) {
+        super("The columnReference (" + columnReferenceName + ") is not a valid reference.");
     }
 }

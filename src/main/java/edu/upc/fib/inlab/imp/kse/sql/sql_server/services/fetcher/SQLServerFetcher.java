@@ -1,6 +1,7 @@
 package edu.upc.fib.inlab.imp.kse.sql.sql_server.services.fetcher;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.SQLObjectSchema;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.SchemaReference;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.Table;
@@ -134,7 +135,8 @@ public class SQLServerFetcher implements DatabaseFetcher {
             case "uniqueidentifier" -> new SQLCharacter(255);
             case "tinyint" -> new SQLSmallint();
 
-            default -> throw new RuntimeException("Table contains an attribute of unsupported data-type (" + type + ").");
+            default ->
+                throw new IMPSqlException("Table contains an attribute of unsupported data-type (" + type + ").");
         };
     }
 

@@ -15,7 +15,7 @@ public class SQLPrimitiveFloat implements PrimitiveConstant {
     }
 
     @Override
-    public <T> T visit(SQLObjectSchemaVisitor visitor) {
+    public <T> T visit(SQLObjectSchemaVisitor<T> visitor) {
         return visitor.visit(this);
     }
 
@@ -36,6 +36,6 @@ public class SQLPrimitiveFloat implements PrimitiveConstant {
 
     @Override
     public String computeDefaultColumnAlias() {
-        return null;
+        return Float.toString(value);
     }
 }

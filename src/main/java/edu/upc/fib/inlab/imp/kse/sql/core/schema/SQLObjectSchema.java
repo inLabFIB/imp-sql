@@ -2,7 +2,7 @@ package edu.upc.fib.inlab.imp.kse.sql.core.schema;
 
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.exceptions.MissingReferencedObjectException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.exceptions.SQLObjectAlreadyExistsException;
-import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.SQLObjectSchemaParser;
+import edu.upc.fib.inlab.imp.kse.sql.core.services.parser.StandardSQLParser;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.printer.SQLPrinter;
 import edu.upc.fib.inlab.imp.kse.sql.core.services.printer.StandardSQLPrinter;
 
@@ -47,6 +47,16 @@ public class SQLObjectSchema {
         throw new MissingReferencedObjectException("Table with specified info not found (" + tableName + ").");
     }
 
+    public TableSource getTableSource(String tableName, SchemaReference schemaReference) {
+        for (Table t : tables) {
+            if (t.hasSameIdentifier(tableName, schemaReference)) return t;
+        }
+        for (View v : views) {
+            if (v.hasSameIdentifier(tableName, schemaReference)) return v;
+        }
+        throw new MissingReferencedObjectException("Table or View with specified info not found (" + tableName + ").");
+    }
+
     /** MODIFIERS **/
 
     public void addTable(Table table) {
@@ -81,12 +91,12 @@ public class SQLObjectSchema {
      * @return String containing printed TABLES, VIEWS and ASSERTIONS in this order
      */
     public String getPrintedSchemaObjects(SQLPrinter printer) {
-        StringBuilder builder = new StringBuilder("");
+        StringBuilder builder = new StringBuilder();
 
         if (!getTables().isEmpty()) {
             builder.append("<<TABLES>>\n");
             for (Table t : getTables()) {
-                builder.append((String) t.visit(printer)).append("\n");
+                builder.append(t.visit(printer)).append("\n");
             }
             builder.append("\n");
         }
@@ -94,7 +104,7 @@ public class SQLObjectSchema {
         if (!getViews().isEmpty()) {
             builder.append("<<VIEWS>>\n");
             for (View v : getViews()) {
-                builder.append((String) v.visit(printer)).append("\n");
+                builder.append(v.visit(printer)).append("\n");
             }
             builder.append("\n");
         }
@@ -102,7 +112,7 @@ public class SQLObjectSchema {
         if (!getAssertions().isEmpty()) {
             builder.append("<<ASSERTIONS>>\n");
             for (Assertion a : getAssertions()) {
-                builder.append((String) a.visit(printer)).append("\n");
+                builder.append(a.visit(printer)).append("\n");
             }
             builder.append("\n");
         }
@@ -114,11 +124,11 @@ public class SQLObjectSchema {
 
     public SQLObjectSchema getCopy() {
         String schemaString = "";
-        schemaString += String.join("\n\n", tables.stream().map(s -> s.<String>visit(new StandardSQLPrinter())).toList());
-        schemaString += String.join("\n\n", views.stream().map(s -> s.<String>visit(new StandardSQLPrinter())).toList());
-        schemaString += String.join("\n\n", assertions.stream().map(s -> s.<String>visit(new StandardSQLPrinter())).toList());
+        schemaString += String.join("\n\n", tables.stream().map(s -> s.visit(new StandardSQLPrinter())).toList());
+        schemaString += String.join("\n\n", views.stream().map(s -> s.visit(new StandardSQLPrinter())).toList());
+        schemaString += String.join("\n\n", assertions.stream().map(s -> s.visit(new StandardSQLPrinter())).toList());
 
-        SQLObjectSchemaParser parser = new SQLObjectSchemaParser();
+        StandardSQLParser parser = new StandardSQLParser();
         parser.parse(schemaString);
         return parser.getSQLObjectSchema();
     }

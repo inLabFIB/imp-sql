@@ -1,5 +1,6 @@
 package edu.upc.fib.inlab.imp.kse.sql.core.services.printer;
 
+import edu.upc.fib.inlab.imp.kse.sql.core.exceptions.IMPSqlException;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.boolean_expressions.*;
 import edu.upc.fib.inlab.imp.kse.sql.core.schema.constraints.*;
@@ -12,21 +13,18 @@ import edu.upc.fib.inlab.imp.kse.sql.core.schema.value_expressions.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static edu.upc.fib.inlab.imp.kse.sql.core.schema.relational_expressions.SetOperation.SetOperator.UNION;
-
-@SuppressWarnings("unchecked")
 public class StandardSQLPrinter extends SQLPrinter {
 
     @Override
     public String visit(TableExpression te) {
         StringBuilder subquery = new StringBuilder("SELECT ");
-        subquery.append(String.join(", ", te.getSelectClause().stream().map(s -> s.<String>visit(this)).toList()));
+        subquery.append(String.join(", ", te.getSelectClause().stream().map(s -> s.visit(this)).toList()));
 
         RelationalExpression fromClause = te.getFromClause();
-        if (fromClause != null) subquery.append(" FROM ").append(fromClause.<String>visit(this));
+        if (fromClause != null) subquery.append(" FROM ").append(fromClause.visit(this));
 
         BooleanExpression whereClause = te.getWhereClause();
-        if (whereClause != null) subquery.append(" WHERE ").append(whereClause.<String>visit(this));
+        if (whereClause != null) subquery.append(" WHERE ").append(whereClause.visit(this));
 
         if (te.getAlias() == null) return "( " + subquery + " )";
         return "( " + subquery + " ) AS " + te.getAlias();
@@ -42,7 +40,7 @@ public class StandardSQLPrinter extends SQLPrinter {
     public String visit(CrossJoin j) {
         String rightExp = j.getRightExpression().visit(this);
         if (j.getRightExpression() instanceof CrossJoin) rightExp = "( " + rightExp + " )";
-        return j.getLeftExpression().<String>visit(this) + " CROSS JOIN " + rightExp;
+        return j.getLeftExpression().visit(this) + " CROSS JOIN " + rightExp;
     }
 
     @Override
@@ -53,23 +51,17 @@ public class StandardSQLPrinter extends SQLPrinter {
             case LEFT -> " LEFT OUTER JOIN ";
             case RIGHT -> " RIGHT OUTER JOIN ";
             case FULL -> " FULL OUTER JOIN ";
-            default -> " " + j.getOperator().toString() + " ";
         };
-        return j.getLeftExpression().<String>visit(this) + operation + j.getRightExpression().<String>visit(this) +
-            " ON ( " + j.getOnClause().<String>visit(this) + " )";
+        return j.getLeftExpression().visit(this) + operation + j.getRightExpression().visit(this) +
+            " ON ( " + j.getOnClause().visit(this) + " )";
     }
 
     @Override
     public String visit(SetOperation so) {
-        // TODO: Future work - IMPSQL-46
-        if (so.getOperator() != UNION && so.returnsDuplicates()) throw new RuntimeException("Can't translate a EXCEPT/INTERSECT clause with ALL modifier.");
-        if (so.getAlias() != null) throw new RuntimeException("Can't translate a set operation with alias.");
-
         String operator = switch (so.getOperator()) {
             case UNION -> " UNION ";
             case EXCEPT -> " EXCEPT ";
             case INTERSECT -> " INTERSECT ";
-            default -> " " + so.getOperator().toString() + " ";
         };
 
         if (so.returnsDuplicates()) operator += "ALL ";
@@ -82,9 +74,9 @@ public class StandardSQLPrinter extends SQLPrinter {
     @Override
     public String visit(TableReference tr) {
         String tableReference;
-        SchemaReference schemaReference = tr.getTable().getSchemaReference();
-        if (schemaReference == null) tableReference = tr.getTable().getTableName();
-        else tableReference = schemaReference.<String>visit(this) + "." + tr.getTable().getTableName();
+        SchemaReference schemaReference = tr.getTableSource().getSchemaReference();
+        if (schemaReference == null) tableReference = tr.getTableSource().getName();
+        else tableReference = schemaReference.visit(this) + "." + tr.getTableSource().getName();
 
         if (tr.getAlias() != null) return tableReference + " AS " + tr.getAlias();
         return tableReference;
@@ -99,16 +91,15 @@ public class StandardSQLPrinter extends SQLPrinter {
             case LEQ -> " <= ";
             case GT -> " > ";
             case GEQ -> " >= ";
-            default -> " " + cp.getOperator().toString() + " ";
         };
-        return cp.getLeftExpression().<String>visit(this) + operation + cp.getRightExpression().<String>visit(this);
+        return cp.getLeftExpression().visit(this) + operation + cp.getRightExpression().visit(this);
     }
 
     @Override
     public String visit(ValueListInPredicate vlip) {
         List<ValueExpression> valueList = vlip.getValueList();
         String valuesListString = valueList.stream()
-            .map(e -> e.<String>visit(this))
+            .map(e -> e.visit(this))
             .collect(Collectors.joining(", "));
         return vlip.getMainExpression().visit(this) + " IN ( " + valuesListString + " )";
     }
@@ -125,9 +116,8 @@ public class StandardSQLPrinter extends SQLPrinter {
         String operation = switch (po.getOperator()) {
             case AND -> " AND ";
             case OR -> " OR ";
-            default -> " " + po.getOperator().toString() + " ";
         };
-        return po.getLeftExpression().<String>visit(this) + operation + po.getRightExpression().<String>visit(this);
+        return po.getLeftExpression().visit(this) + operation + po.getRightExpression().visit(this);
     }
 
     @Override
@@ -135,31 +125,33 @@ public class StandardSQLPrinter extends SQLPrinter {
         String assertionName = (a.getSchemaReference() != null) ? a.getSchemaReference().visit(this) + "." : "";
         assertionName += a.getAssertionName();
 
-        return "CREATE ASSERTION " + assertionName + " CHECK ( " + a.getBooleanExpression().<String>visit(this) + " );";
+        return "CREATE ASSERTION " + assertionName + " CHECK ( " + a.getBooleanExpression().visit(this) + " );";
     }
 
     @Override
     public String visit(View v) {
-        if (v.getQuery().getAlias() != null) throw new RuntimeException("Query of View cannot have an alias in SQL.");
+        if (v.getQuery().getAlias() != null) throw new IMPSqlException("Query of View cannot have an alias in SQL.");
 
         String viewName = (v.getSchemaReference() != null) ? v.getSchemaReference().visit(this) + "." : "";
         viewName += v.getViewName();
 
         String viewCreationStatement = "CREATE VIEW " + viewName;
-        if (v.getColumnNames() != null && v.getColumnNames().size() > 0) viewCreationStatement += " ( " + String.join(", ", v.getColumnNames()) + " )";
-        viewCreationStatement += " AS " + v.getQuery().<String>visit(this) + ";";
+        if (!v.getExplicitColumnNames().isEmpty())
+            viewCreationStatement += " ( " + String.join(", ", v.getExplicitColumnNames()) + " )";
+        viewCreationStatement += " AS " + v.getQuery().visit(this) + ";";
         return viewCreationStatement;
     }
 
     @Override
     public String visit(NotOperation no) {
-        return "NOT ( " + no.getExpression().<String>visit(this) + " )";
+        return "NOT ( " + no.getExpression().visit(this) + " )";
     }
 
     @Override
     public String visit(ExistsPredicate ep) {
-        if (ep.getQuery().getAlias() != null) throw new RuntimeException("Query inside ExistsPredicate cannot have an alias in SQL.");
-        return "EXISTS " + ep.getQuery().<String>visit(this);
+        if (ep.getQuery().getAlias() != null)
+            throw new IMPSqlException("Query inside ExistsPredicate cannot have an alias in SQL.");
+        return "EXISTS " + ep.getQuery().visit(this);
     }
 
     @Override
@@ -179,7 +171,7 @@ public class StandardSQLPrinter extends SQLPrinter {
 
     @Override
     public String visit(SQLFunction f) {
-        return f.getFunctionName() + "(" + String.join(", ", f.getArguments().stream().map(p -> p.<String>visit(this)).toList()) + ")";
+        return f.getFunctionName() + "(" + String.join(", ", f.getArguments().stream().map(p -> p.visit(this)).toList()) + ")";
     }
 
     @Override
@@ -190,7 +182,7 @@ public class StandardSQLPrinter extends SQLPrinter {
     @Override
     public String visit(AliasableSelectItem asi) {
         if (asi.getColumAlias() == null) return asi.getExpression().visit(this);
-        return asi.getExpression().<String>visit(this) + " AS " + asi.getColumAlias();
+        return asi.getExpression().visit(this) + " AS " + asi.getColumAlias();
     }
 
     @Override
@@ -210,25 +202,25 @@ public class StandardSQLPrinter extends SQLPrinter {
         List<TableConstraint> tableConstraints = t.getTableConstraints();
         String constraints = "";
         if (!tableConstraints.isEmpty()) constraints = ", " +
-            String.join(", ", tableConstraints.stream().map(c -> c.<String>visit(this)).toList());
+            String.join(", ", tableConstraints.stream().map(c -> c.visit(this)).toList());
         return "CREATE TABLE " + prefix + t.getTableName() + " ( "
-            + String.join(", ", t.getAttributes().stream().map(a -> a.<String>visit(this)).toList())
+            + String.join(", ", t.getAttributes().stream().map(a -> a.visit(this)).toList())
             + constraints + " );";
     }
 
     @Override
     public String visit(Attribute a) {
-        return a.getName() + " " + a.getType().<String>visit(this) +
-            (a.hasDefaultExpression() ? " DEFAULT " + a.getDefaultExpression().<String>visit(this) : "") +
+        return a.getName() + " " + a.getType().visit(this) +
+            (a.hasDefaultExpression() ? " DEFAULT " + a.getDefaultExpression().visit(this) : "") +
             (a.isNotNull() ? " NOT NULL" : "");
     }
 
     @Override
     public String visit(Check c) {
         String checkCreationStatement = "";
-        if (c.hasName()) checkCreationStatement = "CONSTRAINT " + c.getName() + " ";
+        if (c.hasName()) checkCreationStatement = constraintBeginStatement(c.getName());
         checkCreationStatement += "CHECK (" +
-            c.getExpression().<String>visit(this) +
+            c.getExpression().visit(this) +
             ")";
         return checkCreationStatement;
     }
@@ -236,7 +228,7 @@ public class StandardSQLPrinter extends SQLPrinter {
     @Override
     public String visit(Unique u) {
         String uniqueCreationStatement = "";
-        if (u.hasName()) uniqueCreationStatement = "CONSTRAINT " + u.getName() + " ";
+        if (u.hasName()) uniqueCreationStatement = constraintBeginStatement(u.getName());
         uniqueCreationStatement += "UNIQUE (" +
             String.join(", ", u.getAttributes().stream().map(Attribute::getName).toList())
             + ")";
@@ -246,7 +238,7 @@ public class StandardSQLPrinter extends SQLPrinter {
     @Override
     public String visit(PrimaryKey pk) {
         String pkCreationStatement = "";
-        if (pk.hasName()) pkCreationStatement = "CONSTRAINT " + pk.getName() + " ";
+        if (pk.hasName()) pkCreationStatement = constraintBeginStatement(pk.getName());
         pkCreationStatement += "PRIMARY KEY (" +
             String.join(", ", pk.getPkAttributes().stream().map(Attribute::getName).toList())
             + ")";
@@ -259,7 +251,7 @@ public class StandardSQLPrinter extends SQLPrinter {
         if (fk.getPkReferenceTable().getSchemaReference() != null)
             prefix = fk.getPkReferenceTable().getSchemaReference().visit(this)+".";
         String fkCreationStatement = "";
-        if (fk.hasName()) fkCreationStatement = "CONSTRAINT " + fk.getName() + " ";
+        if (fk.hasName()) fkCreationStatement = constraintBeginStatement(fk.getName());
         fkCreationStatement += "FOREIGN KEY (" +
             String.join(", ", fk.getFkAttributes().stream().map(Attribute::getName).toList());
         fkCreationStatement += ") REFERENCES " + prefix + fk.getPkReferenceTable().getTableName() + " ("+
@@ -268,6 +260,9 @@ public class StandardSQLPrinter extends SQLPrinter {
         return fkCreationStatement;
     }
 
+    private static String constraintBeginStatement(String name) {
+        return "CONSTRAINT " + name + " ";
+    }
     /* Data types */
 
     @Override
