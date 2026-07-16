@@ -77,7 +77,7 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
     public List<ColumnReference> visit(TableExpression te) {
         List<ColumnReference> required = new ArrayList<>();
         List<ColumnReference> offered = new ArrayList<>();
-        Set<String> cachedOfferedTableAliases = new HashSet<>();
+        Set<String> cachedOfferedTableAliases = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
         // Process FROM clause (needs to walk tree since ON clauses need to be checked)
         required.addAll(visitFromClause(te));
@@ -165,7 +165,7 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
         // No table name, look only one column name. If more than one throw error.
         boolean found = false;
         for (ColumnReference compared : offered) {
-            if (compared.getColumnName().equals(target.getColumnName())) {
+            if (compared.equals(target)) {
                 if (found)
                     throw new AmbiguousColumnReferenceException("Ambiguous column reference: multiple table aliases offer it.");
                 found = true;
