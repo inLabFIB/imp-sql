@@ -50,6 +50,7 @@ public class ColumnReference implements ValueExpression {
 
         ColumnReference that = (ColumnReference) o;
 
+//        if (!Objects.equals(tableName, that.tableName)) return false;
         if(Objects.isNull(tableName) && !Objects.isNull(that.tableName)) return false;
         if(!Objects.isNull(tableName) && !tableName.equalsIgnoreCase(that.getTableName())) return false;
         return columnName.equalsIgnoreCase(that.columnName);

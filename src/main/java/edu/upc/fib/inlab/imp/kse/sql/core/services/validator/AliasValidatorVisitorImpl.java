@@ -165,7 +165,7 @@ public class AliasValidatorVisitorImpl implements SQLObjectSchemaVisitor<List<Co
         // No table name, look only one column name. If more than one throw error.
         boolean found = false;
         for (ColumnReference compared : offered) {
-            if (compared.equals(target)) {
+            if (compared.getColumnName().equalsIgnoreCase(target.getColumnName())) {
                 if (found)
                     throw new AmbiguousColumnReferenceException("Ambiguous column reference: multiple table aliases offer it.");
                 found = true;

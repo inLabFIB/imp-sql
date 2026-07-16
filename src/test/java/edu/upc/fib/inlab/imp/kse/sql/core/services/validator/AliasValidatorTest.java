@@ -77,6 +77,24 @@ class AliasValidatorTest {
         assertDoesNotThrow(() -> validator.validateAliases(schema.getAssertions().get(0)));
     }
 
+    @Test
+    void validColumnReference_worksWithoutTableReference() {
+        StandardSQLParser parser = new StandardSQLParser();
+        String tableA = "CREATE TABLE a (col1 int)";
+        parser.parse(tableA);
+
+        // Object parsed from input string
+        String assertionString = """
+            CREATE ASSERTION assertionName CHECK ( NOT EXISTS (
+                SELECT col1 FROM a
+            ))""";
+        parser.parse(assertionString);
+        SQLObjectSchema schema = parser.getSQLObjectSchema();
+
+        SQLObjectSchemaValidator validator = new SQLObjectSchemaValidator();
+        assertDoesNotThrow(() -> validator.validateAliases(schema.getAssertions().get(0)));
+    }
+
 
     @Test
     void validTableReference_isCaseInsensitive() {
